@@ -395,9 +395,15 @@ function Modal({dir,rid,asset,precioCNKT,web3,contrato,contratoE,wallet,onClose,
     const aw=web3.utils.toWei(c.toString(),'ether');
     setLoading(true);
     try{
+      // Verificar que esté en Polygon
+      const chainId=await window.ethereum.request({method:'eth_chainId'});
+      if(chainId!==CFG.POLYGON_CHAIN){
+        setStatus({msg:'Cambiando a red Polygon...',tipo:'info'});
+        try{await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:CFG.POLYGON_CHAIN}]});}
+        catch(e){setStatus({msg:'Cambia a la red Polygon en MetaMask y vuelve a intentar.',tipo:'err'});setLoading(false);return;}
+      }
       setStatus({msg:'Paso 1/2: Aprobando CNKT+ (solo se hace una vez)...',tipo:'info'});
       const al=await contratoE.methods.allowance(wallet,CFG.CONTRATO_VEGAS).call();
-      // Aprobar maximo ilimitado — solo se hace una vez, nunca vuelve a pedir approve
       const MAX='115792089237316195423570985008687907853269984665640564039457584007913129639935';
       if(BigInt(al)<BigInt(aw))await contratoE.methods.approve(CFG.CONTRATO_VEGAS,MAX).send({from:wallet});
       setStatus({msg:'Paso 2/2: Enviando entrada...',tipo:'info'});
