@@ -310,15 +310,17 @@ function CardLive({ronda,rid,wallet,soloLectura,web3,contrato,onBet}) {
     if(!ronda||!web3)return;
     const fp=async()=>{try{const p=await contrato.methods.getPrice(parseInt(ronda.asset)).call();setPrecio(parseInt(p)/1e8);}catch(e){}};
     fp(); const pi=setInterval(fp,15000);
-    const ti=setInterval(()=>setSecsLeft(tLeft(ronda.closeTime)),1000);
-    setSecsLeft(tLeft(ronda.closeTime));
+    // Contar hasta resolveTime (10 min completos)
+    const ti=setInterval(()=>setSecsLeft(tLeft(ronda.resolveTime)),1000);
+    setSecsLeft(tLeft(ronda.resolveTime));
     return()=>{clearInterval(pi);clearInterval(ti);};
   },[ronda,web3]);
   useEffect(()=>{
     if(!ronda||!web3||soloLectura||!wallet)return;
     contrato.methods.hasBet(rid,wallet).call().then(b=>setYaBet(b)).catch(()=>{});
   },[ronda,wallet]);
-  const cerradas=secsLeft<=0, urgente=secsLeft<=60&&secsLeft>0;
+  // Entradas cerradas cuando queden menos de 2 min (120 seg)
+  const cerradas=secsLeft<=120, urgente=secsLeft<=120&&secsLeft>0;
   if(!ronda) return (
     <div className="card card-live" style={{minHeight:380,padding:0}}>
       <PentaUp/><div className="card-body">
@@ -393,9 +395,11 @@ function Modal({dir,rid,asset,precioCNKT,web3,contrato,contratoE,wallet,onClose,
     const aw=web3.utils.toWei(c.toString(),'ether');
     setLoading(true);
     try{
-      setStatus({msg:'Paso 1/2: Aprobando CNKT+...',tipo:'info'});
+      setStatus({msg:'Paso 1/2: Aprobando CNKT+ (solo se hace una vez)...',tipo:'info'});
       const al=await contratoE.methods.allowance(wallet,CFG.CONTRATO_VEGAS).call();
-      if(BigInt(al)<BigInt(aw))await contratoE.methods.approve(CFG.CONTRATO_VEGAS,aw).send({from:wallet});
+      // Aprobar maximo ilimitado — solo se hace una vez, nunca vuelve a pedir approve
+      const MAX='115792089237316195423570985008687907853269984665640564039457584007913129639935';
+      if(BigInt(al)<BigInt(aw))await contratoE.methods.approve(CFG.CONTRATO_VEGAS,MAX).send({from:wallet});
       setStatus({msg:'Paso 2/2: Enviando entrada...',tipo:'info'});
       await contrato.methods.placeBet(rid,isUp?0:1,aw).send({from:wallet});
       setStatus({msg:`✓ ${c} CNKT+ registrados`,tipo:'ok'});
@@ -497,7 +501,7 @@ function App() {
       setRondas({live:live&&(live.status==='0'||live.status===0)?live:null,liveId:rid,exp1,exp1Id:rid>1?rid-1:null,exp2,exp2Id:rid>2?rid-2:null});
       if(live&&(live.status==='0'||live.status===0)){
         try{const p=await cv.methods.getPrice(parseInt(live.asset)).call();setPrecioBTC(parseInt(p)/1e8);}catch(e){}
-        const s=tLeft(live.closeTime);setTimer(fTime(s));setTimerUrgent(s<=60&&s>0);
+        const s=tLeft(live.resolveTime);setTimer(fTime(s));setTimerUrgent(s<=120&&s>0);
       }
       if(prevLiveId.current&&rid>prevLiveId.current&&walletAddr){
         checkResultado(cv,w3,prevLiveId.current,walletAddr);
@@ -532,7 +536,7 @@ function App() {
 
   useEffect(()=>{
     if(!rondas.live)return;
-    const t=setInterval(()=>{const s=tLeft(rondas.live.closeTime);setTimer(fTime(s));setTimerUrgent(s<=60&&s>0);},1000);
+    const t=setInterval(()=>{const s=tLeft(rondas.live.resolveTime);setTimer(fTime(s));setTimerUrgent(s<=120&&s>0);},1000);
     return()=>clearInterval(t);
   },[rondas.live]);
 
