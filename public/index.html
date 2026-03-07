@@ -9,6 +9,9 @@
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.10.0/web3.min.js"></script>
+<script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.3/dist/dotlottie-wc.js" type="module"></script>
+<script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.3/dist/dotlottie-wc.js" type="module"></script>
+<script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.3/dist/dotlottie-wc.js" type="module"></script>
 <style>
 :root{
   --bg:#1A1033;--bg2:#130D28;--surface:#1E1538;--surface2:#251C45;--border:#2E2455;
@@ -89,6 +92,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .pool-pct-u{color:var(--up)}
 .pool-pct-d{color:var(--dn)}
 .banner-closed{background:rgba(237,75,158,0.1);border:1px solid rgba(237,75,158,0.35);border-radius:8px;padding:7px 10px;text-align:center;font-size:11px;font-weight:700;color:var(--dn);letter-spacing:1px;margin:4px 0;animation:pulse 1.5s infinite}
+.banner-calc{background:rgba(123,94,255,0.1);border:1px solid rgba(123,94,255,0.35);border-radius:8px;padding:10px;text-align:center;font-size:12px;font-weight:700;color:var(--live);letter-spacing:1px;margin:4px 0;animation:calcPulse 1s infinite}
+@keyframes calcPulse{0%{opacity:0.4;box-shadow:0 0 0px rgba(123,94,255,0)}50%{opacity:1;box-shadow:0 0 16px rgba(123,94,255,0.3)}100%{opacity:0.4;box-shadow:0 0 0px rgba(123,94,255,0)}}
 .bet-btns{display:flex;flex-direction:column;gap:7px;margin-top:auto;padding-top:8px}
 .btn-up{padding:11px;border-radius:12px;border:none;background:var(--up);color:#000;font-family:'Kanit',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all 0.3s;letter-spacing:0.5px}
 .btn-up:hover:not(:disabled){box-shadow:0 0 20px rgba(31,199,212,0.5);transform:translateY(-1px)}
@@ -186,8 +191,17 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .toast-item.ok{border-color:rgba(31,199,212,0.4);color:var(--up)}
 .toast-item.err{border-color:rgba(237,75,158,0.4);color:var(--dn)}
 .toast-item.info{border-color:rgba(255,215,0,0.4);color:var(--gold)}
+.calculando-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 0;margin-top:auto}
+.calculando-txt{font-size:16px;font-weight:800;letter-spacing:3px;font-family:'DM Mono',monospace;animation:calcPulse 1.2s ease-in-out infinite}
+@keyframes calcPulse{0%,100%{color:rgba(31,199,212,0.3)}50%{color:rgba(31,199,212,1);text-shadow:0 0 20px rgba(31,199,212,0.8)}}
+.calculando-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 0;gap:4px}
+.calculando-txt{font-size:16px;font-weight:800;letter-spacing:3px;font-family:'DM Mono',monospace;animation:calcPulse 1.2s ease-in-out infinite}
+@keyframes calcPulse{0%,100%{color:#1FC7D4;opacity:1;text-shadow:0 0 10px rgba(31,199,212,0.8)}50%{color:#7B5EFF;opacity:0.6;text-shadow:0 0 20px rgba(123,94,255,0.6)}}
 .spinner{display:inline-block;width:11px;height:11px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:5px}
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes calcPulse{0%,100%{opacity:1;color:#1FC7D4}50%{opacity:0.3;color:#7B5EFF}}
+.calculando-wrap{display:flex;flex-direction:column;align-items:center;padding:4px 0;gap:4px}
+.calculando-txt{font-size:14px;font-weight:800;letter-spacing:3px;color:var(--up);animation:calcPulse 1.2s ease-in-out infinite}
 @media(max-width:600px){.price-bar{display:none}.admin-grid{grid-template-columns:1fr}.carousel-padding{width:20px}}
 </style>
 </head>
@@ -261,6 +275,19 @@ function CardExpired({ronda,id,web3}) {
     </div>
   );
   const st=parseInt(ronda.status),isCancelled=st===3,isResolved=st===2;
+  // Si sigue ABIERTA pero ya pasó el tiempo — está calculando
+  const isCalculando=st===0&&Math.floor(Date.now()/1000)>parseInt(ronda.resolveTime);
+  if(isCalculando) return (
+    <div className="card card-exp" style={{minHeight:320,padding:0,border:'1px solid rgba(31,199,212,0.3)'}}>
+      <PentaUp/><div className="card-body">
+        <div className="card-tag-row"><span className="tag-txt" style={{color:'var(--up)'}}>⏳ CALCULANDO</span><span className="card-num-txt">#{id}</span></div>
+        <div className="calculando-wrap" style={{flex:1,justifyContent:'center'}}>
+          <dotlottie-wc src="https://lottie.host/1b3592b4-cf02-40e1-950a-fe9fed6fb3cc/YRVEvH3BMD.lottie" style={{width:'110px',height:'110px'}} autoplay loop></dotlottie-wc>
+          <div className="calculando-txt">CALCULANDO...</div>
+        </div>
+      </div><PentaDn/>
+    </div>
+  );
   const pA=parseInt(ronda.priceAtOpen)/1e8;
   const pC=ronda.priceAtClose!=='0'?parseInt(ronda.priceAtClose)/1e8:null;
   const upWon=isResolved&&parseInt(ronda.result)===0,dnWon=isResolved&&parseInt(ronda.result)===1;
@@ -379,8 +406,15 @@ function CardLive({ronda,rid,wallet,soloLectura,web3,contrato,onBet}) {
         <div className="info-row"><span className="info-lbl">Prize Pool</span><span className="info-val gold">{tPf.toFixed(2)} CNKT+</span></div>
         <div className="pool-bar"><div className="pool-bar-u" style={{width:pctUp+'%'}}/><div className="pool-bar-d" style={{width:(100-pctUp)+'%'}}/></div>
         <div className="pool-pcts"><span className="pool-pct-u">{pctUp.toFixed(0)}%</span><span className="pool-pct-d">{(100-pctUp).toFixed(0)}%</span></div>
-        {cerradas&&<div className="banner-closed">🔒 ENTRADAS CERRADAS</div>}
-        {yaBet&&miApuesta?(
+        {secsLeft<=0?(
+          <div className="calculando-wrap">
+            <dotlottie-wc src="https://lottie.host/1b3592b4-cf02-40e1-950a-fe9fed6fb3cc/YRVEvH3BMD.lottie" style={{width:'130px',height:'130px'}} autoplay loop></dotlottie-wc>
+            <div className="calculando-txt">CALCULANDO...</div>
+          </div>
+        ):cerradas?(
+          <div className="banner-closed">🔒 ENTRADAS CERRADAS</div>
+        ):null}
+        {secsLeft<=0?null:yaBet&&miApuesta?(
           <div style={{marginTop:'auto',paddingTop:8}}>
             {/* Tu apuesta */}
             <div style={{
@@ -430,7 +464,7 @@ function CardLive({ronda,rid,wallet,soloLectura,web3,contrato,onBet}) {
             <button className="btn-up" disabled={cerradas||soloLectura||!wallet} onClick={()=>onBet('SUBE')}>Enter UP ▲</button>
             <button className="btn-dn" disabled={cerradas||soloLectura||!wallet} onClick={()=>onBet('BAJA')}>Enter DOWN ▼</button>
           </div>
-        )}
+        ))}
       </div>
       <PentaDn mult={multDn}/>
     </div>
