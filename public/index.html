@@ -4,856 +4,927 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CNKT Predictor by EVOX</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.10.0/web3.min.js"></script>
 <style>
 :root{
-  --bg:#050505;
-  --surface:#0d0d0d;
-  --surface2:#141414;
-  --border:#1f1f1f;
+  --bg:#1A1033;
+  --bg2:#130D28;
+  --surface:#1E1538;
+  --surface2:#251C45;
+  --border:#2E2455;
   --gold:#FFD700;
-  --gold2:#FFA500;
+  --gold2:#FFC200;
   --gold-dim:rgba(255,215,0,0.12);
-  --gold-glow:rgba(255,215,0,0.25);
-  --green:#00ff87;
-  --red:#ff3b5c;
-  --text:#f0f0f0;
-  --muted:#555;
-  --muted2:#333;
+  --up:#1FC7D4;
+  --up2:#00E5A0;
+  --up-dim:rgba(31,199,212,0.15);
+  --dn:#ED4B9E;
+  --dn-dim:rgba(237,75,158,0.15);
+  --live:#7B5EFF;
+  --live-dim:rgba(123,94,255,0.2);
+  --text:#F4EEFF;
+  --muted:#6B5E9A;
+  --muted2:#2E2455;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;overflow-x:hidden}
+html,body,#root{height:100%}
+body{background:var(--bg2);color:var(--text);font-family:'Kanit',sans-serif;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 15% 40%,rgba(123,94,255,0.12),transparent 55%),radial-gradient(ellipse at 85% 10%,rgba(31,199,212,0.06),transparent 50%);pointer-events:none;z-index:0}
 
-/* NOISE TEXTURE */
-body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:0.4}
-
-/* LINEAS SUTILES */
-body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,215,0,0.015) 40px);pointer-events:none;z-index:0}
+/* SCROLLBAR */
+::-webkit-scrollbar{height:4px;width:4px}
+::-webkit-scrollbar-track{background:var(--surface)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
 /* HEADER */
-.header{position:sticky;top:0;z-index:100;background:rgba(5,5,5,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between}
-.logo{display:flex;align-items:center;gap:12px}
-.logo-icon{width:36px;height:36px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:20px;color:#000;letter-spacing:1px;flex-shrink:0}
-.logo-text{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--gold)}
-.logo-sub{font-size:9px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-top:-4px}
-.header-right{display:flex;align-items:center;gap:12px}
-.net-badge{display:flex;align-items:center;gap:6px;padding:5px 12px;border:1px solid var(--border);border-radius:4px;font-size:11px;color:var(--muted)}
-.net-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-.btn-conectar{background:var(--gold);color:#000;border:none;padding:8px 20px;border-radius:4px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:1px;transition:all 0.2s}
-.btn-conectar:hover{background:var(--gold2);transform:translateY(-1px)}
-.wallet-chip{display:flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid rgba(255,215,0,0.3);border-radius:4px;font-size:11px;color:var(--gold);cursor:pointer}
-.wallet-chip:hover{background:var(--gold-dim)}
+.header{background:rgba(19,13,40,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:12px}
+.logo{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.logo-badge{width:30px;height:30px;background:linear-gradient(135deg,#FFD700,#FFA500);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#000}
+.logo-name{font-size:16px;font-weight:800;color:var(--gold);letter-spacing:1px}
+.logo-sub{font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:2px}
+.price-bar{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1;justify-content:center}
+.price-bar::-webkit-scrollbar{display:none}
+.price-chip{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:16px;background:var(--surface2);border:1px solid var(--border);font-size:11px;white-space:nowrap;cursor:pointer;transition:all 0.2s}
+.price-chip.active{background:var(--gold-dim);border-color:rgba(255,215,0,0.4);color:var(--gold)}
+.price-chip-val{font-family:'DM Mono',monospace;font-weight:700;font-size:12px}
+.header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.timer-badge{display:flex;align-items:center;gap:6px;padding:5px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:16px;font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--gold)}
+.timer-badge-sub{font-size:10px;color:var(--muted);font-weight:400;margin-left:2px}
+.btn-connect{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border:none;padding:7px 16px;border-radius:16px;font-family:'Kanit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px;white-space:nowrap}
+.btn-connect:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(255,215,0,0.3)}
+.wallet-pill{display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid rgba(255,215,0,0.3);border-radius:16px;font-size:11px;color:var(--gold);cursor:pointer;background:var(--gold-dim);font-family:'DM Mono',monospace}
+.wallet-dot{width:6px;height:6px;border-radius:50%;background:#1FC7D4;box-shadow:0 0 6px #1FC7D4}
 
-/* MAIN */
-.main{max-width:1100px;margin:0 auto;padding:32px 24px;position:relative;z-index:1}
-
-/* STATS BAR */
-.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:40px}
-.stat{background:var(--surface);padding:16px 20px}
-.stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px}
-.stat-val{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px}
-.stat-val.gold{color:var(--gold)}
-.stat-val.green{color:var(--green)}
-.stat-val.muted{color:var(--muted)}
-
-/* SECTION TITLE */
-.section-title{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:4px;color:var(--muted);text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:12px}
-.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
-
-/* TARJETAS CONTENEDOR */
-.cards-wrap{display:flex;gap:16px;margin-bottom:40px;align-items:stretch}
+/* CARRUSEL */
+.carousel-section{padding:24px 0 8px;position:relative;z-index:1}
+.carousel-track{display:flex;gap:12px;padding:8px 0 16px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-ms-overflow-style:none;align-items:center;cursor:grab}
+.carousel-track:active{cursor:grabbing}
+.carousel-track::-webkit-scrollbar{display:none}
+.carousel-padding{flex-shrink:0;width:calc(50vw - 150px)}
 
 /* TARJETA BASE */
-.ronda-card{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;min-height:320px;display:flex;flex-direction:column;transition:all 0.3s;position:relative;overflow:hidden}
-.ronda-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--border)}
+.card{flex-shrink:0;border-radius:24px;display:flex;flex-direction:column;scroll-snap-align:center;transition:transform 0.3s,box-shadow 0.3s;position:relative;overflow:visible;user-select:none}
+.card:hover{transform:translateY(-2px)}
 
-/* TARJETA EXPIRADA */
-.card-expired{opacity:0.45;flex:0 0 240px}
-.card-expired::before{background:var(--muted2)}
+/* EXPIRADA */
+.card-exp{width:200px;background:var(--surface);border:1px solid var(--border);opacity:0.6}
+.card-exp:hover{opacity:0.8}
 
-/* TARJETA ACTIVA */
-.card-live{flex:0 0 460px;border-color:rgba(255,215,0,0.3);background:linear-gradient(145deg,#0d0d0d,#111008)}
-.card-live::before{background:linear-gradient(90deg,var(--gold),var(--gold2));box-shadow:0 0 20px var(--gold-glow)}
-.card-live-glow{position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:200px;height:120px;background:radial-gradient(ellipse,rgba(255,215,0,0.08),transparent 70%);pointer-events:none}
+/* LIVE */
+.card-live{width:295px;background:linear-gradient(160deg,#1E1538,#150F2E);border:2px solid var(--live);box-shadow:0 0 0 1px rgba(123,94,255,0.1),0 20px 60px rgba(0,0,0,0.6),0 0 40px var(--live-dim)}
+.card-live::before{content:'LIVE';position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--live);color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:10px;letter-spacing:2px}
 
-/* TARJETA PROXIMA */
-.card-next{flex:0 0 320px;border-color:rgba(255,255,255,0.08)}
-.card-next::before{background:linear-gradient(90deg,#333,#222)}
+/* NEXT */
+.card-next{width:240px;background:var(--surface);border:2px solid var(--surface2)}
 
-/* CARD HEADER */
-.card-tag{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px}
-.tag-expired{background:var(--muted2);color:var(--muted)}
-.tag-live{background:rgba(255,215,0,0.15);color:var(--gold);border:1px solid rgba(255,215,0,0.3)}
-.tag-live-dot{width:5px;height:5px;border-radius:50%;background:var(--gold);animation:pulse 1s infinite}
-.tag-next{background:rgba(255,255,255,0.05);color:#888}
+/* LATER */
+.card-later{width:120px;background:var(--surface);border:1px solid var(--border);opacity:0.35;align-items:center;justify-content:center;padding:20px;gap:6px;min-height:300px}
 
-/* CARD ASSET */
-.card-asset{font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:2px;color:var(--text);margin-bottom:4px;line-height:1}
-.card-live .card-asset{font-size:52px;color:var(--gold)}
-.card-round{font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:16px}
+/* PENTÁGONO UP */
+.penta-up{position:relative;background:var(--up-dim);border:1px solid rgba(31,199,212,0.3);border-radius:12px 12px 0 0;padding:10px 16px;text-align:center;margin:0;clip-path:polygon(0 0,100% 0,100% 75%,50% 100%,0 75%)}
+.penta-up.winner{background:rgba(31,199,212,0.25);border-color:rgba(31,199,212,0.6)}
+.penta-dn{position:relative;background:var(--dn-dim);border:1px solid rgba(237,75,158,0.3);border-radius:0 0 12px 12px;padding:10px 16px;text-align:center;margin:0;clip-path:polygon(0 25%,50% 0,100% 25%,100% 100%,0 100%)}
+.penta-dn.winner{background:rgba(237,75,158,0.25);border-color:rgba(237,75,158,0.6)}
+.penta-dir{font-size:15px;font-weight:800;letter-spacing:2px;margin-bottom:2px;padding-top:4px}
+.penta-dir.up{color:var(--up)}
+.penta-dir.dn{color:var(--dn);padding-top:8px}
+.penta-mult{font-size:11px;font-weight:600;opacity:0.85}
+.penta-mult.up{color:var(--up)}
+.penta-mult.dn{color:var(--dn);padding-bottom:4px}
 
-/* PRECIOS */
-.price-row{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
-.price-main{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px}
-.card-live .price-main{font-size:36px;color:var(--text)}
-.price-change{font-size:12px;padding:2px 8px;border-radius:3px;font-weight:700}
-.price-change.up{background:rgba(0,255,135,0.1);color:var(--green)}
-.price-change.down{background:rgba(255,59,92,0.1);color:var(--red)}
-.price-open{font-size:11px;color:var(--muted);margin-bottom:20px}
-
-/* TIMER CIRCULAR */
-.timer-wrap{display:flex;align-items:center;gap:16px;margin-bottom:20px}
-.timer-circle{position:relative;width:64px;height:64px;flex-shrink:0}
-.timer-svg{transform:rotate(-90deg)}
-.timer-track{fill:none;stroke:var(--border);stroke-width:4}
-.timer-prog{fill:none;stroke:var(--gold);stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset 1s linear;stroke-dasharray:163;stroke-dashoffset:0}
-.timer-prog.warning{stroke:var(--red)}
-.timer-num{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--gold);letter-spacing:1px}
-.timer-num.warning{color:var(--red)}
-.timer-info{flex:1}
-.timer-label{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
-.timer-status{font-size:12px;color:var(--text)}
+/* CUERPO TARJETA */
+.card-body{padding:12px 14px;flex:1;display:flex;flex-direction:column;gap:6px}
+.card-tag-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.tag-live-dot{width:7px;height:7px;border-radius:50%;background:var(--live);box-shadow:0 0 8px var(--live);animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.tag-txt{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--muted)}
+.card-num-txt{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace}
+.price-center{text-align:center;padding:8px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:4px 0}
+.price-label-sm{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;font-family:'DM Mono',monospace}
+.price-main{font-size:24px;font-weight:800;font-family:'DM Mono',monospace;letter-spacing:-0.5px}
+.card-live .price-main{font-size:28px;color:var(--up)}
+.price-delta{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700;margin-top:3px;font-family:'DM Mono',monospace}
+.price-delta.up{background:rgba(31,199,212,0.15);color:var(--up)}
+.price-delta.dn{background:rgba(237,75,158,0.15);color:var(--dn)}
+.info-row{display:flex;justify-content:space-between;font-size:11px}
+.info-lbl{color:var(--muted)}
+.info-val{font-family:'DM Mono',monospace;font-weight:600}
+.info-val.gold{color:var(--gold)}
 
 /* POOL BAR */
-.pool-bar-wrap{margin-bottom:12px}
-.pool-bar-track{height:6px;background:var(--border);border-radius:3px;overflow:hidden;display:flex;margin-bottom:8px}
-.pool-bar-up{background:linear-gradient(90deg,var(--green),rgba(0,255,135,0.5));height:100%;transition:width 0.5s;border-radius:3px 0 0 3px}
-.pool-bar-dn{background:linear-gradient(90deg,rgba(255,59,92,0.5),var(--red));height:100%;transition:width 0.5s;border-radius:0 3px 3px 0}
-.pool-nums{display:flex;justify-content:space-between;font-size:11px}
-.pool-up-num{color:var(--green)}
-.pool-dn-num{color:var(--red)}
+.pool-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;display:flex;margin:4px 0}
+.pool-bar-u{background:var(--up);height:100%;transition:width 0.6s}
+.pool-bar-d{background:var(--dn);height:100%;transition:width 0.6s}
+.pool-pcts{display:flex;justify-content:space-between;font-size:10px;font-family:'DM Mono',monospace}
+.pool-pct-u{color:var(--up)}
+.pool-pct-d{color:var(--dn)}
 
-/* MULTIPLICADORES */
-.mult-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
-.mult-box{padding:10px;border-radius:8px;text-align:center;border:1px solid}
-.mult-box.up{background:rgba(0,255,135,0.05);border-color:rgba(0,255,135,0.2)}
-.mult-box.dn{background:rgba(255,59,92,0.05);border-color:rgba(255,59,92,0.2)}
-.mult-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px}
-.mult-label.up{color:var(--green)}
-.mult-label.dn{color:var(--red)}
-.mult-val{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px}
-.mult-val.up{color:var(--green)}
-.mult-val.dn{color:var(--red)}
+/* BOTONES */
+.bet-btns{display:flex;flex-direction:column;gap:7px;margin-top:auto;padding-top:8px}
+.btn-up{padding:11px;border-radius:12px;border:none;background:var(--up);color:#000;font-family:'Kanit',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px}
+.btn-up:hover:not(:disabled){box-shadow:0 0 20px rgba(31,199,212,0.5);transform:translateY(-1px)}
+.btn-up:disabled{opacity:0.3;cursor:not-allowed;transform:none}
+.btn-dn{padding:11px;border-radius:12px;border:none;background:var(--dn);color:#fff;font-family:'Kanit',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px}
+.btn-dn:hover:not(:disabled){box-shadow:0 0 20px rgba(237,75,158,0.5);transform:translateY(-1px)}
+.btn-dn:disabled{opacity:0.3;cursor:not-allowed;transform:none}
+.entrado-badge{text-align:center;padding:10px;border-radius:10px;background:var(--gold-dim);border:1px solid rgba(255,215,0,0.3);color:var(--gold);font-size:13px;font-weight:700;letter-spacing:1px;margin-top:auto}
 
-/* BOTONES SUBE BAJA */
-.bet-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:auto}
-.btn-up{padding:14px;border-radius:8px;border:2px solid var(--green);background:rgba(0,255,135,0.07);color:var(--green);font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden}
-.btn-up::after{content:'▲';position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:14px;opacity:0.5}
-.btn-up:hover:not(:disabled){background:var(--green);color:#000;border-color:var(--green);box-shadow:0 0 20px rgba(0,255,135,0.3);transform:translateY(-2px)}
-.btn-dn{padding:14px;border-radius:8px;border:2px solid var(--red);background:rgba(255,59,92,0.07);color:var(--red);font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden}
-.btn-dn::after{content:'▼';position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:14px;opacity:0.5}
-.btn-dn:hover:not(:disabled){background:var(--red);color:#fff;border-color:var(--red);box-shadow:0 0 20px rgba(255,59,92,0.3);transform:translateY(-2px)}
-.btn-up:disabled,.btn-dn:disabled{opacity:0.25;cursor:not-allowed;transform:none}
+/* NO ROUND */
+.no-round{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;padding:20px 0;min-height:200px}
+.no-round-icon{font-size:32px;margin-bottom:4px}
 
-/* ENTRADO BADGE */
-.entrado-badge{text-align:center;padding:12px;border:1px solid rgba(255,215,0,0.3);border-radius:8px;background:rgba(255,215,0,0.05);color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;margin-top:auto}
+/* CONN DROPDOWN */
+.conn-drop{position:fixed;top:64px;right:16px;z-index:200;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;width:260px;box-shadow:0 20px 60px rgba(0,0,0,0.8);animation:fadeIn 0.15s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.conn-title{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;font-family:'DM Mono',monospace}
+.conn-opt{width:100%;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Kanit',sans-serif;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:6px;text-align:left;display:flex;align-items:center;gap:10px;transition:all 0.2s}
+.conn-opt:hover{border-color:var(--gold);color:var(--gold)}
+.conn-ghost{width:100%;padding:7px;background:transparent;border:none;color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;letter-spacing:1px;text-align:center}
+.conn-ghost:hover{color:var(--text)}
+.conn-err{font-size:11px;margin-top:8px;line-height:1.6;font-family:'DM Mono',monospace;color:var(--dn)}
+.conn-info{font-size:11px;margin-top:8px;line-height:1.6;font-family:'DM Mono',monospace;color:var(--gold)}
 
-/* TARJETA PROXIMA - contenido */
-.next-info{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:8px}
-.next-icon{font-size:40px;margin-bottom:8px}
-.next-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;color:var(--muted)}
-.next-desc{font-size:11px;color:var(--muted);line-height:1.7}
+/* BOTTOM */
+.bottom{max-width:1000px;margin:0 auto;padding:0 16px 40px;position:relative;z-index:1}
 
-/* TARJETA SIN RONDA */
-.no-round{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:8px}
-.no-round-icon{font-size:36px;margin-bottom:8px}
-.no-round-text{font-size:12px;color:var(--muted);line-height:1.8}
+/* ADMIN */
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.admin-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px}
+.admin-title{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;font-family:'DM Mono',monospace}
+.asset-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.asset-chip{padding:5px 12px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Kanit',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s}
+.asset-chip.sel{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+.btn-admin{width:100%;padding:10px;border-radius:10px;font-family:'Kanit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;margin-bottom:6px;border:none;letter-spacing:0.5px}
+.btn-open{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000}
+.btn-open:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(255,215,0,0.3)}
+.btn-open:disabled{opacity:0.3;cursor:not-allowed;transform:none}
+.btn-resolve{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-resolve:hover{border-color:var(--text);color:var(--text)}
+.btn-resolve:disabled{opacity:0.3;cursor:not-allowed}
 
 /* HISTORIAL */
-.historial{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:40px}
-.hist-header{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.hist-title{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:3px;color:var(--muted)}
+.hist-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.hist-head{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.hist-title{font-size:13px;font-weight:700;letter-spacing:0.5px}
+.hist-sub{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:1px}
 table{width:100%;border-collapse:collapse;font-size:11px}
-th{text-align:left;padding:10px 24px;color:var(--muted);font-size:10px;letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid var(--border)}
-td{padding:12px 24px;border-bottom:1px solid var(--muted2)}
+th{text-align:left;padding:10px 18px;color:var(--muted);font-size:10px;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-weight:400}
+td{padding:11px 18px;border-bottom:1px solid var(--muted2);font-family:'DM Mono',monospace}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:rgba(255,255,255,0.02)}
-.badge{display:inline-block;padding:2px 10px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:1px}
-.badge.sube{background:rgba(0,255,135,0.1);color:var(--green);border:1px solid rgba(0,255,135,0.2)}
-.badge.baja{background:rgba(255,59,92,0.1);color:var(--red);border:1px solid rgba(255,59,92,0.2)}
+.badge-up{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;background:rgba(31,199,212,0.12);color:var(--up);border:1px solid rgba(31,199,212,0.25)}
+.badge-dn{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;background:rgba(237,75,158,0.12);color:var(--dn);border:1px solid rgba(237,75,158,0.25)}
 
-/* PANEL ADMIN */
-.admin-panel{display:none;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:40px}
-.admin-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px}
-.admin-box h3{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:3px;color:var(--muted);margin-bottom:16px}
-.asset-selector{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
-.asset-btn{padding:7px 14px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:1px}
-.asset-btn.selected{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
-.btn-admin{width:100%;padding:12px;border-radius:6px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;cursor:pointer;transition:all 0.2s;margin-bottom:8px;border:none}
-.btn-abrir{background:var(--gold);color:#000}.btn-abrir:hover{background:var(--gold2)}.btn-abrir:disabled{opacity:0.3;cursor:not-allowed}
-.btn-resolver{background:transparent;border:1px solid #444;color:#888}.btn-resolver:hover{border-color:var(--text);color:var(--text)}.btn-resolver:disabled{opacity:0.3;cursor:not-allowed}
-
-/* MODAL ENTRADA */
-.modal-bg{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);z-index:200;align-items:center;justify-content:center;padding:20px}
-.modal-bg.show{display:flex}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;width:100%;max-width:400px;position:relative}
-.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:16px 16px 0 0}
-.modal.up::before{background:linear-gradient(90deg,var(--green),transparent)}
-.modal.dn::before{background:linear-gradient(90deg,var(--red),transparent)}
-.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px}
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.15s ease}
+.modal-box{background:var(--surface);border-radius:20px;padding:26px;width:100%;max-width:370px;position:relative;border:1px solid var(--border)}
+.modal-box.up{border-top:3px solid var(--up);box-shadow:0 0 30px rgba(31,199,212,0.12)}
+.modal-box.dn{border-top:3px solid var(--dn);box-shadow:0 0 30px rgba(237,75,158,0.12)}
+.modal-close{position:absolute;top:14px;right:14px;background:var(--surface2);border:none;color:var(--muted);cursor:pointer;width:26px;height:26px;border-radius:8px;font-size:13px;display:flex;align-items:center;justify-content:center}
 .modal-close:hover{color:var(--text)}
-.modal-dir{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:4px;margin-bottom:4px}
-.modal-dir.up{color:var(--green)}
-.modal-dir.dn{color:var(--red)}
-.modal-ronda{font-size:11px;color:var(--muted);margin-bottom:24px;letter-spacing:1px}
-.modal-precio-ref{display:flex;justify-content:space-between;padding:10px 14px;background:var(--bg);border-radius:6px;margin-bottom:20px;font-size:11px}
-.modal-precio-ref span{color:var(--gold)}
-.conv-grid{display:grid;grid-template-columns:1fr 32px 1fr;gap:8px;align-items:end;margin-bottom:20px}
-.conv-sep{text-align:center;color:var(--muted);padding-bottom:10px;font-size:16px}
-.field label{display:block;font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
-.field input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:14px;padding:10px 12px;border-radius:6px;outline:none;transition:border-color 0.2s}
+.modal-dir{font-size:26px;font-weight:800;letter-spacing:2px;margin-bottom:2px}
+.modal-dir.up{color:var(--up)}
+.modal-dir.dn{color:var(--dn)}
+.modal-sub{font-size:11px;color:var(--muted);margin-bottom:18px;font-family:'DM Mono',monospace;letter-spacing:1px}
+.price-ref{display:flex;justify-content:space-between;padding:9px 13px;background:var(--bg2);border-radius:10px;margin-bottom:14px;font-size:12px;border:1px solid var(--border)}
+.price-ref-val{color:var(--gold);font-weight:700;font-family:'DM Mono',monospace}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;font-family:'DM Mono',monospace}
+.field input{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:15px;padding:9px 13px;border-radius:10px;outline:none;transition:border-color 0.2s}
 .field input:focus{border-color:var(--gold)}
-.field-hint{font-size:10px;color:var(--muted);margin-top:4px}
-.btn-confirmar{width:100%;padding:14px;border-radius:8px;border:none;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;cursor:pointer;transition:all 0.2s}
-.btn-confirmar.up{background:var(--green);color:#000}.btn-confirmar.up:hover{box-shadow:0 0 20px rgba(0,255,135,0.4);transform:translateY(-1px)}
-.btn-confirmar.dn{background:var(--red);color:#fff}.btn-confirmar.dn:hover{box-shadow:0 0 20px rgba(255,59,92,0.4);transform:translateY(-1px)}
-.btn-confirmar:disabled{opacity:0.4;cursor:not-allowed;transform:none}
-.modal-status{margin-top:12px;padding:10px 14px;border-radius:6px;font-size:11px;display:none;line-height:1.6}
-.modal-status.ok{background:rgba(0,255,135,0.08);border:1px solid rgba(0,255,135,0.2);color:var(--green)}
-.modal-status.err{background:rgba(255,59,92,0.08);border:1px solid rgba(255,59,92,0.2);color:var(--red)}
-.modal-status.info{background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.2);color:var(--gold)}
+.field-hint{font-size:10px;color:var(--muted);margin-top:4px;font-family:'DM Mono',monospace}
+.or-div{text-align:center;font-size:11px;color:var(--muted);margin:6px 0 10px;letter-spacing:1px}
+.btn-confirm{width:100%;padding:13px;border-radius:12px;border:none;font-family:'Kanit',sans-serif;font-size:16px;font-weight:800;cursor:pointer;transition:all 0.2s;letter-spacing:1px;margin-top:4px}
+.btn-confirm.up{background:var(--up);color:#000}
+.btn-confirm.up:hover{box-shadow:0 0 20px rgba(31,199,212,0.4);transform:translateY(-1px)}
+.btn-confirm.dn{background:var(--dn);color:#fff}
+.btn-confirm.dn:hover{box-shadow:0 0 20px rgba(237,75,158,0.4);transform:translateY(-1px)}
+.btn-confirm:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+.modal-st{margin-top:10px;padding:9px 13px;border-radius:8px;font-size:11px;line-height:1.7;font-family:'DM Mono',monospace}
+.modal-st.ok{background:rgba(31,199,212,0.08);border:1px solid rgba(31,199,212,0.2);color:var(--up)}
+.modal-st.err{background:rgba(237,75,158,0.08);border:1px solid rgba(237,75,158,0.2);color:var(--dn)}
+.modal-st.info{background:var(--gold-dim);border:1px solid rgba(255,215,0,0.2);color:var(--gold)}
 
 /* TOAST */
-.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 20px;font-size:12px;z-index:300;opacity:0;transform:translateY(10px);transition:all 0.3s;pointer-events:none;letter-spacing:1px}
-.toast.show{opacity:1;transform:translateY(0)}
-.toast.ok{border-color:rgba(0,255,135,0.4);color:var(--green)}
-.toast.err{border-color:rgba(255,59,92,0.4);color:var(--red)}
-.toast.info{border-color:rgba(255,215,0,0.4);color:var(--gold)}
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:400;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast-item{background:var(--surface2);border-radius:10px;padding:10px 18px;font-size:12px;font-family:'DM Mono',monospace;letter-spacing:0.5px;border:1px solid var(--border);animation:slideUp 0.3s ease;pointer-events:none}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.toast-item.ok{border-color:rgba(31,199,212,0.4);color:var(--up)}
+.toast-item.err{border-color:rgba(237,75,158,0.4);color:var(--dn)}
+.toast-item.info{border-color:rgba(255,215,0,0.4);color:var(--gold)}
 
-/* SPINNER */
-.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:6px}
+.spinner{display:inline-block;width:11px;height:11px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:5px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* MOBILE MENU */
-.mobile-connect{display:none}
-
-@media(max-width:768px){
-  .header{padding:0 16px}
-  .logo-text{font-size:18px}
-  .main{padding:20px 16px}
-  .stats-bar{grid-template-columns:repeat(2,1fr)}
-  .cards-wrap{flex-direction:column}
-  .card-expired{display:none}
-  .card-live{flex:none}
-  .card-next{flex:none}
-  .admin-panel{grid-template-columns:1fr}
-  .conv-grid{grid-template-columns:1fr}.conv-sep{display:none}
-  .mobile-connect{display:block}
+@media(max-width:600px){
+  .price-bar{display:none}
+  .admin-grid{grid-template-columns:1fr}
+  .carousel-padding{width:20px}
 }
 </style>
 </head>
 <body>
+<div id="root"></div>
 
-<!-- HEADER -->
-<header class="header">
-  <div class="logo">
-    <div class="logo-icon">C+</div>
-    <div>
-      <div class="logo-text">CNKT PREDICTOR</div>
-      <div class="logo-sub">by EVOX · Polygon Network</div>
-    </div>
-  </div>
-  <div class="header-right">
-    <div class="net-badge">
-      <div class="net-dot"></div>
-      <span>Polygon</span>
-    </div>
-    <div id="headerWallet">
-      <button class="btn-conectar" onclick="mostrarMenuConexion()">CONECTAR WALLET</button>
-    </div>
-  </div>
-</header>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
 
-<!-- MENÚ CONEXIÓN DROPDOWN -->
-<div id="menuConexion" style="display:none;position:fixed;top:72px;right:24px;z-index:150;background:var(--surface);border:1px solid rgba(255,215,0,0.2);border-radius:12px;padding:20px;width:280px;box-shadow:0 20px 60px rgba(0,0,0,0.8)">
-  <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:3px;color:var(--muted);margin-bottom:16px">CONECTAR WALLET</div>
-  <button onclick="conectarMetaMask()" style="width:100%;padding:12px;background:var(--gold-dim);border:1px solid rgba(255,215,0,0.3);border-radius:8px;color:var(--gold);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px;text-align:left;display:flex;align-items:center;gap:10px;transition:all 0.2s">
-    <span style="font-size:20px">🦊</span> MetaMask
-  </button>
-  <button onclick="conectarMovil()" style="width:100%;padding:12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;color:#888;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px;text-align:left;display:flex;align-items:center;gap:10px;transition:all 0.2s">
-    <span style="font-size:20px">📱</span> Celular (MetaMask / Trust)
-  </button>
-  <button onclick="soloVer()" style="width:100%;padding:10px;background:transparent;border:none;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;letter-spacing:1px">
-    Solo ver sin wallet →
-  </button>
-  <div id="menuError" style="color:var(--red);font-size:11px;margin-top:8px;display:none"></div>
-</div>
-<div id="menuOverlay" onclick="cerrarMenuConexion()" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:140"></div>
-
-<!-- MAIN -->
-<main class="main">
-
-  <!-- STATS BAR -->
-  <div class="stats-bar">
-    <div class="stat">
-      <div class="stat-label">Tu CNKT+</div>
-      <div class="stat-val green" id="statCNKT">—</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Precio CNKT+</div>
-      <div class="stat-val gold" id="statPrecioCNKT">—</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Pool Actual</div>
-      <div class="stat-val gold" id="statPool">—</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Tu Entrada</div>
-      <div class="stat-val muted" id="statTuEntrada">—</div>
-    </div>
-  </div>
-
-  <!-- RONDAS -->
-  <div class="section-title">Rondas</div>
-  <div class="cards-wrap">
-
-    <!-- TARJETA EXPIRADA -->
-    <div class="ronda-card card-expired" id="cardExpired">
-      <div class="card-tag tag-expired">EXPIRADA</div>
-      <div class="card-asset" id="expAsset">BTC</div>
-      <div class="card-round" id="expRound">Ronda —</div>
-      <div class="price-row">
-        <div class="price-main" id="expPrecioOpen">$—</div>
-      </div>
-      <div class="price-open">Cierre: <span id="expPrecioClose">$—</span></div>
-      <div style="margin-top:auto">
-        <div id="expResult" style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--muted)">—</div>
-      </div>
-    </div>
-
-    <!-- TARJETA EN VIVO -->
-    <div class="ronda-card card-live" id="cardLive">
-      <div class="card-live-glow"></div>
-      <div class="card-tag tag-live"><div class="tag-live-dot"></div>EN VIVO</div>
-
-      <!-- Sin ronda -->
-      <div class="no-round" id="noRound">
-        <div class="no-round-icon">⏳</div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--muted)">SIN RONDA ACTIVA</div>
-        <div class="no-round-text">Espera a que el keeper abra<br>una nueva ronda</div>
-      </div>
-
-      <!-- Con ronda -->
-      <div id="withRound" style="display:none;flex-direction:column;flex:1">
-        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
-          <div>
-            <div class="card-asset" id="liveAsset">BTC</div>
-            <div class="card-round" id="liveRound">Ronda —</div>
-          </div>
-          <div style="text-align:right">
-            <div style="font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:2px">VARIACION</div>
-            <div class="price-change" id="liveChange" style="font-size:14px">+0.00%</div>
-          </div>
-        </div>
-
-        <div class="price-row">
-          <div class="price-main" id="livePrecio">$—</div>
-        </div>
-        <div class="price-open" style="margin-bottom:16px">Apertura: <span id="liveOpen">$—</span></div>
-
-        <div class="timer-wrap">
-          <div class="timer-circle">
-            <svg class="timer-svg" width="64" height="64" viewBox="0 0 64 64">
-              <circle class="timer-track" cx="32" cy="32" r="26"/>
-              <circle class="timer-prog" id="timerCircle" cx="32" cy="32" r="26"/>
-            </svg>
-            <div class="timer-num" id="timerNum">--</div>
-          </div>
-          <div class="timer-info">
-            <div class="timer-label">Tiempo restante</div>
-            <div class="timer-status" id="timerStatus2">Entradas abiertas</div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);letter-spacing:1px;margin-top:2px" id="timerFull">--:--</div>
-          </div>
-        </div>
-
-        <div class="pool-bar-wrap">
-          <div class="pool-bar-track">
-            <div class="pool-bar-up" id="poolBarUp" style="width:50%"></div>
-            <div class="pool-bar-dn" id="poolBarDn" style="width:50%"></div>
-          </div>
-          <div class="pool-nums">
-            <span class="pool-up-num">▲ <span id="poolUp">0</span> CNKT+</span>
-            <span class="pool-dn-num">▼ <span id="poolDn">0</span> CNKT+</span>
-          </div>
-        </div>
-
-        <div class="mult-row">
-          <div class="mult-box up">
-            <div class="mult-label up">▲ Sube · Pago</div>
-            <div class="mult-val up" id="multUp">—x</div>
-          </div>
-          <div class="mult-box dn">
-            <div class="mult-label dn">▼ Baja · Pago</div>
-            <div class="mult-val dn" id="multDn">—x</div>
-          </div>
-        </div>
-
-        <div id="betBtns" class="bet-btns">
-          <button class="btn-up" id="btnUp" onclick="abrirModal('SUBE')" disabled>SUBE</button>
-          <button class="btn-dn" id="btnDn" onclick="abrirModal('BAJA')" disabled>BAJA</button>
-        </div>
-        <div id="entradoBadge" class="entrado-badge" style="display:none">✓ ENTRADA REGISTRADA</div>
-      </div>
-    </div>
-
-    <!-- TARJETA PROXIMA -->
-    <div class="ronda-card card-next">
-      <div class="card-tag tag-next">PROXIMA</div>
-      <div class="next-info">
-        <div class="next-icon">🎲</div>
-        <div class="next-title">Próxima Ronda</div>
-        <div class="next-desc">Las rondas se abren automáticamente cada 10 minutos.<br><br>El keeper bot resuelve y abre rondas sin intervención.</div>
-        <div style="margin-top:16px;padding:10px 16px;background:var(--gold-dim);border:1px solid rgba(255,215,0,0.2);border-radius:6px;font-size:11px;color:var(--gold);letter-spacing:1px">
-          Entrada min: 500 CNKT+
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- PANEL ADMIN -->
-  <div class="admin-panel" id="adminPanel">
-    <div class="admin-box">
-      <h3>Abrir Ronda</h3>
-      <div class="asset-selector">
-        <button class="asset-btn selected" onclick="selectAsset(0,this)">BTC</button>
-        <button class="asset-btn" onclick="selectAsset(1,this)">ETH</button>
-        <button class="asset-btn" onclick="selectAsset(2,this)">SOL</button>
-        <button class="asset-btn" onclick="selectAsset(3,this)">BNB</button>
-        <button class="asset-btn" onclick="selectAsset(4,this)">MATIC</button>
-      </div>
-      <button class="btn-admin btn-abrir" id="btnAbrirRonda" onclick="abrirRonda()">▶ ABRIR RONDA</button>
-    </div>
-    <div class="admin-box">
-      <h3>Resolver Ronda</h3>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:16px;line-height:1.8">Consulta Chainlink y distribuye fondos automáticamente.</div>
-      <button class="btn-admin btn-resolver" id="btnResolver" onclick="resolverRonda()">✓ RESOLVER RONDA</button>
-    </div>
-  </div>
-
-  <!-- HISTORIAL -->
-  <div class="section-title">Historial</div>
-  <div class="historial">
-    <div class="hist-header">
-      <div class="hist-title">Últimas Rondas</div>
-      <div style="font-size:10px;color:var(--muted);letter-spacing:1px">AUTO-ACTUALIZA</div>
-    </div>
-    <div id="historialTabla"><div style="color:var(--muted);font-size:11px;text-align:center;padding:32px;letter-spacing:1px">CARGANDO...</div></div>
-  </div>
-
-</main>
-
-<!-- MODAL ENTRADA -->
-<div class="modal-bg" id="modalBg" onclick="cerrarModal(event)">
-  <div class="modal" id="modal">
-    <button class="modal-close" onclick="cerrarModalBtn()">✕</button>
-    <div class="modal-dir" id="modalDir">SUBE</div>
-    <div class="modal-ronda" id="modalRonda">Ronda — · BTC</div>
-    <div class="modal-precio-ref">
-      <span style="color:var(--muted)">Precio CNKT+</span>
-      <span id="modalPrecio">—</span>
-    </div>
-    <div class="conv-grid">
-      <div class="field">
-        <label>CNKT+</label>
-        <input type="number" id="modalCNKT" placeholder="500" min="500" oninput="convCNKT()">
-        <div class="field-hint" id="hintCNKT">Min 500 · Max 250,000</div>
-      </div>
-      <div class="conv-sep">⇄</div>
-      <div class="field">
-        <label>USD equiv.</label>
-        <input type="number" id="modalUSD" placeholder="0.00" step="0.01" oninput="convUSD()">
-        <div class="field-hint" id="hintUSD">—</div>
-      </div>
-    </div>
-    <button class="btn-confirmar" id="btnConfirmar" onclick="confirmarEntrada()">CONFIRMAR</button>
-    <div class="modal-status" id="modalStatus"></div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.10.0/web3.min.js"></script>
-<script>
-const CONFIG={
-  CONTRATO_VEGAS:'0x76d19Ed4Aaba2ee40D522dBC9325DD2d45a44251',
-  CONTRATO_CNKT:'0x87bdfbe98Ba55104701b2F2e999982a317905637',
-  POLYGON_CHAIN_ID:'0x89',
-  POLYGON_RPC:'https://polygon-mainnet.g.alchemy.com/v2/RjgxBguZAwG-m9PqEv8WN',
-  USDC_POLYGON:'0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
+// ── CONFIG ──────────────────────────────────────────────────
+const CFG = {
+  CONTRATO_VEGAS: '0x76d19Ed4Aaba2ee40D522dBC9325DD2d45a44251',
+  CONTRATO_CNKT:  '0x87bdfbe98Ba55104701b2F2e999982a317905637',
+  POLYGON_CHAIN:  '0x89',
+  RPC: 'https://polygon-mainnet.g.alchemy.com/v2/RjgxBguZAwG-m9PqEv8WN',
 };
-const ASSETS=['BTC','ETH','SOL','BNB','MATIC'];
-const ABI_VEGAS=[
-  {"inputs":[{"internalType":"uint8","name":"_asset","type":"uint8"}],"name":"openRound","outputs":[],"stateMutability":"nonpayable","type":"function"},
-  {"inputs":[{"internalType":"uint256","name":"_roundId","type":"uint256"},{"internalType":"uint8","name":"_direction","type":"uint8"},{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"placeBet","outputs":[],"stateMutability":"nonpayable","type":"function"},
-  {"inputs":[{"internalType":"uint256","name":"_roundId","type":"uint256"}],"name":"resolveRound","outputs":[],"stateMutability":"nonpayable","type":"function"},
-  {"inputs":[],"name":"currentRoundId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
-  {"inputs":[{"internalType":"uint256","name":"_roundId","type":"uint256"}],"name":"getRoundInfo","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint8","name":"asset","type":"uint8"},{"internalType":"uint8","name":"status","type":"uint8"},{"internalType":"uint256","name":"openTime","type":"uint256"},{"internalType":"uint256","name":"closeTime","type":"uint256"},{"internalType":"uint256","name":"resolveTime","type":"uint256"},{"internalType":"int256","name":"priceAtOpen","type":"int256"},{"internalType":"int256","name":"priceAtClose","type":"int256"},{"internalType":"uint256","name":"totalSube","type":"uint256"},{"internalType":"uint256","name":"totalBaja","type":"uint256"},{"internalType":"uint256","name":"totalPool","type":"uint256"},{"internalType":"uint8","name":"result","type":"uint8"}],"internalType":"struct ProyectoVegas.Round","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},
-  {"inputs":[{"internalType":"uint256","name":"_roundId","type":"uint256"},{"internalType":"address","name":"","type":"address"}],"name":"hasBet","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
-  {"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
-  {"inputs":[{"internalType":"uint8","name":"_asset","type":"uint8"}],"name":"getPrice","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"},
+const ASSETS = ['BTC','ETH','SOL','BNB','MATIC'];
+const ABI_V = [
+  {inputs:[{internalType:"uint8",name:"_asset",type:"uint8"}],name:"openRound",outputs:[],stateMutability:"nonpayable",type:"function"},
+  {inputs:[{internalType:"uint256",name:"_roundId",type:"uint256"},{internalType:"uint8",name:"_direction",type:"uint8"},{internalType:"uint256",name:"_amount",type:"uint256"}],name:"placeBet",outputs:[],stateMutability:"nonpayable",type:"function"},
+  {inputs:[{internalType:"uint256",name:"_roundId",type:"uint256"}],name:"resolveRound",outputs:[],stateMutability:"nonpayable",type:"function"},
+  {inputs:[],name:"currentRoundId",outputs:[{internalType:"uint256",name:"",type:"uint256"}],stateMutability:"view",type:"function"},
+  {inputs:[{internalType:"uint256",name:"_roundId",type:"uint256"}],name:"getRoundInfo",outputs:[{components:[{internalType:"uint256",name:"id",type:"uint256"},{internalType:"uint8",name:"asset",type:"uint8"},{internalType:"uint8",name:"status",type:"uint8"},{internalType:"uint256",name:"openTime",type:"uint256"},{internalType:"uint256",name:"closeTime",type:"uint256"},{internalType:"uint256",name:"resolveTime",type:"uint256"},{internalType:"int256",name:"priceAtOpen",type:"int256"},{internalType:"int256",name:"priceAtClose",type:"int256"},{internalType:"uint256",name:"totalSube",type:"uint256"},{internalType:"uint256",name:"totalBaja",type:"uint256"},{internalType:"uint256",name:"totalPool",type:"uint256"},{internalType:"uint8",name:"result",type:"uint8"}],internalType:"struct ProyectoVegas.Round",name:"",type:"tuple"}],stateMutability:"view",type:"function"},
+  {inputs:[{internalType:"uint256",name:"_roundId",type:"uint256"},{internalType:"address",name:"",type:"address"}],name:"hasBet",outputs:[{internalType:"bool",name:"",type:"bool"}],stateMutability:"view",type:"function"},
+  {inputs:[],name:"owner",outputs:[{internalType:"address",name:"",type:"address"}],stateMutability:"view",type:"function"},
+  {inputs:[{internalType:"uint8",name:"_asset",type:"uint8"}],name:"getPrice",outputs:[{internalType:"int256",name:"",type:"int256"}],stateMutability:"view",type:"function"},
 ];
-const ABI_ERC20=[
-  {"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
-  {"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
-  {"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+const ABI_E = [
+  {inputs:[{internalType:"address",name:"spender",type:"address"},{internalType:"uint256",name:"amount",type:"uint256"}],name:"approve",outputs:[{internalType:"bool",name:"",type:"bool"}],stateMutability:"nonpayable",type:"function"},
+  {inputs:[{internalType:"address",name:"account",type:"address"}],name:"balanceOf",outputs:[{internalType:"uint256",name:"",type:"uint256"}],stateMutability:"view",type:"function"},
+  {inputs:[{internalType:"address",name:"owner",type:"address"},{internalType:"address",name:"spender",type:"address"}],name:"allowance",outputs:[{internalType:"uint256",name:"",type:"uint256"}],stateMutability:"view",type:"function"},
 ];
 
-let web3,contratoVegas,contratoCNKT;
-let userWallet=null,esOwner=false,soloLectura=false;
-let timerInterval=null,selectedAsset=0;
-let precioCNKT=0.00142;
-let modalDir='SUBE';
-let rondaActualId=null;
+// ── UTILS ────────────────────────────────────────────────────
+const fUSD = v => '$' + parseFloat(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fCNKT = (web3,wei) => parseFloat(web3.utils.fromWei(wei.toString(),'ether')).toFixed(2);
+const fPool = (web3,wei) => parseFloat(web3.utils.fromWei(wei.toString(),'ether')).toFixed(2) + ' CNKT+';
+const tLeft = ct => Math.max(0, parseInt(ct) - Math.floor(Date.now()/1000));
+const fTime = s => String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+const calcMult = (web3,total,side) => {
+  try {
+    const t = parseFloat(web3.utils.fromWei(total.toString(),'ether'));
+    const s = parseFloat(web3.utils.fromWei(side.toString(),'ether'));
+    if(!t||!s) return '—';
+    return (t*0.95/s).toFixed(2) + 'x';
+  } catch(e){ return '—'; }
+};
 
-// UTILS
-function showToast(msg,tipo='ok'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+tipo;setTimeout(()=>t.className='toast',3500)}
-function fmtCNKT(wei){return parseFloat(web3.utils.fromWei(wei.toString(),'ether')).toFixed(2)}
-function fmtUSD(v){return '$'+parseFloat(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
-function timeLeft(ct){return Math.max(0,parseInt(ct)-Math.floor(Date.now()/1000))}
-function fmtTimer(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
-
-// MENÚ CONEXIÓN
-function mostrarMenuConexion(){
-  document.getElementById('menuConexion').style.display='block';
-  document.getElementById('menuOverlay').style.display='block';
+// ── PENTÁGONO ────────────────────────────────────────────────
+function PentaUp({ dir, mult, winner }) {
+  return (
+    <div className={`penta-up ${winner?'winner':''}`}>
+      <div className="penta-dir up">{dir}</div>
+      <div className="penta-mult up">{mult} Payout</div>
+    </div>
+  );
 }
-function cerrarMenuConexion(){
-  document.getElementById('menuConexion').style.display='none';
-  document.getElementById('menuOverlay').style.display='none';
+function PentaDn({ dir, mult, winner }) {
+  return (
+    <div className={`penta-dn ${winner?'winner':''}`}>
+      <div className="penta-dir dn">{dir}</div>
+      <div className="penta-mult dn">{mult} Payout</div>
+    </div>
+  );
 }
 
-// PRECIO CNKT+
-async function fetchPrecioCNKT(){
-  try{
-    const r=await fetch('/precio-cnkt');
-    const d=await r.json();
-    if(d?.ok&&d?.precio){
-      precioCNKT=d.precio;
-      document.getElementById('statPrecioCNKT').textContent='$'+precioCNKT.toFixed(6);
-      document.getElementById('modalPrecio').textContent='$'+precioCNKT.toFixed(6)+' / CNKT+';
+// ── TARJETA EXPIRADA ─────────────────────────────────────────
+function CardExpired({ ronda, id }) {
+  if (!ronda) return (
+    <div className="card card-exp" style={{minHeight:300,padding:0}}>
+      <PentaUp dir="UP" mult="—" />
+      <div className="card-body">
+        <div className="card-tag-row">
+          <span className="tag-txt">⊘ EXPIRADA</span>
+          <span className="card-num-txt">#—</span>
+        </div>
+        <div className="no-round"><div className="no-round-icon">—</div></div>
+      </div>
+      <PentaDn dir="DOWN" mult="—" />
+    </div>
+  );
+  const pA = parseInt(ronda.priceAtOpen)/1e8;
+  const pC = ronda.priceAtClose !== '0' ? parseInt(ronda.priceAtClose)/1e8 : null;
+  const resolved = parseInt(ronda.status) === 2;
+  const upWon = resolved && parseInt(ronda.result) === 0;
+  const dnWon = resolved && parseInt(ronda.result) === 1;
+  const delta = pC ? (pC-pA)/pA*100 : null;
+
+  return (
+    <div className="card card-exp" style={{minHeight:300,padding:0}}>
+      <PentaUp dir="UP" mult="—" winner={upWon} />
+      <div className="card-body">
+        <div className="card-tag-row">
+          <span className="tag-txt">⊘ EXPIRADA</span>
+          <span className="card-num-txt">#{id}</span>
+        </div>
+        <div className="price-center">
+          <div className="price-label-sm">Closed Price</div>
+          <div className="price-main" style={{fontSize:20}}>{pC ? fUSD(pC) : '—'}</div>
+          {delta !== null && (
+            <div className={`price-delta ${delta>=0?'up':'dn'}`}>
+              {delta>=0?'↑':'↓'} ${Math.abs(pC-pA).toFixed(4)}
+            </div>
+          )}
+        </div>
+        <div className="info-row"><span className="info-lbl">Locked Price</span><span className="info-val">{fUSD(pA)}</span></div>
+        <div className="info-row"><span className="info-lbl">Prize Pool</span><span className="info-val gold">{fUSD(parseFloat(ronda.totalPool ? window._web3?.utils.fromWei(ronda.totalPool.toString(),'ether') : 0))}</span></div>
+      </div>
+      <PentaDn dir="DOWN" mult="—" winner={dnWon} />
+    </div>
+  );
+}
+
+// ── TARJETA LIVE ─────────────────────────────────────────────
+function CardLive({ ronda, rid, wallet, soloLectura, web3, contrato, onBet }) {
+  const [precio, setPrecio] = useState(null);
+  const [timer, setTimer] = useState('--:--');
+  const [yaBet, setYaBet] = useState(false);
+  const [btnsEnabled, setBtnsEnabled] = useState(false);
+
+  useEffect(() => {
+    if (!ronda || !web3) return;
+    // Precio actual
+    const fetchPrecio = async () => {
+      try {
+        const p = await contrato.methods.getPrice(parseInt(ronda.asset)).call();
+        setPrecio(parseInt(p)/1e8);
+      } catch(e){}
+    };
+    fetchPrecio();
+    const pi = setInterval(fetchPrecio, 15000);
+
+    // Timer
+    const ti = setInterval(() => {
+      const r = tLeft(ronda.closeTime);
+      setTimer(fTime(r));
+      setBtnsEnabled(r > 0);
+      if (r <= 0) clearInterval(ti);
+    }, 1000);
+    setTimer(fTime(tLeft(ronda.closeTime)));
+
+    return () => { clearInterval(pi); clearInterval(ti); };
+  }, [ronda, web3]);
+
+  useEffect(() => {
+    if (!ronda || !web3 || soloLectura || !wallet) return;
+    contrato.methods.hasBet(rid, wallet).call()
+      .then(b => setYaBet(b)).catch(()=>{});
+  }, [ronda, wallet]);
+
+  if (!ronda) return (
+    <div className="card card-live" style={{minHeight:380,padding:0}}>
+      <PentaUp dir="UP" mult="—" />
+      <div className="card-body">
+        <div className="card-tag-row">
+          <div style={{display:'flex',alignItems:'center',gap:6}}><div className="tag-live-dot"/><span className="tag-txt" style={{color:'#7B5EFF'}}>LIVE</span></div>
+        </div>
+        <div className="no-round">
+          <div className="no-round-icon">⏳</div>
+          <div style={{fontSize:13,fontWeight:700,color:'var(--muted)'}}>Sin ronda activa</div>
+          <div style={{fontSize:11,color:'var(--muted)',lineHeight:1.8}}>El keeper abrirá<br/>una nueva ronda pronto</div>
+        </div>
+      </div>
+      <PentaDn dir="DOWN" mult="—" />
+    </div>
+  );
+
+  const pA = parseInt(ronda.priceAtOpen)/1e8;
+  const delta = precio ? (precio-pA)/pA*100 : null;
+  const tS = ronda.totalSube; const tB = ronda.totalBaja; const tP = ronda.totalPool;
+  const tSf = parseFloat(web3.utils.fromWei(tS.toString(),'ether'));
+  const tBf = parseFloat(web3.utils.fromWei(tB.toString(),'ether'));
+  const tPf = tSf + tBf;
+  const pctUp = tPf > 0 ? (tSf/tPf*100) : 50;
+  const multUp = calcMult(web3,tP,tS);
+  const multDn = calcMult(web3,tP,tB);
+
+  return (
+    <div className="card card-live" style={{minHeight:380,padding:0}}>
+      <PentaUp dir="UP" mult={multUp} />
+      <div className="card-body">
+        <div className="card-tag-row">
+          <div style={{display:'flex',alignItems:'center',gap:6}}>
+            <div className="tag-live-dot"/>
+            <span className="tag-txt" style={{color:'#7B5EFF'}}>LIVE</span>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:6}}>
+            <span style={{fontSize:12,fontFamily:'DM Mono,monospace',color:'var(--gold)',fontWeight:700}}>{timer}</span>
+            <span className="card-num-txt">#{rid}</span>
+          </div>
+        </div>
+
+        <div className="price-center">
+          <div className="price-label-sm">Last Price</div>
+          <div className="price-main">{precio ? fUSD(precio) : '...'}</div>
+          {delta !== null && (
+            <div className={`price-delta ${delta>=0?'up':'dn'}`}>
+              {delta>=0?'↑':'↓'} {Math.abs(delta).toFixed(3)}%
+            </div>
+          )}
+        </div>
+
+        <div className="info-row"><span className="info-lbl">Locked Price</span><span className="info-val">{fUSD(pA)}</span></div>
+        <div className="info-row"><span className="info-lbl">Prize Pool</span><span className="info-val gold">{tPf.toFixed(2)} CNKT+</span></div>
+
+        <div className="pool-bar">
+          <div className="pool-bar-u" style={{width:pctUp+'%'}}/>
+          <div className="pool-bar-d" style={{width:(100-pctUp)+'%'}}/>
+        </div>
+        <div className="pool-pcts">
+          <span className="pool-pct-u">{pctUp.toFixed(0)}%</span>
+          <span className="pool-pct-d">{(100-pctUp).toFixed(0)}%</span>
+        </div>
+
+        {yaBet ? (
+          <div className="entrado-badge">✓ Entrada registrada</div>
+        ) : (
+          <div className="bet-btns">
+            <button className="btn-up" disabled={!btnsEnabled || soloLectura || !wallet} onClick={()=>onBet('SUBE')}>
+              Enter UP ▲
+            </button>
+            <button className="btn-dn" disabled={!btnsEnabled || soloLectura || !wallet} onClick={()=>onBet('BAJA')}>
+              Enter DOWN ▼
+            </button>
+          </div>
+        )}
+      </div>
+      <PentaDn dir="DOWN" mult={multDn} />
+    </div>
+  );
+}
+
+// ── TARJETA NEXT ─────────────────────────────────────────────
+function CardNext({ rid }) {
+  return (
+    <div className="card card-next" style={{minHeight:340,padding:0}}>
+      <PentaUp dir="UP" mult="—" />
+      <div className="card-body">
+        <div className="card-tag-row">
+          <span className="tag-txt">▶ NEXT</span>
+          <span className="card-num-txt">#{rid || '—'}</span>
+        </div>
+        <div className="no-round" style={{minHeight:160}}>
+          <div style={{fontSize:28,marginBottom:4}}>🎲</div>
+          <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.8,textAlign:'center'}}>
+            Próxima ronda<br/>Min: 500 CNKT+<br/>Max: 250,000 CNKT+
+          </div>
+        </div>
+        <div className="bet-btns" style={{marginTop:'auto',paddingTop:8}}>
+          <button className="btn-up" disabled>Enter UP ▲</button>
+          <button className="btn-dn" disabled>Enter DOWN ▼</button>
+        </div>
+      </div>
+      <PentaDn dir="DOWN" mult="—" />
+    </div>
+  );
+}
+
+// ── MODAL ENTRADA ─────────────────────────────────────────────
+function Modal({ dir, rid, asset, precioCNKT, web3, contrato, contratoE, wallet, onClose, onSuccess }) {
+  const [cnkt, setCnkt] = useState('');
+  const [usd, setUsd] = useState('');
+  const [hint, setHint] = useState({txt:'Min 500 · Max 250,000', color:'var(--muted)'});
+  const [status, setStatus] = useState(null); // {msg, tipo}
+  const [loading, setLoading] = useState(false);
+  const isUp = dir === 'SUBE';
+
+  const updateHint = (c) => {
+    if(c>0&&c<500) setHint({txt:'⚠ Mínimo 500 CNKT+', color:'var(--dn)'});
+    else if(c>250000) setHint({txt:'⚠ Máximo 250,000', color:'var(--dn)'});
+    else if(c>=500) setHint({txt:`✓ ≈ $${(c*precioCNKT).toFixed(2)} USD`, color:'var(--up)'});
+    else setHint({txt:'Min 500 · Max 250,000', color:'var(--muted)'});
+  };
+
+  const onCNKT = e => {
+    const v = e.target.value; setCnkt(v);
+    const c = parseFloat(v)||0;
+    setUsd(c>0 ? (c*precioCNKT).toFixed(4) : '');
+    updateHint(c);
+  };
+  const onUSD = e => {
+    const v = e.target.value; setUsd(v);
+    const u = parseFloat(v)||0;
+    const c = u>0&&precioCNKT>0 ? Math.round(u/precioCNKT) : '';
+    setCnkt(c); updateHint(parseFloat(c)||0);
+  };
+
+  const confirm = async () => {
+    const c = parseFloat(cnkt);
+    if(!c||c<500||c>250000){setStatus({msg:'Monto inválido (500–250,000 CNKT+)',tipo:'err'});return}
+    const amountWei = web3.utils.toWei(c.toString(),'ether');
+    const dirNum = isUp ? 0 : 1;
+    setLoading(true);
+    try {
+      setStatus({msg:'Paso 1/2: Aprobando CNKT+...',tipo:'info'});
+      const al = await contratoE.methods.allowance(wallet, CFG.CONTRATO_VEGAS).call();
+      if(BigInt(al) < BigInt(amountWei))
+        await contratoE.methods.approve(CFG.CONTRATO_VEGAS, amountWei).send({from:wallet});
+      setStatus({msg:'Paso 2/2: Enviando entrada...',tipo:'info'});
+      await contrato.methods.placeBet(rid, dirNum, amountWei).send({from:wallet});
+      setStatus({msg:`✓ ${c} CNKT+ registrados correctamente`,tipo:'ok'});
+      onSuccess();
+      setTimeout(onClose, 2000);
+    } catch(e) {
+      setStatus({msg:'✗ '+(e.message||e),tipo:'err'});
     }
-  }catch(e){
-    document.getElementById('statPrecioCNKT').textContent='~$'+precioCNKT.toFixed(6);
-    document.getElementById('modalPrecio').textContent='~$'+precioCNKT.toFixed(6)+' / CNKT+';
-  }
+    setLoading(false);
+  };
+
+  return (
+    <div className="modal-bg" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className={`modal-box ${isUp?'up':'dn'}`}>
+        <button className="modal-close" onClick={onClose}>✕</button>
+        <div className={`modal-dir ${isUp?'up':'dn'}`}>{isUp?'▲ UP — SUBE':'▼ DOWN — BAJA'}</div>
+        <div className="modal-sub">Ronda #{rid} · {asset}</div>
+        <div className="price-ref">
+          <span style={{color:'var(--muted)',fontSize:12}}>Precio CNKT+</span>
+          <span className="price-ref-val">${precioCNKT.toFixed(6)}</span>
+        </div>
+        <div className="field">
+          <label>CNKT+ a ingresar</label>
+          <input type="number" value={cnkt} onChange={onCNKT} placeholder="500" min="500"/>
+          <div className="field-hint" style={{color:hint.color}}>{hint.txt}</div>
+        </div>
+        <div className="or-div">— o escribe en USD —</div>
+        <div className="field">
+          <label>Equivalente USD</label>
+          <input type="number" value={usd} onChange={onUSD} placeholder="0.00" step="0.01"/>
+        </div>
+        <button className={`btn-confirm ${isUp?'up':'dn'}`} onClick={confirm} disabled={loading}>
+          {loading ? <span><span className="spinner"/>Procesando...</span> : `CONFIRMAR ${isUp?'▲ UP':'▼ DOWN'}`}
+        </button>
+        {status && <div className={`modal-st ${status.tipo}`}>{status.msg}</div>}
+      </div>
+    </div>
+  );
 }
 
-// CONVERTIDOR
-function convCNKT(){
-  const c=parseFloat(document.getElementById('modalCNKT').value)||0;
-  const h=document.getElementById('hintCNKT');
-  if(c>0)document.getElementById('modalUSD').value=(c*precioCNKT).toFixed(4);
-  else document.getElementById('modalUSD').value='';
-  if(c>0&&c<500){h.style.color='var(--red)';h.textContent='⚠ Min 500 CNKT+'}
-  else if(c>250000){h.style.color='var(--red)';h.textContent='⚠ Max 250,000'}
-  else if(c>=500){h.style.color='var(--green)';h.textContent='✓ ≈ $'+(c*precioCNKT).toFixed(2)+' USD'}
-  else{h.style.color='var(--muted)';h.textContent='Min 500 · Max 250,000'}
-}
-function convUSD(){
-  const u=parseFloat(document.getElementById('modalUSD').value)||0;
-  if(u>0&&precioCNKT>0){document.getElementById('modalCNKT').value=Math.round(u/precioCNKT);convCNKT()}
-}
-
-// INICIALIZAR
-async function inicializarApp(provider,wallet,lectura=false){
-  soloLectura=lectura;userWallet=wallet;
-  web3=new Web3(provider);
-  contratoVegas=new web3.eth.Contract(ABI_VEGAS,CONFIG.CONTRATO_VEGAS);
-  contratoCNKT=new web3.eth.Contract(ABI_ERC20,CONFIG.CONTRATO_CNKT);
-  if(!lectura){
-    const owner=await contratoVegas.methods.owner().call();
-    esOwner=(owner.toLowerCase()===userWallet.toLowerCase());
-  }
-  cerrarMenuConexion();
-  // Actualizar header
-  const hw=document.getElementById('headerWallet');
-  hw.innerHTML=`<div class="wallet-chip" onclick="mostrarMenuConexion()"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span> ${lectura?'Solo vista':wallet.slice(0,6)+'...'+wallet.slice(-4)}</div>`;
-  if(esOwner)document.getElementById('adminPanel').style.display='grid';
-  await fetchPrecioCNKT();
-  await cargarTodo();
-  setInterval(cargarTodo,15000);
-  setInterval(fetchPrecioCNKT,60000);
-  if(!lectura)showToast(esOwner?'Owner conectado ✓':'Wallet conectada ✓','ok');
-  else showToast('Modo solo vista — conecta wallet para apostar','info');
+// ── CONN DROPDOWN ─────────────────────────────────────────────
+function ConnDropdown({ onMM, onMovil, onVer, error }) {
+  return (
+    <div className="conn-drop">
+      <div className="conn-title">Conectar Wallet</div>
+      <button className="conn-opt" onClick={onMM}><span style={{fontSize:20}}>🦊</span> MetaMask</button>
+      <button className="conn-opt" onClick={onMovil}><span style={{fontSize:20}}>📱</span> Celular (MM / Trust)</button>
+      <button className="conn-ghost" onClick={onVer}>Solo ver sin wallet →</button>
+      {error && error.startsWith('link:') ? (
+        <div className="conn-info" dangerouslySetInnerHTML={{__html:error.slice(5)}}/>
+      ) : error ? (
+        <div className="conn-err">{error}</div>
+      ) : null}
+    </div>
+  );
 }
 
-// METAMASK
-async function conectarMetaMask(){
-  const err=document.getElementById('menuError');err.style.display='none';
-  if(!window.ethereum){err.textContent='MetaMask no detectado. Usa el botón de celular.';err.style.display='block';return}
-  try{
-    const accounts=await window.ethereum.request({method:'eth_requestAccounts'});
-    const chainId=await window.ethereum.request({method:'eth_chainId'});
-    if(chainId!==CONFIG.POLYGON_CHAIN_ID){
-      try{await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:CONFIG.POLYGON_CHAIN_ID}]})}
-      catch(e){err.textContent='Cambia a Polygon en MetaMask.';err.style.display='block';return}
+// ── APP PRINCIPAL ─────────────────────────────────────────────
+function App() {
+  const [web3, setWeb3] = useState(null);
+  const [contrato, setContrato] = useState(null);
+  const [contratoE, setContratoE] = useState(null);
+  const [wallet, setWallet] = useState(null);
+  const [esOwner, setEsOwner] = useState(false);
+  const [soloLectura, setSoloLectura] = useState(true);
+  const [showConn, setShowConn] = useState(false);
+  const [connErr, setConnErr] = useState('');
+
+  const [rondas, setRondas] = useState({live:null, liveId:null, exp1:null, exp1Id:null, exp2:null, exp2Id:null});
+  const [historial, setHistorial] = useState([]);
+  const [precioBTC, setPrecioBTC] = useState(null);
+  const [precioCNKT, setPrecioCNKT] = useState(0.00142);
+  const [timer, setTimer] = useState('--:--');
+
+  const [modal, setModal] = useState(null); // {dir}
+  const [toasts, setToasts] = useState([]);
+  const [selAsset, setSelAsset] = useState(0);
+  const [adminLoading, setAdminLoading] = useState('');
+
+  const carouselRef = useRef(null);
+
+  // Toast
+  const addToast = useCallback((msg, tipo='ok') => {
+    const id = Date.now();
+    setToasts(t => [...t, {id,msg,tipo}]);
+    setTimeout(() => setToasts(t => t.filter(x=>x.id!==id)), 3500);
+  }, []);
+
+  // Init Web3
+  const initWeb3 = useCallback(async (provider, addr, lectura=false) => {
+    const w3 = new Web3(provider);
+    const cv = new w3.eth.Contract(ABI_V, CFG.CONTRATO_VEGAS);
+    const ce = new w3.eth.Contract(ABI_E, CFG.CONTRATO_CNKT);
+    window._web3 = w3;
+    setWeb3(w3); setContrato(cv); setContratoE(ce);
+    setWallet(addr); setSoloLectura(lectura);
+    if(!lectura && addr) {
+      const owner = await cv.methods.owner().call();
+      setEsOwner(owner.toLowerCase() === addr.toLowerCase());
     }
-    await inicializarApp(window.ethereum,accounts[0]);
-  }catch(e){err.textContent='Error: '+(e.message||e);err.style.display='block'}
-}
+    return {w3, cv, ce};
+  }, []);
 
-// MÓVIL
-function conectarMovil(){
-  const url=window.location.href;
-  const mmLink=`https://metamask.app.link/dapp/${window.location.host}`;
-  const twLink=`https://link.trustwallet.com/open_url?coin_id=966&url=${encodeURIComponent(url)}`;
-  const err=document.getElementById('menuError');
-  err.style.display='block';
-  err.style.color='var(--gold)';
-  err.innerHTML=`<div style="margin-bottom:6px">Abre desde tu wallet:</div><a href="${mmLink}" style="display:block;padding:8px;background:var(--gold-dim);border-radius:4px;color:var(--gold);text-decoration:none;font-size:11px;margin-bottom:4px">🦊 MetaMask Mobile</a><a href="${twLink}" style="display:block;padding:8px;background:rgba(255,255,255,0.03);border-radius:4px;color:#888;text-decoration:none;font-size:11px">🛡 Trust Wallet</a>`;
-}
+  // Precio CNKT
+  const fetchPrecioCNKT = useCallback(async () => {
+    try {
+      const r = await fetch('/precio-cnkt');
+      const d = await r.json();
+      if(d?.ok && d?.precio) setPrecioCNKT(d.precio);
+    } catch(e){}
+  }, []);
 
-// SOLO VER
-async function soloVer(){
-  const provider=new Web3.providers.HttpProvider(CONFIG.POLYGON_RPC);
-  await inicializarApp(provider,'0x0000000000000000000000000000000000000000',true);
-}
-
-// CARGAR DATOS
-async function cargarTodo(){await Promise.all([cargarBalance(),cargarRondas(),cargarHistorial()])}
-
-async function cargarBalance(){
-  try{
-    if(soloLectura||!userWallet||userWallet==='0x0000000000000000000000000000000000000000')return;
-    const b=await contratoCNKT.methods.balanceOf(userWallet).call();
-    document.getElementById('statCNKT').textContent=fmtCNKT(b)+' CNKT+';
-  }catch(e){}
-}
-
-async function cargarRondas(){
-  try{
-    const roundId=await contratoVegas.methods.currentRoundId().call();
-    const rid=parseInt(roundId);
-    rondaActualId=rid;
-
-    // Cargar ronda expirada anterior
-    if(rid>1){
-      try{
-        const prev=await contratoVegas.methods.getRoundInfo(rid-1).call();
-        document.getElementById('expAsset').textContent=ASSETS[parseInt(prev.asset)];
-        document.getElementById('expRound').textContent='Ronda #'+(rid-1);
-        document.getElementById('expPrecioOpen').textContent=fmtUSD(parseInt(prev.priceAtOpen)/1e8);
-        document.getElementById('expPrecioClose').textContent=prev.priceAtClose!=='0'?fmtUSD(parseInt(prev.priceAtClose)/1e8):'—';
-        if(parseInt(prev.status)===2){
-          const resEl=document.getElementById('expResult');
-          const esUp=parseInt(prev.result)===0;
-          resEl.textContent=esUp?'▲ SUBIO':'▼ BAJO';
-          resEl.style.color=esUp?'var(--green)':'var(--red)';
-        }
-      }catch(e){}
-    }
-
-    if(rid===0){mostrarSinRonda();return}
-    const ronda=await contratoVegas.methods.getRoundInfo(rid).call();
-    if(ronda.status!=='0'&&ronda.status!==0){mostrarSinRonda();return}
-    mostrarRondaActiva(ronda,rid);
-  }catch(e){mostrarSinRonda()}
-}
-
-function mostrarSinRonda(){
-  document.getElementById('noRound').style.display='flex';
-  document.getElementById('withRound').style.display='none';
-  document.getElementById('statPool').textContent='—';
-  document.getElementById('statTuEntrada').textContent='—';
-  if(timerInterval){clearInterval(timerInterval);timerInterval=null}
-}
-
-async function mostrarRondaActiva(ronda,rid){
-  document.getElementById('noRound').style.display='none';
-  document.getElementById('withRound').style.display='flex';
-  document.getElementById('liveAsset').textContent=ASSETS[parseInt(ronda.asset)];
-  document.getElementById('liveRound').textContent='Ronda #'+rid;
-  const pA=parseInt(ronda.priceAtOpen)/1e8;
-  document.getElementById('liveOpen').textContent=fmtUSD(pA);
-  try{
-    const pC=await contratoVegas.methods.getPrice(parseInt(ronda.asset)).call();
-    const pN=parseInt(pC)/1e8;
-    document.getElementById('livePrecio').textContent=fmtUSD(pN);
-    const v=(pN-pA)/pA*100;
-    const ch=document.getElementById('liveChange');
-    ch.textContent=(v>=0?'+':'')+v.toFixed(3)+'%';
-    ch.className='price-change '+(v>=0?'up':'down');
-  }catch(e){}
-  const tS=parseFloat(web3.utils.fromWei(ronda.totalSube.toString(),'ether'));
-  const tB=parseFloat(web3.utils.fromWei(ronda.totalBaja.toString(),'ether'));
-  const tP=tS+tB;
-  document.getElementById('poolUp').textContent=tS.toFixed(0);
-  document.getElementById('poolDn').textContent=tB.toFixed(0);
-  document.getElementById('statPool').textContent=tP.toFixed(2)+' CNKT+';
-  const pS=tP>0?tS/tP*100:50;
-  document.getElementById('poolBarUp').style.width=pS+'%';
-  document.getElementById('poolBarDn').style.width=(100-pS)+'%';
-  // Multiplicadores
-  const multUp=tP>0&&tS>0?((tP*0.95)/tS).toFixed(2)+'x':'—x';
-  const multDn=tP>0&&tB>0?((tP*0.95)/tB).toFixed(2)+'x':'—x';
-  document.getElementById('multUp').textContent=multUp;
-  document.getElementById('multDn').textContent=multDn;
-  // Entrada del usuario
-  try{
-    if(!soloLectura&&userWallet&&userWallet!=='0x0000000000000000000000000000000000000000'){
-      const yaBet=await contratoVegas.methods.hasBet(rid,userWallet).call();
-      if(yaBet){
-        document.getElementById('betBtns').style.display='none';
-        document.getElementById('entradoBadge').style.display='block';
-        document.getElementById('statTuEntrada').textContent='✓ Registrada';
-      }else{
-        document.getElementById('betBtns').style.display='grid';
-        document.getElementById('entradoBadge').style.display='none';
+  // Cargar rondas
+  const cargarRondas = useCallback(async (cv, w3) => {
+    if(!cv || !w3) return;
+    try {
+      const rid = parseInt(await cv.methods.currentRoundId().call());
+      let live=null, exp1=null, exp2=null;
+      if(rid>0) live = await cv.methods.getRoundInfo(rid).call();
+      if(rid>1) exp1 = await cv.methods.getRoundInfo(rid-1).call();
+      if(rid>2) exp2 = await cv.methods.getRoundInfo(rid-2).call();
+      setRondas({live: live&&(live.status==='0'||live.status===0)?live:null, liveId:rid, exp1, exp1Id:rid>1?rid-1:null, exp2, exp2Id:rid>2?rid-2:null});
+      // Precio BTC del oráculo
+      if(live&&(live.status==='0'||live.status===0)){
+        try{
+          const p = await cv.methods.getPrice(parseInt(live.asset)).call();
+          setPrecioBTC(parseInt(p)/1e8);
+        }catch(e){}
       }
-    }
-  }catch(e){}
-  iniciarTimer(ronda);
+      // Timer
+      if(live&&(live.status==='0'||live.status===0)){
+        setTimer(fTime(tLeft(live.closeTime)));
+      }
+    } catch(e){}
+  }, []);
+
+  // Cargar historial
+  const cargarHistorial = useCallback(async (cv, w3) => {
+    if(!cv||!w3) return;
+    try {
+      const rid = parseInt(await cv.methods.currentRoundId().call());
+      if(rid===0){setHistorial([]);return}
+      const ini = Math.max(1, rid-9);
+      const ps = [];
+      for(let i=rid;i>=ini;i--) ps.push(cv.methods.getRoundInfo(i).call().then(r=>({r,id:i})));
+      const res = await Promise.all(ps);
+      setHistorial(res);
+    } catch(e){}
+  }, []);
+
+  // Cargar todo
+  const cargarTodo = useCallback((cv, w3) => {
+    cargarRondas(cv, w3);
+    cargarHistorial(cv, w3);
+  }, [cargarRondas, cargarHistorial]);
+
+  // Auto-carga inicial
+  useEffect(() => {
+    const w3 = new Web3(new Web3.providers.HttpProvider(CFG.RPC));
+    const cv = new w3.eth.Contract(ABI_V, CFG.CONTRATO_VEGAS);
+    const ce = new w3.eth.Contract(ABI_E, CFG.CONTRATO_CNKT);
+    window._web3 = w3;
+    setWeb3(w3); setContrato(cv); setContratoE(ce);
+    fetchPrecioCNKT();
+    cargarTodo(cv, w3);
+    const interval = setInterval(() => cargarTodo(cv, w3), 15000);
+    const pInterval = setInterval(fetchPrecioCNKT, 60000);
+    return () => { clearInterval(interval); clearInterval(pInterval); };
+  }, []);
+
+  // Timer
+  useEffect(() => {
+    if(!rondas.live) return;
+    const t = setInterval(() => {
+      setTimer(fTime(tLeft(rondas.live.closeTime)));
+    }, 1000);
+    return () => clearInterval(t);
+  }, [rondas.live]);
+
+  // METAMASK
+  const conectarMM = async () => {
+    setConnErr('');
+    if(!window.ethereum){setConnErr('MetaMask no detectado.');return}
+    try {
+      const accounts = await window.ethereum.request({method:'eth_requestAccounts'});
+      const chainId = await window.ethereum.request({method:'eth_chainId'});
+      if(chainId !== CFG.POLYGON_CHAIN) {
+        try { await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:CFG.POLYGON_CHAIN}]}); }
+        catch(e) { setConnErr('Cambia a Polygon en MetaMask.'); return; }
+      }
+      const {w3,cv,ce} = await initWeb3(window.ethereum, accounts[0], false);
+      setShowConn(false);
+      addToast('Wallet conectada ✓','ok');
+      cargarTodo(cv, w3);
+    } catch(e) { setConnErr('Error: '+(e.message||e)); }
+  };
+
+  const conectarMovil = () => {
+    const url = window.location.href;
+    const mm = `https://metamask.app.link/dapp/${window.location.host}`;
+    const tw = `https://link.trustwallet.com/open_url?coin_id=966&url=${encodeURIComponent(url)}`;
+    setConnErr(`link:<a href="${mm}" style="display:block;padding:8px;background:var(--gold-dim);border-radius:6px;color:var(--gold);text-decoration:none;margin-bottom:4px;font-size:11px">🦊 MetaMask Mobile</a><a href="${tw}" style="display:block;padding:8px;background:rgba(255,255,255,0.03);border-radius:6px;color:#888;text-decoration:none;font-size:11px">🛡 Trust Wallet</a>`);
+  };
+
+  const soloVer = () => { setShowConn(false); addToast('Modo solo vista','info'); };
+
+  // ADMIN
+  const abrirRonda = async () => {
+    if(!contrato||!wallet) return;
+    setAdminLoading('abriendo');
+    try {
+      await contrato.methods.openRound(selAsset).send({from:wallet});
+      addToast(ASSETS[selAsset]+' ronda abierta ✓','ok');
+      setTimeout(()=>cargarTodo(contrato,web3), 3000);
+    } catch(e) { addToast('Error: '+(e.message||e),'err'); }
+    setAdminLoading('');
+  };
+
+  const resolverRonda = async () => {
+    if(!contrato||!wallet||!rondas.liveId) return;
+    setAdminLoading('resolviendo');
+    try {
+      await contrato.methods.resolveRound(rondas.liveId).send({from:wallet});
+      addToast('Ronda #'+rondas.liveId+' resuelta ✓','ok');
+      setTimeout(()=>cargarTodo(contrato,web3), 3000);
+    } catch(e) { addToast('Error: '+(e.message||e),'err'); }
+    setAdminLoading('');
+  };
+
+  // HISTORIAL RENDER
+  const renderHistorial = () => {
+    if(!historial.length) return <div style={{color:'var(--muted)',fontSize:11,textAlign:'center',padding:32,fontFamily:'DM Mono,monospace'}}>SIN HISTORIAL</div>;
+    const sL = ['Abierta','Cerrada','Resuelta','Cancelada'];
+    const sC = ['var(--gold)','var(--muted)','var(--up)','var(--dn)'];
+    return (
+      <table>
+        <thead><tr><th>Ronda</th><th>Activo</th><th>Apertura</th><th>Cierre</th><th>Pool</th><th>Resultado</th><th>Estado</th></tr></thead>
+        <tbody>
+          {historial.map(({r,id}) => {
+            const st = parseInt(r.status);
+            const pA = fUSD(parseInt(r.priceAtOpen)/1e8);
+            const pC = r.priceAtClose!=='0' ? fUSD(parseInt(r.priceAtClose)/1e8) : '—';
+            const pool = web3 ? parseFloat(web3.utils.fromWei(r.totalPool.toString(),'ether')).toFixed(2) : '—';
+            const res = st===2 ? (parseInt(r.result)===0 ? <span className="badge-up">▲ UP</span> : <span className="badge-dn">▼ DOWN</span>) : '—';
+            return (
+              <tr key={id}>
+                <td style={{color:'var(--muted)'}}>#{id}</td>
+                <td style={{fontWeight:700,color:'var(--gold)',fontFamily:'Kanit,sans-serif'}}>{ASSETS[parseInt(r.asset)]}</td>
+                <td>{pA}</td><td>{pC}</td><td>{pool} CNKT+</td><td>{res}</td>
+                <td style={{color:sC[st],fontSize:11}}>{sL[st]}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    );
+  };
+
+  return (
+    <>
+      {/* HEADER */}
+      <header className="header">
+        <div className="logo">
+          <div className="logo-badge">C+</div>
+          <div>
+            <div className="logo-name">CNKT <span style={{color:'var(--muted)',fontSize:12,fontWeight:400}}>by EVOX</span></div>
+          </div>
+        </div>
+
+        <div className="price-bar">
+          <div className="price-chip active">
+            <span>₿</span>
+            <span className="price-chip-val">{precioBTC ? fUSD(precioBTC) : '—'}</span>
+            <span style={{fontSize:10,color:'var(--muted)'}}>BTC</span>
+          </div>
+          <div className="price-chip">
+            <span style={{fontSize:10,color:'var(--gold)'}}>CNKT+</span>
+            <span className="price-chip-val" style={{color:'var(--gold)'}}>${precioCNKT.toFixed(6)}</span>
+          </div>
+        </div>
+
+        <div className="header-actions">
+          <div className="timer-badge">
+            {timer} <span className="timer-badge-sub">5m</span>
+          </div>
+          {!soloLectura && wallet ? (
+            <div className="wallet-pill" onClick={()=>setShowConn(!showConn)}>
+              <div className="wallet-dot"/>
+              {wallet.slice(0,6)}...{wallet.slice(-4)}
+            </div>
+          ) : (
+            <button className="btn-connect" onClick={()=>setShowConn(!showConn)}>CONECTAR</button>
+          )}
+        </div>
+      </header>
+
+      {/* CONN DROPDOWN */}
+      {showConn && (
+        <>
+          <div style={{position:'fixed',inset:0,zIndex:199}} onClick={()=>setShowConn(false)}/>
+          <ConnDropdown onMM={conectarMM} onMovil={conectarMovil} onVer={soloVer} error={connErr}/>
+        </>
+      )}
+
+      {/* CARRUSEL */}
+      <div className="carousel-section">
+        <div className="carousel-track" ref={carouselRef}>
+          <div className="carousel-padding"/>
+
+          <CardExpired ronda={rondas.exp2} id={rondas.exp2Id}/>
+          <CardExpired ronda={rondas.exp1} id={rondas.exp1Id}/>
+
+          <CardLive
+            ronda={rondas.live}
+            rid={rondas.liveId}
+            wallet={!soloLectura?wallet:null}
+            soloLectura={soloLectura}
+            web3={web3}
+            contrato={contrato}
+            onBet={dir => {
+              if(soloLectura){addToast('Conecta tu wallet para apostar','info');setShowConn(true);return}
+              setModal({dir});
+            }}
+          />
+
+          <CardNext rid={rondas.liveId ? rondas.liveId+1 : null}/>
+
+          <div className="card card-later">
+            <div style={{fontSize:28,opacity:0.4}}>🕐</div>
+            <div style={{fontSize:11,color:'var(--muted)',letterSpacing:1,textTransform:'uppercase'}}>Later</div>
+            <div style={{fontSize:13,fontWeight:700,fontFamily:'DM Mono,monospace',color:'var(--muted)'}}>~10 min</div>
+          </div>
+
+          <div className="carousel-padding"/>
+        </div>
+      </div>
+
+      {/* BOTTOM */}
+      <div className="bottom">
+
+        {/* ADMIN */}
+        {esOwner && (
+          <div className="admin-grid">
+            <div className="admin-card">
+              <div className="admin-title">Abrir Ronda</div>
+              <div className="asset-chips">
+                {ASSETS.map((a,i) => (
+                  <button key={a} className={`asset-chip ${selAsset===i?'sel':''}`} onClick={()=>setSelAsset(i)}>{a}</button>
+                ))}
+              </div>
+              <button className="btn-admin btn-open" disabled={adminLoading==='abriendo'} onClick={abrirRonda}>
+                {adminLoading==='abriendo' ? '...' : '▶ Abrir Ronda'}
+              </button>
+            </div>
+            <div className="admin-card">
+              <div className="admin-title">Resolver Ronda</div>
+              <div style={{fontSize:11,color:'var(--muted)',marginBottom:12,lineHeight:1.8,fontFamily:'DM Mono,monospace'}}>Consulta Chainlink y distribuye fondos automáticamente.</div>
+              <button className="btn-admin btn-resolve" disabled={adminLoading==='resolviendo'} onClick={resolverRonda}>
+                {adminLoading==='resolviendo' ? '...' : '✓ Resolver Ronda'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* HISTORIAL */}
+        <div className="hist-card">
+          <div className="hist-head">
+            <div className="hist-title">Historial de Rondas</div>
+            <div className="hist-sub">AUTO-ACTUALIZA</div>
+          </div>
+          {renderHistorial()}
+        </div>
+
+      </div>
+
+      {/* MODAL */}
+      {modal && contrato && web3 && (
+        <Modal
+          dir={modal.dir}
+          rid={rondas.liveId}
+          asset={rondas.live ? ASSETS[parseInt(rondas.live.asset)] : 'BTC'}
+          precioCNKT={precioCNKT}
+          web3={web3}
+          contrato={contrato}
+          contratoE={contratoE}
+          wallet={wallet}
+          onClose={()=>setModal(null)}
+          onSuccess={()=>{
+            addToast('Entrada '+(modal.dir==='SUBE'?'▲':'▼')+' registrada ✓','ok');
+            cargarTodo(contrato,web3);
+          }}
+        />
+      )}
+
+      {/* TOASTS */}
+      <div className="toast-wrap">
+        {toasts.map(t => <div key={t.id} className={`toast-item ${t.tipo}`}>{t.msg}</div>)}
+      </div>
+    </>
+  );
 }
 
-function iniciarTimer(ronda){
-  if(timerInterval)clearInterval(timerInterval);
-  const dur=parseInt(ronda.closeTime)-parseInt(ronda.openTime);
-  const circ=document.getElementById('timerCircle');
-  const circum=163;
-  function tick(){
-    const r=timeLeft(ronda.closeTime);
-    const pct=Math.min(1,r/dur);
-    circ.style.strokeDashoffset=circum*(1-pct);
-    document.getElementById('timerNum').textContent=r>60?Math.ceil(r/60)+"m":r+"s";
-    document.getElementById('timerFull').textContent=fmtTimer(r);
-    const warn=r<=120;
-    circ.classList.toggle('warning',warn);
-    document.getElementById('timerNum').classList.toggle('warning',warn);
-    if(r<=0){
-      document.getElementById('timerStatus2').textContent='🔒 Entradas cerradas';
-      document.getElementById('btnUp').disabled=true;
-      document.getElementById('btnDn').disabled=true;
-      clearInterval(timerInterval);
-    }else if(warn){
-      document.getElementById('timerStatus2').textContent='⚠️ Cierre próximo';
-      habilitarBotones();
-    }else{
-      document.getElementById('timerStatus2').textContent='✅ Entradas abiertas';
-      habilitarBotones();
-    }
-  }
-  tick();timerInterval=setInterval(tick,1000);
-}
-
-function habilitarBotones(){
-  if(soloLectura||!userWallet||userWallet==='0x0000000000000000000000000000000000000000')return;
-  contratoVegas.methods.hasBet(rondaActualId,userWallet).call().then(yaBet=>{
-    if(!yaBet){document.getElementById('btnUp').disabled=false;document.getElementById('btnDn').disabled=false}
-  }).catch(()=>{});
-}
-
-// MODAL
-function abrirModal(dir){
-  if(soloLectura){showToast('Conecta tu wallet para apostar','info');mostrarMenuConexion();return}
-  modalDir=dir;
-  const m=document.getElementById('modal');
-  m.className='modal '+(dir==='SUBE'?'up':'dn');
-  document.getElementById('modalDir').textContent=dir==='SUBE'?'▲ SUBE':'▼ BAJA';
-  document.getElementById('modalDir').className='modal-dir '+(dir==='SUBE'?'up':'dn');
-  document.getElementById('modalRonda').textContent='Ronda #'+rondaActualId+' · '+document.getElementById('liveAsset').textContent;
-  document.getElementById('modalPrecio').textContent='$'+precioCNKT.toFixed(6)+' / CNKT+';
-  document.getElementById('modalCNKT').value='';
-  document.getElementById('modalUSD').value='';
-  document.getElementById('hintCNKT').style.color='var(--muted)';
-  document.getElementById('hintCNKT').textContent='Min 500 · Max 250,000';
-  document.getElementById('hintUSD').textContent='—';
-  document.getElementById('modalStatus').style.display='none';
-  document.getElementById('btnConfirmar').disabled=false;
-  document.getElementById('btnConfirmar').textContent='CONFIRMAR';
-  document.getElementById('btnConfirmar').className='btn-confirmar '+(dir==='SUBE'?'up':'dn');
-  document.getElementById('modalBg').classList.add('show');
-}
-function cerrarModal(e){if(e.target===document.getElementById('modalBg'))cerrarModalBtn()}
-function cerrarModalBtn(){document.getElementById('modalBg').classList.remove('show')}
-
-async function confirmarEntrada(){
-  const cnkt=parseFloat(document.getElementById('modalCNKT').value);
-  if(!cnkt||cnkt<500||cnkt>250000){showToast('Monto invalido (500–250,000 CNKT+)','err');return}
-  const amountWei=web3.utils.toWei(cnkt.toString(),'ether');
-  const dirNum=modalDir==='SUBE'?0:1;
-  const st=document.getElementById('modalStatus');
-  const btn=document.getElementById('btnConfirmar');
-  const showSt=(msg,tipo)=>{st.innerHTML=msg;st.className='modal-status '+tipo;st.style.display='block'};
-  try{
-    btn.disabled=true;
-    showSt('<span class="spinner"></span>Paso 1/2: Aprobando CNKT+...','info');
-    const allowance=await contratoCNKT.methods.allowance(userWallet,CONFIG.CONTRATO_VEGAS).call();
-    if(BigInt(allowance)<BigInt(amountWei))await contratoCNKT.methods.approve(CONFIG.CONTRATO_VEGAS,amountWei).send({from:userWallet});
-    showSt('<span class="spinner"></span>Paso 2/2: Confirmando entrada...','info');
-    await contratoVegas.methods.placeBet(rondaActualId,dirNum,amountWei).send({from:userWallet});
-    showSt('✓ Entrada de '+cnkt+' CNKT+ registrada correctamente','ok');
-    showToast('Entrada '+(modalDir==='SUBE'?'▲':'▼')+' registrada ✓','ok');
-    document.getElementById('statTuEntrada').textContent='✓ Registrada';
-    document.getElementById('betBtns').style.display='none';
-    document.getElementById('entradoBadge').style.display='block';
-    setTimeout(()=>cerrarModalBtn(),2000);
-    setTimeout(cargarTodo,3000);
-  }catch(e){
-    showSt('✗ '+(e.message||e),'err');
-    btn.disabled=false;
-  }
-}
-
-// ADMIN
-function selectAsset(idx,btn){selectedAsset=idx;document.querySelectorAll('.asset-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected')}
-async function abrirRonda(){
-  const btn=document.getElementById('btnAbrirRonda');btn.disabled=true;btn.textContent='Abriendo...';
-  try{await contratoVegas.methods.openRound(selectedAsset).send({from:userWallet});showToast(ASSETS[selectedAsset]+' · Ronda abierta ✓','ok');setTimeout(cargarTodo,3000)}
-  catch(e){showToast('Error: '+(e.message||e),'err')}
-  btn.disabled=false;btn.textContent='▶ ABRIR RONDA';
-}
-async function resolverRonda(){
-  if(!rondaActualId){showToast('No hay ronda activa','err');return}
-  const btn=document.getElementById('btnResolver');btn.disabled=true;btn.textContent='Resolviendo...';
-  try{await contratoVegas.methods.resolveRound(rondaActualId).send({from:userWallet});showToast('Ronda #'+rondaActualId+' resuelta ✓','ok');setTimeout(cargarTodo,3000)}
-  catch(e){showToast('Error: '+(e.message||e),'err')}
-  btn.disabled=false;btn.textContent='✓ RESOLVER RONDA';
-}
-
-// HISTORIAL
-async function cargarHistorial(){
-  try{
-    const rid=parseInt(await contratoVegas.methods.currentRoundId().call());
-    if(rid===0){document.getElementById('historialTabla').innerHTML='<div style="color:var(--muted);font-size:11px;text-align:center;padding:32px;letter-spacing:1px">SIN HISTORIAL</div>';return}
-    const ini=Math.max(1,rid-9);
-    const ps=[];
-    for(let i=rid;i>=ini;i--)ps.push(contratoVegas.methods.getRoundInfo(i).call());
-    const rondas=await Promise.all(ps);
-    const sL=['Abierta','Cerrada','Resuelta','Cancelada'];
-    const sC=['var(--gold)','var(--muted)','var(--green)','var(--red)'];
-    const rows=rondas.map((r,i)=>{
-      const id=rid-i;
-      const asset=ASSETS[parseInt(r.asset)];
-      const st=parseInt(r.status);
-      const pA=fmtUSD(parseInt(r.priceAtOpen)/1e8);
-      const pC=r.priceAtClose!=='0'?fmtUSD(parseInt(r.priceAtClose)/1e8):'—';
-      const pool=parseFloat(web3.utils.fromWei(r.totalPool.toString(),'ether')).toFixed(2);
-      const res=st===2?(parseInt(r.result)===0?'<span class="badge sube">▲ SUBE</span>':'<span class="badge baja">▼ BAJA</span>'):'—';
-      return `<tr><td style="color:var(--muted)">#${id}</td><td style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--gold)">${asset}</td><td>${pA}</td><td>${pC}</td><td>${pool} CNKT+</td><td>${res}</td><td style="color:${sC[st]};font-size:10px;letter-spacing:1px">${sL[st].toUpperCase()}</td></tr>`;
-    });
-    document.getElementById('historialTabla').innerHTML=`<table><thead><tr><th>Ronda</th><th>Activo</th><th>Apertura</th><th>Cierre</th><th>Pool</th><th>Resultado</th><th>Estado</th></tr></thead><tbody>${rows.join('')}</tbody></table>`;
-  }catch(e){document.getElementById('historialTabla').innerHTML='<div style="color:var(--muted);font-size:11px;text-align:center;padding:32px">ERROR CARGANDO</div>'}
-}
-
-// Auto-carga al entrar (solo lectura)
-window.addEventListener('load',async()=>{
-  try{
-    const provider=new Web3.providers.HttpProvider(CONFIG.POLYGON_RPC);
-    web3=new Web3(provider);
-    contratoVegas=new web3.eth.Contract(ABI_VEGAS,CONFIG.CONTRATO_VEGAS);
-    contratoCNKT=new web3.eth.Contract(ABI_ERC20,CONFIG.CONTRATO_CNKT);
-    soloLectura=true;
-    await fetchPrecioCNKT();
-    await cargarRondas();
-    await cargarHistorial();
-    setInterval(()=>{cargarRondas();cargarHistorial()},15000);
-    setInterval(fetchPrecioCNKT,60000);
-  }catch(e){}
-});
-
-if(window.ethereum){window.ethereum.on('accountsChanged',()=>location.reload());window.ethereum.on('chainChanged',()=>location.reload())}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
 </body>
 </html>
