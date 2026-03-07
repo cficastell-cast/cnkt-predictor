@@ -473,7 +473,7 @@ function Modal({dir,rid,asset,precioCNKT,web3,contrato,contratoE,wallet,onClose,
       const al=await contratoE.methods.allowance(wallet,CFG.CONTRATO_VEGAS).call();
       const MAX='115792089237316195423570985008687907853269984665640564039457584007913129639935';
       const gasPrice = await web3.eth.getGasPrice();
-      const gasPriceFast = (BigInt(gasPrice) * 150n / 100n).toString(); // +50% para que no se atasque
+      const gasPriceFast = (BigInt(gasPrice) * 150n / 100n < 30000000000n ? '30000000000' : (BigInt(gasPrice) * 150n / 100n).toString()); // mínimo 30 Gwei
       if(BigInt(al)<BigInt(aw))await contratoE.methods.approve(CFG.CONTRATO_VEGAS,MAX).send({from:wallet, gasPrice:gasPriceFast});
       setStatus({msg:'Paso 2/2: Enviando entrada...',tipo:'info'});
       await contrato.methods.placeBet(rid,isUp?0:1,aw).send({from:wallet, gasPrice:gasPriceFast});
