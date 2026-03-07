@@ -569,7 +569,7 @@ function App() {
   const[rondas,setRondas]=useState({live:null,liveId:null,exp1:null,exp1Id:null,exp2:null,exp2Id:null});
   const[historial,setHistorial]=useState([]);const[precioBTC,setPrecioBTC]=useState(null);
   const[precioCNKT,setPrecioCNKT]=useState(0.00142);const[timer,setTimer]=useState('--:--');const[timerUrgent,setTimerUrgent]=useState(false);
-  const[modal,setModal]=useState(null);const[resultModal,setResultModal]=useState(null);const[showGuia,setShowGuia]=useState(false);
+  const[modal,setModal]=useState(null);const[resultModal,setResultModal]=useState(null);const[showGuia,setShowGuia]=useState(false);const[stats,setStats]=useState(null);const[statsLoading,setStatsLoading]=useState(false);
   const[toasts,setToasts]=useState([]);const[selAsset,setSelAsset]=useState(0);const[adminLoading,setAdminLoading]=useState('');
   const prevLiveId=useRef(null);const prevWallet=useRef(null);const carouselRef=useRef(null);const liveCardRef=useRef(null);
 
@@ -713,6 +713,83 @@ function App() {
     setAdminLoading('');
   };
 
+  const cargarStats = async () => {
+    if(!contrato||!web3) return;
+    setStatsLoading(true);
+    try {
+      const rid = parseInt(await contrato.methods.currentRoundId().call());
+      if(rid===0){setStats(null);setStatsLoading(false);return;}
+
+      const hoy = new Date(); hoy.setHours(0,0,0,0);
+      const mesInicio = new Date(); mesInicio.setDate(1); mesInicio.setHours(0,0,0,0);
+      const hoyTs = Math.floor(hoy.getTime()/1000);
+      const mesTs = Math.floor(mesInicio.getTime()/1000);
+
+      // Cargar todas las rondas
+      const ps = [];
+      for(let i=1;i<=rid;i++) ps.push(contrato.methods.getRoundInfo(i).call().then(r=>({r,id:i})));
+      const todas = await Promise.all(ps);
+
+      // Calcular stats
+      let evoxMes=0, evoxTotal=0;
+      let rondasHoy={total:0,resueltas:0,canceladas:0};
+      let volHoy=0, volMes=0;
+      let sumaApostadores=0, sumaPool=0, rondasConApuestas=0;
+      const horaConteo={};
+      let maxRonda={pool:0,id:0};
+
+      todas.forEach(({r,id})=>{
+        const st=parseInt(r.status);
+        const pool=parseFloat(web3.utils.fromWei(r.totalPool.toString(),'ether'));
+        const openTs=parseInt(r.openTime);
+        const fee=pool*0.05;
+
+        // Total histórico
+        if(st===2) evoxTotal+=fee;
+
+        // Este mes
+        if(openTs>=mesTs){
+          if(st===2){evoxMes+=fee; volMes+=pool;}
+          else if(st!==3) volMes+=pool;
+        }
+
+        // Hoy
+        if(openTs>=hoyTs){
+          rondasHoy.total++;
+          if(st===2){rondasHoy.resueltas++;volHoy+=pool;}
+          else if(st===3) rondasHoy.canceladas++;
+        }
+
+        // Promedios (rondas con apuestas)
+        if(pool>0&&st===2){
+          sumaPool+=pool; rondasConApuestas++;
+          if(pool>maxRonda.pool) maxRonda={pool,id};
+          // Hora
+          const hora=new Date(openTs*1000).getHours();
+          horaConteo[hora]=(horaConteo[hora]||0)+1;
+        }
+      });
+
+      // Mejor hora
+      let mejorHora=-1, mejorHoraCount=0;
+      Object.entries(horaConteo).forEach(([h,c])=>{if(c>mejorHoraCount){mejorHoraCount=c;mejorHora=parseInt(h);}});
+
+      // Proyección mes (basada en promedio diario de hoy)
+      const diasMes=new Date(hoy.getFullYear(),hoy.getMonth()+1,0).getDate();
+      const diaDelMes=hoy.getDate();
+      const proyeccionMes=diaDelMes>0?(evoxMes/diaDelMes)*diasMes:0;
+
+      setStats({
+        evoxMes, evoxTotal,
+        rondasHoy, volHoy, volMes,
+        promPool: rondasConApuestas>0?sumaPool/rondasConApuestas:0,
+        maxRonda, mejorHora, mejorHoraCount,
+        proyeccionMes, totalRondas:rid,
+      });
+    } catch(e){ console.error(e); }
+    setStatsLoading(false);
+  };
+
   const renderHistorial=()=>{
     if(!historial.length)return<div style={{color:'var(--muted)',fontSize:11,textAlign:'center',padding:32,fontFamily:'DM Mono,monospace'}}>SIN HISTORIAL</div>;
     const sL=['Abierta','Cerrada','Resuelta','Cancelada'],sC=['var(--gold)','var(--muted)','var(--up)','var(--dn)'];
@@ -761,10 +838,50 @@ function App() {
     </div>
 
     <div className="bottom">
-      {esOwner&&<div className="admin-grid">
+      {esOwner&&<>
+        {/* DASHBOARD STATS */}
+        <div style={{marginBottom:16}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
+            <div style={{fontSize:13,fontWeight:700,letterSpacing:0.5}}>📊 Dashboard EVOX</div>
+            <button onClick={cargarStats} disabled={statsLoading} style={{background:'var(--gold-dim)',border:'1px solid rgba(255,215,0,0.3)',borderRadius:10,padding:'5px 14px',color:'var(--gold)',fontFamily:'Kanit,sans-serif',fontSize:11,fontWeight:700,cursor:'pointer',letterSpacing:1}}>
+              {statsLoading?'Cargando...':'↻ Actualizar'}
+            </button>
+          </div>
+          {stats?(
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:10}}>
+              {[
+                {lbl:'Ganancias EVOX este mes',val:stats.evoxMes.toFixed(2)+' CNKT+',sub:'≈ $'+(stats.evoxMes*precioCNKT).toFixed(2)+' USD',color:'var(--gold)'},
+                {lbl:'Ganancias EVOX históricas',val:stats.evoxTotal.toFixed(2)+' CNKT+',sub:'≈ $'+(stats.evoxTotal*precioCNKT).toFixed(2)+' USD',color:'var(--gold)'},
+                {lbl:'Proyección fin de mes',val:stats.proyeccionMes.toFixed(2)+' CNKT+',sub:'≈ $'+(stats.proyeccionMes*precioCNKT).toFixed(2)+' USD',color:'var(--up)'},
+                {lbl:'Rondas hoy',val:stats.rondasHoy.total+' total',sub:'✓ '+stats.rondasHoy.resueltas+' resueltas · ✗ '+stats.rondasHoy.canceladas+' canceladas',color:'var(--text)'},
+                {lbl:'Volumen apostado hoy',val:stats.volHoy.toFixed(2)+' CNKT+',sub:'≈ $'+(stats.volHoy*precioCNKT).toFixed(2)+' USD',color:'var(--text)'},
+                {lbl:'Volumen apostado este mes',val:stats.volMes.toFixed(2)+' CNKT+',sub:'≈ $'+(stats.volMes*precioCNKT).toFixed(2)+' USD',color:'var(--text)'},
+                {lbl:'Promedio pool por ronda',val:stats.promPool.toFixed(2)+' CNKT+',sub:'≈ $'+(stats.promPool*precioCNKT).toFixed(2)+' USD',color:'var(--muted)'},
+                {lbl:'Ronda más grande',val:'#'+stats.maxRonda.id,sub:stats.maxRonda.pool.toFixed(2)+' CNKT+ en el pool',color:'var(--dn)'},
+                {lbl:'Mejor hora del día',val:stats.mejorHora>=0?(stats.mejorHora+':00 - '+(stats.mejorHora+1)+':00'):'—',sub:stats.mejorHoraCount+' rondas con apuestas',color:'var(--live)'},
+                {lbl:'Total rondas históricas',val:stats.totalRondas+' rondas',sub:stats.evoxTotal>0?'Plataforma activa':'Sin rondas resueltas aún',color:'var(--muted)'},
+              ].map((item,i)=>(
+                <div key={i} style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:14,padding:'14px 16px'}}>
+                  <div style={{fontSize:10,color:'var(--muted)',letterSpacing:1,textTransform:'uppercase',fontFamily:'DM Mono,monospace',marginBottom:6}}>{item.lbl}</div>
+                  <div style={{fontSize:16,fontWeight:800,color:item.color,fontFamily:'DM Mono,monospace',marginBottom:2}}>{item.val}</div>
+                  <div style={{fontSize:10,color:'var(--muted)',fontFamily:'DM Mono,monospace'}}>{item.sub}</div>
+                </div>
+              ))}
+            </div>
+          ):(
+            <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:14,padding:'24px',textAlign:'center',color:'var(--muted)',fontSize:12,fontFamily:'DM Mono,monospace'}}>
+              {statsLoading?'Cargando estadísticas...':'Presiona ↻ Actualizar para ver el dashboard'}
+            </div>
+          )}
+        </div>
+
+        {/* ADMIN GRID */}
+        <div className="admin-grid">
         <div className="admin-card"><div className="admin-title">Abrir Ronda</div><div className="asset-chips">{ASSETS.map((a,i)=><button key={a} className={`asset-chip ${selAsset===i?'sel':''}`} onClick={()=>setSelAsset(i)}>{a}</button>)}</div><button className="btn-admin btn-open" disabled={adminLoading==='abriendo'} onClick={abrirRonda}>{adminLoading==='abriendo'?'...':'▶ Abrir Ronda'}</button></div>
         <div className="admin-card"><div className="admin-title">Resolver Ronda</div><div style={{fontSize:11,color:'var(--muted)',marginBottom:12,lineHeight:1.8,fontFamily:'DM Mono,monospace'}}>Consulta Chainlink y distribuye fondos automáticamente.</div><button className="btn-admin btn-resolve" disabled={adminLoading==='resolviendo'} onClick={resolverRonda}>{adminLoading==='resolviendo'?'...':'✓ Resolver Ronda'}</button></div>
-      </div>}
+      </div>
+      </>
+      }
       <div className="hist-card"><div className="hist-head"><div className="hist-title">Historial de Rondas</div><div className="hist-sub">AUTO-ACTUALIZA</div></div>{renderHistorial()}</div>
     </div>
 
