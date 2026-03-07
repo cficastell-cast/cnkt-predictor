@@ -11,92 +11,60 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.10.0/web3.min.js"></script>
 <style>
 :root{
-  --bg:#1A1033;
-  --bg2:#130D28;
-  --surface:#1E1538;
-  --surface2:#251C45;
-  --border:#2E2455;
-  --gold:#FFD700;
-  --gold2:#FFC200;
-  --gold-dim:rgba(255,215,0,0.12);
-  --up:#1FC7D4;
-  --up2:#00E5A0;
-  --up-dim:rgba(31,199,212,0.15);
-  --dn:#ED4B9E;
-  --dn-dim:rgba(237,75,158,0.15);
-  --live:#7B5EFF;
-  --live-dim:rgba(123,94,255,0.2);
-  --text:#F4EEFF;
-  --muted:#6B5E9A;
-  --muted2:#2E2455;
+  --bg:#1A1033;--bg2:#130D28;--surface:#1E1538;--surface2:#251C45;--border:#2E2455;
+  --gold:#FFD700;--gold2:#FFC200;--gold-dim:rgba(255,215,0,0.12);
+  --up:#1FC7D4;--up-dim:rgba(31,199,212,0.15);
+  --dn:#ED4B9E;--dn-dim:rgba(237,75,158,0.15);
+  --live:#7B5EFF;--live-dim:rgba(123,94,255,0.2);
+  --text:#F4EEFF;--muted:#6B5E9A;--muted2:#2E2455;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body,#root{height:100%}
 body{background:var(--bg2);color:var(--text);font-family:'Kanit',sans-serif;overflow-x:hidden}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 15% 40%,rgba(123,94,255,0.12),transparent 55%),radial-gradient(ellipse at 85% 10%,rgba(31,199,212,0.06),transparent 50%);pointer-events:none;z-index:0}
-
-/* SCROLLBAR */
-::-webkit-scrollbar{height:4px;width:4px}
-::-webkit-scrollbar-track{background:var(--surface)}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-
-/* HEADER */
+::-webkit-scrollbar{height:4px;width:4px}::-webkit-scrollbar-track{background:var(--surface)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 .header{background:rgba(19,13,40,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:12px}
 .logo{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .logo-badge{width:30px;height:30px;background:linear-gradient(135deg,#FFD700,#FFA500);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#000}
 .logo-name{font-size:16px;font-weight:800;color:var(--gold);letter-spacing:1px}
-.logo-sub{font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:2px}
 .price-bar{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1;justify-content:center}
 .price-bar::-webkit-scrollbar{display:none}
-.price-chip{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:16px;background:var(--surface2);border:1px solid var(--border);font-size:11px;white-space:nowrap;cursor:pointer;transition:all 0.2s}
+.price-chip{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:16px;background:var(--surface2);border:1px solid var(--border);font-size:11px;white-space:nowrap}
 .price-chip.active{background:var(--gold-dim);border-color:rgba(255,215,0,0.4);color:var(--gold)}
 .price-chip-val{font-family:'DM Mono',monospace;font-weight:700;font-size:12px}
 .header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .timer-badge{display:flex;align-items:center;gap:6px;padding:5px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:16px;font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--gold)}
-.timer-badge-sub{font-size:10px;color:var(--muted);font-weight:400;margin-left:2px}
+.timer-badge.urgent{color:var(--dn);border-color:rgba(237,75,158,0.4);background:rgba(237,75,158,0.08);animation:timerPulse 0.8s infinite}
+@keyframes timerPulse{0%,100%{opacity:1}50%{opacity:0.6}}
 .btn-connect{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border:none;padding:7px 16px;border-radius:16px;font-family:'Kanit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px;white-space:nowrap}
 .btn-connect:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(255,215,0,0.3)}
 .wallet-pill{display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid rgba(255,215,0,0.3);border-radius:16px;font-size:11px;color:var(--gold);cursor:pointer;background:var(--gold-dim);font-family:'DM Mono',monospace}
 .wallet-dot{width:6px;height:6px;border-radius:50%;background:#1FC7D4;box-shadow:0 0 6px #1FC7D4}
-
-/* CARRUSEL */
 .carousel-section{padding:24px 0 8px;position:relative;z-index:1}
 .carousel-track{display:flex;gap:12px;padding:8px 0 16px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-ms-overflow-style:none;align-items:center;cursor:grab}
 .carousel-track:active{cursor:grabbing}
 .carousel-track::-webkit-scrollbar{display:none}
-.carousel-padding{flex-shrink:0;width:calc(50vw - 150px)}
-
-/* TARJETA BASE */
+.carousel-padding{flex-shrink:0;width:calc(50vw - 155px)}
 .card{flex-shrink:0;border-radius:24px;display:flex;flex-direction:column;scroll-snap-align:center;transition:transform 0.3s,box-shadow 0.3s;position:relative;overflow:visible;user-select:none}
 .card:hover{transform:translateY(-2px)}
-
-/* EXPIRADA */
-.card-exp{width:200px;background:var(--surface);border:1px solid var(--border);opacity:0.6}
-.card-exp:hover{opacity:0.8}
-
-/* LIVE */
-.card-live{width:295px;background:linear-gradient(160deg,#1E1538,#150F2E);border:2px solid var(--live);box-shadow:0 0 0 1px rgba(123,94,255,0.1),0 20px 60px rgba(0,0,0,0.6),0 0 40px var(--live-dim)}
+.card-exp{width:210px;background:var(--surface);border:1px solid var(--border);opacity:0.7}
+.card-exp:hover{opacity:0.9}
+.card-live{width:300px;background:linear-gradient(160deg,#1E1538,#150F2E);border:2px solid var(--live);box-shadow:0 0 0 1px rgba(123,94,255,0.1),0 20px 60px rgba(0,0,0,0.6),0 0 40px var(--live-dim)}
 .card-live::before{content:'LIVE';position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--live);color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:10px;letter-spacing:2px}
-
-/* NEXT */
 .card-next{width:240px;background:var(--surface);border:2px solid var(--surface2)}
-
-/* LATER */
 .card-later{width:120px;background:var(--surface);border:1px solid var(--border);opacity:0.35;align-items:center;justify-content:center;padding:20px;gap:6px;min-height:300px}
-
-/* PENTÁGONO UP */
-.penta-up{position:relative;background:var(--up-dim);border:1px solid rgba(31,199,212,0.3);border-radius:12px 12px 0 0;padding:10px 16px;text-align:center;margin:0;clip-path:polygon(0 0,100% 0,100% 75%,50% 100%,0 75%)}
-.penta-up.winner{background:rgba(31,199,212,0.25);border-color:rgba(31,199,212,0.6)}
-.penta-dn{position:relative;background:var(--dn-dim);border:1px solid rgba(237,75,158,0.3);border-radius:0 0 12px 12px;padding:10px 16px;text-align:center;margin:0;clip-path:polygon(0 25%,50% 0,100% 25%,100% 100%,0 100%)}
-.penta-dn.winner{background:rgba(237,75,158,0.25);border-color:rgba(237,75,158,0.6)}
+.penta-up{background:var(--up-dim);border:1px solid rgba(31,199,212,0.3);border-radius:12px 12px 0 0;padding:10px 16px;text-align:center;clip-path:polygon(0 0,100% 0,100% 75%,50% 100%,0 75%)}
+.penta-up.winner{background:rgba(31,199,212,0.3);border-color:rgba(31,199,212,0.7);box-shadow:0 0 20px rgba(31,199,212,0.2)}
+.penta-up.loser{background:rgba(255,255,255,0.02);border-color:rgba(255,255,255,0.08)}
+.penta-dn{background:var(--dn-dim);border:1px solid rgba(237,75,158,0.3);border-radius:0 0 12px 12px;padding:10px 16px;text-align:center;clip-path:polygon(0 25%,50% 0,100% 25%,100% 100%,0 100%)}
+.penta-dn.winner{background:rgba(237,75,158,0.3);border-color:rgba(237,75,158,0.7);box-shadow:0 0 20px rgba(237,75,158,0.2)}
+.penta-dn.loser{background:rgba(255,255,255,0.02);border-color:rgba(255,255,255,0.08)}
 .penta-dir{font-size:15px;font-weight:800;letter-spacing:2px;margin-bottom:2px;padding-top:4px}
 .penta-dir.up{color:var(--up)}
 .penta-dir.dn{color:var(--dn);padding-top:8px}
-.penta-mult{font-size:11px;font-weight:600;opacity:0.85}
+.penta-mult{font-size:11px;font-weight:600}
 .penta-mult.up{color:var(--up)}
 .penta-mult.dn{color:var(--dn);padding-bottom:4px}
-
-/* CUERPO TARJETA */
 .card-body{padding:12px 14px;flex:1;display:flex;flex-direction:column;gap:6px}
 .card-tag-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
 .tag-live-dot{width:7px;height:7px;border-radius:50%;background:var(--live);box-shadow:0 0 8px var(--live);animation:pulse 1.2s infinite}
@@ -105,7 +73,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .card-num-txt{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace}
 .price-center{text-align:center;padding:8px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:4px 0}
 .price-label-sm{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;font-family:'DM Mono',monospace}
-.price-main{font-size:24px;font-weight:800;font-family:'DM Mono',monospace;letter-spacing:-0.5px}
+.price-main{font-size:22px;font-weight:800;font-family:'DM Mono',monospace;letter-spacing:-0.5px}
 .card-live .price-main{font-size:28px;color:var(--up)}
 .price-delta{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700;margin-top:3px;font-family:'DM Mono',monospace}
 .price-delta.up{background:rgba(31,199,212,0.15);color:var(--up)}
@@ -114,44 +82,34 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .info-lbl{color:var(--muted)}
 .info-val{font-family:'DM Mono',monospace;font-weight:600}
 .info-val.gold{color:var(--gold)}
-
-/* POOL BAR */
 .pool-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;display:flex;margin:4px 0}
 .pool-bar-u{background:var(--up);height:100%;transition:width 0.6s}
 .pool-bar-d{background:var(--dn);height:100%;transition:width 0.6s}
 .pool-pcts{display:flex;justify-content:space-between;font-size:10px;font-family:'DM Mono',monospace}
 .pool-pct-u{color:var(--up)}
 .pool-pct-d{color:var(--dn)}
-
-/* BOTONES */
+.banner-closed{background:rgba(237,75,158,0.1);border:1px solid rgba(237,75,158,0.35);border-radius:8px;padding:7px 10px;text-align:center;font-size:11px;font-weight:700;color:var(--dn);letter-spacing:1px;margin:4px 0;animation:pulse 1.5s infinite}
 .bet-btns{display:flex;flex-direction:column;gap:7px;margin-top:auto;padding-top:8px}
-.btn-up{padding:11px;border-radius:12px;border:none;background:var(--up);color:#000;font-family:'Kanit',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px}
+.btn-up{padding:11px;border-radius:12px;border:none;background:var(--up);color:#000;font-family:'Kanit',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all 0.3s;letter-spacing:0.5px}
 .btn-up:hover:not(:disabled){box-shadow:0 0 20px rgba(31,199,212,0.5);transform:translateY(-1px)}
-.btn-up:disabled{opacity:0.3;cursor:not-allowed;transform:none}
-.btn-dn{padding:11px;border-radius:12px;border:none;background:var(--dn);color:#fff;font-family:'Kanit',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px}
+.btn-up:disabled{opacity:0.22;cursor:not-allowed;transform:none;filter:grayscale(0.7)}
+.btn-dn{padding:11px;border-radius:12px;border:none;background:var(--dn);color:#fff;font-family:'Kanit',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all 0.3s;letter-spacing:0.5px}
 .btn-dn:hover:not(:disabled){box-shadow:0 0 20px rgba(237,75,158,0.5);transform:translateY(-1px)}
-.btn-dn:disabled{opacity:0.3;cursor:not-allowed;transform:none}
+.btn-dn:disabled{opacity:0.22;cursor:not-allowed;transform:none;filter:grayscale(0.7)}
 .entrado-badge{text-align:center;padding:10px;border-radius:10px;background:var(--gold-dim);border:1px solid rgba(255,215,0,0.3);color:var(--gold);font-size:13px;font-weight:700;letter-spacing:1px;margin-top:auto}
-
-/* NO ROUND */
 .no-round{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;padding:20px 0;min-height:200px}
-.no-round-icon{font-size:32px;margin-bottom:4px}
-
-/* CONN DROPDOWN */
-.conn-drop{position:fixed;top:64px;right:16px;z-index:200;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;width:260px;box-shadow:0 20px 60px rgba(0,0,0,0.8);animation:fadeIn 0.15s ease}
+.conn-drop{position:fixed;top:64px;right:16px;z-index:200;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;width:270px;box-shadow:0 20px 60px rgba(0,0,0,0.8);animation:fadeIn 0.15s ease}
 @keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 .conn-title{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;font-family:'DM Mono',monospace}
 .conn-opt{width:100%;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Kanit',sans-serif;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:6px;text-align:left;display:flex;align-items:center;gap:10px;transition:all 0.2s}
 .conn-opt:hover{border-color:var(--gold);color:var(--gold)}
+.conn-opt.danger:hover{border-color:var(--dn);color:var(--dn)}
+.conn-wallet-addr{padding:10px 14px;background:var(--bg2);border-radius:10px;font-family:'DM Mono',monospace;font-size:11px;color:var(--gold);word-break:break-all;border:1px solid var(--border);margin-bottom:10px;line-height:1.6}
 .conn-ghost{width:100%;padding:7px;background:transparent;border:none;color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;letter-spacing:1px;text-align:center}
 .conn-ghost:hover{color:var(--text)}
 .conn-err{font-size:11px;margin-top:8px;line-height:1.6;font-family:'DM Mono',monospace;color:var(--dn)}
 .conn-info{font-size:11px;margin-top:8px;line-height:1.6;font-family:'DM Mono',monospace;color:var(--gold)}
-
-/* BOTTOM */
 .bottom{max-width:1000px;margin:0 auto;padding:0 16px 40px;position:relative;z-index:1}
-
-/* ADMIN */
 .admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
 .admin-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px}
 .admin-title{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;font-family:'DM Mono',monospace}
@@ -161,12 +119,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .btn-admin{width:100%;padding:10px;border-radius:10px;font-family:'Kanit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;margin-bottom:6px;border:none;letter-spacing:0.5px}
 .btn-open{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000}
 .btn-open:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(255,215,0,0.3)}
-.btn-open:disabled{opacity:0.3;cursor:not-allowed;transform:none}
+.btn-open:disabled,.btn-resolve:disabled{opacity:0.3;cursor:not-allowed;transform:none}
 .btn-resolve{background:transparent;border:1px solid var(--border);color:var(--muted)}
 .btn-resolve:hover{border-color:var(--text);color:var(--text)}
-.btn-resolve:disabled{opacity:0.3;cursor:not-allowed}
-
-/* HISTORIAL */
 .hist-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden}
 .hist-head{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
 .hist-title{font-size:13px;font-weight:700;letter-spacing:0.5px}
@@ -178,12 +133,11 @@ tr:last-child td{border-bottom:none}
 tr:hover td{background:rgba(255,255,255,0.02)}
 .badge-up{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;background:rgba(31,199,212,0.12);color:var(--up);border:1px solid rgba(31,199,212,0.25)}
 .badge-dn{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;background:rgba(237,75,158,0.12);color:var(--dn);border:1px solid rgba(237,75,158,0.25)}
-
-/* MODAL */
+.badge-cancel{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;background:rgba(107,94,154,0.12);color:var(--muted);border:1px solid rgba(107,94,154,0.25)}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.15s ease}
 .modal-box{background:var(--surface);border-radius:20px;padding:26px;width:100%;max-width:370px;position:relative;border:1px solid var(--border)}
-.modal-box.up{border-top:3px solid var(--up);box-shadow:0 0 30px rgba(31,199,212,0.12)}
-.modal-box.dn{border-top:3px solid var(--dn);box-shadow:0 0 30px rgba(237,75,158,0.12)}
+.modal-box.up{border-top:3px solid var(--up)}
+.modal-box.dn{border-top:3px solid var(--dn)}
 .modal-close{position:absolute;top:14px;right:14px;background:var(--surface2);border:none;color:var(--muted);cursor:pointer;width:26px;height:26px;border-radius:8px;font-size:13px;display:flex;align-items:center;justify-content:center}
 .modal-close:hover{color:var(--text)}
 .modal-dir{font-size:26px;font-weight:800;letter-spacing:2px;margin-bottom:2px}
@@ -208,32 +162,39 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .modal-st.ok{background:rgba(31,199,212,0.08);border:1px solid rgba(31,199,212,0.2);color:var(--up)}
 .modal-st.err{background:rgba(237,75,158,0.08);border:1px solid rgba(237,75,158,0.2);color:var(--dn)}
 .modal-st.info{background:var(--gold-dim);border:1px solid rgba(255,215,0,0.2);color:var(--gold)}
-
-/* TOAST */
-.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:400;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.toast-item{background:var(--surface2);border-radius:10px;padding:10px 18px;font-size:12px;font-family:'DM Mono',monospace;letter-spacing:0.5px;border:1px solid var(--border);animation:slideUp 0.3s ease;pointer-events:none}
+.result-bg{position:fixed;inset:0;background:rgba(0,0,0,0.88);backdrop-filter:blur(16px);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.3s ease}
+.result-box{background:var(--surface);border-radius:24px;padding:36px 28px;width:100%;max-width:340px;text-align:center;position:relative}
+.result-box.win{border:2px solid var(--up);box-shadow:0 0 60px rgba(31,199,212,0.25)}
+.result-box.lose{border:2px solid var(--dn);box-shadow:0 0 40px rgba(237,75,158,0.1)}
+.result-box.cancel{border:2px solid var(--muted)}
+.result-emoji{font-size:58px;margin-bottom:10px;display:block}
+.result-title{font-size:30px;font-weight:800;letter-spacing:1px;margin-bottom:8px}
+.result-title.win{color:var(--up)}
+.result-title.lose{color:var(--dn)}
+.result-title.cancel{color:var(--muted)}
+.result-sub{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.8}
+.result-amount{font-size:34px;font-weight:800;font-family:'DM Mono',monospace;color:var(--up);margin-bottom:4px}
+.result-lbl{font-size:11px;color:var(--muted);letter-spacing:1px;font-family:'DM Mono',monospace;margin-bottom:22px}
+.result-btn{width:100%;padding:13px;border-radius:12px;border:none;background:var(--surface2);color:var(--text);font-family:'Kanit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px}
+.result-btn:hover{background:var(--border)}
+.confetti-wrap{position:fixed;inset:0;pointer-events:none;z-index:399;overflow:hidden}
+.cp{position:absolute;top:-20px;animation:cfFall linear forwards}
+@keyframes cfFall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:500;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast-item{background:var(--surface2);border-radius:10px;padding:10px 18px;font-size:12px;font-family:'DM Mono',monospace;border:1px solid var(--border);animation:slideUp 0.3s ease}
 @keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .toast-item.ok{border-color:rgba(31,199,212,0.4);color:var(--up)}
 .toast-item.err{border-color:rgba(237,75,158,0.4);color:var(--dn)}
 .toast-item.info{border-color:rgba(255,215,0,0.4);color:var(--gold)}
-
 .spinner{display:inline-block;width:11px;height:11px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:5px}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-@media(max-width:600px){
-  .price-bar{display:none}
-  .admin-grid{grid-template-columns:1fr}
-  .carousel-padding{width:20px}
-}
+@media(max-width:600px){.price-bar{display:none}.admin-grid{grid-template-columns:1fr}.carousel-padding{width:20px}}
 </style>
 </head>
 <body>
 <div id="root"></div>
-
 <script type="text/babel">
 const { useState, useEffect, useRef, useCallback } = React;
-
-// ── CONFIG ──────────────────────────────────────────────────
 const CFG = {
   CONTRATO_VEGAS: '0x76d19Ed4Aaba2ee40D522dBC9325DD2d45a44251',
   CONTRATO_CNKT:  '0x87bdfbe98Ba55104701b2F2e999982a317905637',
@@ -248,6 +209,7 @@ const ABI_V = [
   {inputs:[],name:"currentRoundId",outputs:[{internalType:"uint256",name:"",type:"uint256"}],stateMutability:"view",type:"function"},
   {inputs:[{internalType:"uint256",name:"_roundId",type:"uint256"}],name:"getRoundInfo",outputs:[{components:[{internalType:"uint256",name:"id",type:"uint256"},{internalType:"uint8",name:"asset",type:"uint8"},{internalType:"uint8",name:"status",type:"uint8"},{internalType:"uint256",name:"openTime",type:"uint256"},{internalType:"uint256",name:"closeTime",type:"uint256"},{internalType:"uint256",name:"resolveTime",type:"uint256"},{internalType:"int256",name:"priceAtOpen",type:"int256"},{internalType:"int256",name:"priceAtClose",type:"int256"},{internalType:"uint256",name:"totalSube",type:"uint256"},{internalType:"uint256",name:"totalBaja",type:"uint256"},{internalType:"uint256",name:"totalPool",type:"uint256"},{internalType:"uint8",name:"result",type:"uint8"}],internalType:"struct ProyectoVegas.Round",name:"",type:"tuple"}],stateMutability:"view",type:"function"},
   {inputs:[{internalType:"uint256",name:"_roundId",type:"uint256"},{internalType:"address",name:"",type:"address"}],name:"hasBet",outputs:[{internalType:"bool",name:"",type:"bool"}],stateMutability:"view",type:"function"},
+  {inputs:[{internalType:"uint256",name:"_roundId",type:"uint256"}],name:"getRoundBets",outputs:[{components:[{internalType:"address",name:"user",type:"address"},{internalType:"uint256",name:"amount",type:"uint256"},{internalType:"uint8",name:"direction",type:"uint8"}],internalType:"struct ProyectoVegas.Bet[]",name:"",type:"tuple[]"}],stateMutability:"view",type:"function"},
   {inputs:[],name:"owner",outputs:[{internalType:"address",name:"",type:"address"}],stateMutability:"view",type:"function"},
   {inputs:[{internalType:"uint8",name:"_asset",type:"uint8"}],name:"getPrice",outputs:[{internalType:"int256",name:"",type:"int256"}],stateMutability:"view",type:"function"},
 ];
@@ -256,674 +218,417 @@ const ABI_E = [
   {inputs:[{internalType:"address",name:"account",type:"address"}],name:"balanceOf",outputs:[{internalType:"uint256",name:"",type:"uint256"}],stateMutability:"view",type:"function"},
   {inputs:[{internalType:"address",name:"owner",type:"address"},{internalType:"address",name:"spender",type:"address"}],name:"allowance",outputs:[{internalType:"uint256",name:"",type:"uint256"}],stateMutability:"view",type:"function"},
 ];
-
-// ── UTILS ────────────────────────────────────────────────────
 const fUSD = v => '$' + parseFloat(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-const fCNKT = (web3,wei) => parseFloat(web3.utils.fromWei(wei.toString(),'ether')).toFixed(2);
-const fPool = (web3,wei) => parseFloat(web3.utils.fromWei(wei.toString(),'ether')).toFixed(2) + ' CNKT+';
 const tLeft = ct => Math.max(0, parseInt(ct) - Math.floor(Date.now()/1000));
 const fTime = s => String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
 const calcMult = (web3,total,side) => {
-  try {
-    const t = parseFloat(web3.utils.fromWei(total.toString(),'ether'));
-    const s = parseFloat(web3.utils.fromWei(side.toString(),'ether'));
-    if(!t||!s) return '—';
-    return (t*0.95/s).toFixed(2) + 'x';
-  } catch(e){ return '—'; }
+  try { const t=parseFloat(web3.utils.fromWei(total.toString(),'ether')); const s=parseFloat(web3.utils.fromWei(side.toString(),'ether')); if(!t||!s)return'—'; return(t*0.95/s).toFixed(2)+'x'; } catch(e){return'—';}
 };
 
-// ── PENTÁGONO ────────────────────────────────────────────────
-function PentaUp({ dir, mult, winner }) {
-  return (
-    <div className={`penta-up ${winner?'winner':''}`}>
-      <div className="penta-dir up">{dir}</div>
-      <div className="penta-mult up">{mult} Payout</div>
-    </div>
-  );
-}
-function PentaDn({ dir, mult, winner }) {
-  return (
-    <div className={`penta-dn ${winner?'winner':''}`}>
-      <div className="penta-dir dn">{dir}</div>
-      <div className="penta-mult dn">{mult} Payout</div>
-    </div>
-  );
+function Confetti() {
+  const pcs = Array.from({length:55},(_,i)=>({id:i,left:Math.random()*100,delay:Math.random()*1.8,dur:2+Math.random()*2,color:['#FFD700','#1FC7D4','#ED4B9E','#7B5EFF','#00E5A0','#fff'][Math.floor(Math.random()*6)],size:5+Math.random()*9,round:Math.random()>0.5}));
+  return <div className="confetti-wrap">{pcs.map(p=><div key={p.id} className="cp" style={{left:p.left+'%',width:p.size,height:p.size,background:p.color,animationDuration:p.dur+'s',animationDelay:p.delay+'s',borderRadius:p.round?'50%':'2px'}}/>)}</div>;
 }
 
-// ── TARJETA EXPIRADA ─────────────────────────────────────────
-function CardExpired({ ronda, id }) {
-  if (!ronda) return (
-    <div className="card card-exp" style={{minHeight:300,padding:0}}>
-      <PentaUp dir="UP" mult="—" />
-      <div className="card-body">
-        <div className="card-tag-row">
-          <span className="tag-txt">⊘ EXPIRADA</span>
-          <span className="card-num-txt">#—</span>
-        </div>
-        <div className="no-round"><div className="no-round-icon">—</div></div>
+function ResultModal({tipo,ganancia,web3,onClose}) {
+  const isWin=tipo==='win', isCancel=tipo==='cancel';
+  const gFmt=web3&&ganancia?parseFloat(web3.utils.fromWei(ganancia.toString(),'ether')).toFixed(2):null;
+  return <>
+    {isWin&&<Confetti/>}
+    <div className="result-bg" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className={`result-box ${tipo}`}>
+        <span className="result-emoji">{isWin?'🎉':isCancel?'↩️':'😔'}</span>
+        <div className={`result-title ${tipo}`}>{isWin?'¡GANASTE!':isCancel?'RONDA CANCELADA':'MEJOR SUERTE'}</div>
+        <div className="result-sub">{isWin?'Los CNKT+ ya fueron enviados a tu wallet.':isCancel?'No hubo apuestas en ambos lados.\nTus fondos fueron devueltos automáticamente.':'Esta vez no fue — el mercado decidió diferente.\n¡La próxima ronda es tuya!'}</div>
+        {isWin&&gFmt&&<><div className="result-amount">+{gFmt}</div><div className="result-lbl">CNKT+ RECIBIDOS</div></>}
+        <button className="result-btn" onClick={onClose}>{isWin?'Seguir jugando 🚀':isCancel?'Entendido':'Intentar de nuevo'}</button>
       </div>
-      <PentaDn dir="DOWN" mult="—" />
+    </div>
+  </>;
+}
+
+function PentaUp({mult,winner,loser}) {
+  return <div className={`penta-up ${winner?'winner':loser?'loser':''}`}><div className="penta-dir up">UP</div><div className="penta-mult up">{mult||'—'} Payout</div></div>;
+}
+function PentaDn({mult,winner,loser}) {
+  return <div className={`penta-dn ${winner?'winner':loser?'loser':''}`}><div className="penta-dir dn">DOWN</div><div className="penta-mult dn">{mult||'—'} Payout</div></div>;
+}
+
+function CardExpired({ronda,id,web3}) {
+  if(!ronda) return (
+    <div className="card card-exp" style={{minHeight:300,padding:0}}>
+      <PentaUp/><div className="card-body"><div className="card-tag-row"><span className="tag-txt">⊘ EXPIRADA</span><span className="card-num-txt">#—</span></div><div className="no-round" style={{minHeight:140}}><div style={{fontSize:22,opacity:0.3}}>—</div></div></div><PentaDn/>
     </div>
   );
-  const pA = parseInt(ronda.priceAtOpen)/1e8;
-  const pC = ronda.priceAtClose !== '0' ? parseInt(ronda.priceAtClose)/1e8 : null;
-  const resolved = parseInt(ronda.status) === 2;
-  const upWon = resolved && parseInt(ronda.result) === 0;
-  const dnWon = resolved && parseInt(ronda.result) === 1;
-  const delta = pC ? (pC-pA)/pA*100 : null;
-
+  const st=parseInt(ronda.status),isCancelled=st===3,isResolved=st===2;
+  const pA=parseInt(ronda.priceAtOpen)/1e8;
+  const pC=ronda.priceAtClose!=='0'?parseInt(ronda.priceAtClose)/1e8:null;
+  const upWon=isResolved&&parseInt(ronda.result)===0,dnWon=isResolved&&parseInt(ronda.result)===1;
+  const delta=pA&&pC?(pC-pA):null;
   return (
     <div className="card card-exp" style={{minHeight:300,padding:0}}>
-      <PentaUp dir="UP" mult="—" winner={upWon} />
+      <PentaUp winner={upWon} loser={isResolved&&dnWon}/>
       <div className="card-body">
         <div className="card-tag-row">
-          <span className="tag-txt">⊘ EXPIRADA</span>
+          <span className="tag-txt">{isCancelled?'⊗ CANCELADA':isResolved?'✓ RESUELTA':'⊘ EXPIRADA'}</span>
           <span className="card-num-txt">#{id}</span>
         </div>
-        <div className="price-center">
-          <div className="price-label-sm">Closed Price</div>
-          <div className="price-main" style={{fontSize:20}}>{pC ? fUSD(pC) : '—'}</div>
-          {delta !== null && (
-            <div className={`price-delta ${delta>=0?'up':'dn'}`}>
-              {delta>=0?'↑':'↓'} ${Math.abs(pC-pA).toFixed(4)}
+        {isCancelled?(
+          <div className="no-round" style={{minHeight:140}}><div style={{fontSize:24}}>↩️</div><div style={{fontSize:11,color:'var(--muted)',lineHeight:1.8,textAlign:'center'}}>Cancelada<br/>Fondos devueltos</div></div>
+        ):(
+          <>
+            <div className="price-center">
+              <div className="price-label-sm">Closed Price</div>
+              <div className="price-main" style={{fontSize:18,color:upWon?'var(--up)':dnWon?'var(--dn)':'var(--text)'}}>{pC?fUSD(pC):'—'}</div>
+              {delta!==null&&<div className={`price-delta ${delta>=0?'up':'dn'}`}>{delta>=0?'▲':'▼'} ${Math.abs(delta).toFixed(2)}</div>}
             </div>
-          )}
-        </div>
-        <div className="info-row"><span className="info-lbl">Locked Price</span><span className="info-val">{fUSD(pA)}</span></div>
-        <div className="info-row"><span className="info-lbl">Prize Pool</span><span className="info-val gold">{fUSD(parseFloat(ronda.totalPool ? window._web3?.utils.fromWei(ronda.totalPool.toString(),'ether') : 0))}</span></div>
+            <div className="info-row"><span className="info-lbl">Locked</span><span className="info-val">{fUSD(pA)}</span></div>
+            {isResolved&&<div style={{textAlign:'center',padding:'6px',borderRadius:8,background:upWon?'rgba(31,199,212,0.1)':'rgba(237,75,158,0.1)',fontSize:12,fontWeight:800,color:upWon?'var(--up)':'var(--dn)',letterSpacing:1,marginTop:2}}>{upWon?'▲ UP GANÓ':'▼ DOWN GANÓ'}</div>}
+          </>
+        )}
       </div>
-      <PentaDn dir="DOWN" mult="—" winner={dnWon} />
+      <PentaDn winner={dnWon} loser={isResolved&&upWon}/>
     </div>
   );
 }
 
-// ── TARJETA LIVE ─────────────────────────────────────────────
-function CardLive({ ronda, rid, wallet, soloLectura, web3, contrato, onBet }) {
-  const [precio, setPrecio] = useState(null);
-  const [timer, setTimer] = useState('--:--');
-  const [yaBet, setYaBet] = useState(false);
-  const [btnsEnabled, setBtnsEnabled] = useState(false);
-
-  useEffect(() => {
-    if (!ronda || !web3) return;
-    // Precio actual
-    const fetchPrecio = async () => {
-      try {
-        const p = await contrato.methods.getPrice(parseInt(ronda.asset)).call();
-        setPrecio(parseInt(p)/1e8);
-      } catch(e){}
-    };
-    fetchPrecio();
-    const pi = setInterval(fetchPrecio, 15000);
-
-    // Timer
-    const ti = setInterval(() => {
-      const r = tLeft(ronda.closeTime);
-      setTimer(fTime(r));
-      setBtnsEnabled(r > 0);
-      if (r <= 0) clearInterval(ti);
-    }, 1000);
-    setTimer(fTime(tLeft(ronda.closeTime)));
-
-    return () => { clearInterval(pi); clearInterval(ti); };
-  }, [ronda, web3]);
-
-  useEffect(() => {
-    if (!ronda || !web3 || soloLectura || !wallet) return;
-    contrato.methods.hasBet(rid, wallet).call()
-      .then(b => setYaBet(b)).catch(()=>{});
-  }, [ronda, wallet]);
-
-  if (!ronda) return (
+function CardLive({ronda,rid,wallet,soloLectura,web3,contrato,onBet}) {
+  const [precio,setPrecio]=useState(null);
+  const [secsLeft,setSecsLeft]=useState(600);
+  const [yaBet,setYaBet]=useState(false);
+  useEffect(()=>{
+    if(!ronda||!web3)return;
+    const fp=async()=>{try{const p=await contrato.methods.getPrice(parseInt(ronda.asset)).call();setPrecio(parseInt(p)/1e8);}catch(e){}};
+    fp(); const pi=setInterval(fp,15000);
+    const ti=setInterval(()=>setSecsLeft(tLeft(ronda.closeTime)),1000);
+    setSecsLeft(tLeft(ronda.closeTime));
+    return()=>{clearInterval(pi);clearInterval(ti);};
+  },[ronda,web3]);
+  useEffect(()=>{
+    if(!ronda||!web3||soloLectura||!wallet)return;
+    contrato.methods.hasBet(rid,wallet).call().then(b=>setYaBet(b)).catch(()=>{});
+  },[ronda,wallet]);
+  const cerradas=secsLeft<=0, urgente=secsLeft<=60&&secsLeft>0;
+  if(!ronda) return (
     <div className="card card-live" style={{minHeight:380,padding:0}}>
-      <PentaUp dir="UP" mult="—" />
+      <PentaUp/><div className="card-body">
+        <div className="card-tag-row"><div style={{display:'flex',alignItems:'center',gap:6}}><div className="tag-live-dot"/><span className="tag-txt" style={{color:'#7B5EFF'}}>LIVE</span></div></div>
+        <div className="no-round"><div style={{fontSize:32,marginBottom:4}}>⏳</div><div style={{fontSize:13,fontWeight:700,color:'var(--muted)'}}>Sin ronda activa</div><div style={{fontSize:11,color:'var(--muted)',lineHeight:1.8}}>El keeper abrirá<br/>una nueva ronda pronto</div></div>
+      </div><PentaDn/>
+    </div>
+  );
+  const pA=parseInt(ronda.priceAtOpen)/1e8, delta=precio?(precio-pA)/pA*100:null;
+  const tSf=web3?parseFloat(web3.utils.fromWei(ronda.totalSube.toString(),'ether')):0;
+  const tBf=web3?parseFloat(web3.utils.fromWei(ronda.totalBaja.toString(),'ether')):0;
+  const tPf=tSf+tBf, pctUp=tPf>0?(tSf/tPf*100):50;
+  const multUp=web3?calcMult(web3,ronda.totalPool,ronda.totalSube):'—';
+  const multDn=web3?calcMult(web3,ronda.totalPool,ronda.totalBaja):'—';
+  return (
+    <div className="card card-live" style={{minHeight:400,padding:0}}>
+      <PentaUp mult={multUp}/>
       <div className="card-body">
         <div className="card-tag-row">
           <div style={{display:'flex',alignItems:'center',gap:6}}><div className="tag-live-dot"/><span className="tag-txt" style={{color:'#7B5EFF'}}>LIVE</span></div>
-        </div>
-        <div className="no-round">
-          <div className="no-round-icon">⏳</div>
-          <div style={{fontSize:13,fontWeight:700,color:'var(--muted)'}}>Sin ronda activa</div>
-          <div style={{fontSize:11,color:'var(--muted)',lineHeight:1.8}}>El keeper abrirá<br/>una nueva ronda pronto</div>
-        </div>
-      </div>
-      <PentaDn dir="DOWN" mult="—" />
-    </div>
-  );
-
-  const pA = parseInt(ronda.priceAtOpen)/1e8;
-  const delta = precio ? (precio-pA)/pA*100 : null;
-  const tS = ronda.totalSube; const tB = ronda.totalBaja; const tP = ronda.totalPool;
-  const tSf = parseFloat(web3.utils.fromWei(tS.toString(),'ether'));
-  const tBf = parseFloat(web3.utils.fromWei(tB.toString(),'ether'));
-  const tPf = tSf + tBf;
-  const pctUp = tPf > 0 ? (tSf/tPf*100) : 50;
-  const multUp = calcMult(web3,tP,tS);
-  const multDn = calcMult(web3,tP,tB);
-
-  return (
-    <div className="card card-live" style={{minHeight:380,padding:0}}>
-      <PentaUp dir="UP" mult={multUp} />
-      <div className="card-body">
-        <div className="card-tag-row">
           <div style={{display:'flex',alignItems:'center',gap:6}}>
-            <div className="tag-live-dot"/>
-            <span className="tag-txt" style={{color:'#7B5EFF'}}>LIVE</span>
-          </div>
-          <div style={{display:'flex',alignItems:'center',gap:6}}>
-            <span style={{fontSize:12,fontFamily:'DM Mono,monospace',color:'var(--gold)',fontWeight:700}}>{timer}</span>
+            <span style={{fontSize:12,fontFamily:'DM Mono,monospace',color:urgente?'var(--dn)':'var(--gold)',fontWeight:700}}>{cerradas?'00:00':fTime(secsLeft)}</span>
             <span className="card-num-txt">#{rid}</span>
           </div>
         </div>
-
         <div className="price-center">
           <div className="price-label-sm">Last Price</div>
-          <div className="price-main">{precio ? fUSD(precio) : '...'}</div>
-          {delta !== null && (
-            <div className={`price-delta ${delta>=0?'up':'dn'}`}>
-              {delta>=0?'↑':'↓'} {Math.abs(delta).toFixed(3)}%
-            </div>
-          )}
+          <div className="price-main">{precio?fUSD(precio):'...'}</div>
+          {delta!==null&&<div className={`price-delta ${delta>=0?'up':'dn'}`}>{delta>=0?'▲':'▼'} {Math.abs(delta).toFixed(3)}%</div>}
         </div>
-
         <div className="info-row"><span className="info-lbl">Locked Price</span><span className="info-val">{fUSD(pA)}</span></div>
         <div className="info-row"><span className="info-lbl">Prize Pool</span><span className="info-val gold">{tPf.toFixed(2)} CNKT+</span></div>
-
-        <div className="pool-bar">
-          <div className="pool-bar-u" style={{width:pctUp+'%'}}/>
-          <div className="pool-bar-d" style={{width:(100-pctUp)+'%'}}/>
-        </div>
-        <div className="pool-pcts">
-          <span className="pool-pct-u">{pctUp.toFixed(0)}%</span>
-          <span className="pool-pct-d">{(100-pctUp).toFixed(0)}%</span>
-        </div>
-
-        {yaBet ? (
+        <div className="pool-bar"><div className="pool-bar-u" style={{width:pctUp+'%'}}/><div className="pool-bar-d" style={{width:(100-pctUp)+'%'}}/></div>
+        <div className="pool-pcts"><span className="pool-pct-u">{pctUp.toFixed(0)}%</span><span className="pool-pct-d">{(100-pctUp).toFixed(0)}%</span></div>
+        {cerradas&&<div className="banner-closed">🔒 ENTRADAS CERRADAS</div>}
+        {yaBet?(
           <div className="entrado-badge">✓ Entrada registrada</div>
-        ) : (
+        ):(
           <div className="bet-btns">
-            <button className="btn-up" disabled={!btnsEnabled || soloLectura || !wallet} onClick={()=>onBet('SUBE')}>
-              Enter UP ▲
-            </button>
-            <button className="btn-dn" disabled={!btnsEnabled || soloLectura || !wallet} onClick={()=>onBet('BAJA')}>
-              Enter DOWN ▼
-            </button>
+            <button className="btn-up" disabled={cerradas||soloLectura||!wallet} onClick={()=>onBet('SUBE')}>Enter UP ▲</button>
+            <button className="btn-dn" disabled={cerradas||soloLectura||!wallet} onClick={()=>onBet('BAJA')}>Enter DOWN ▼</button>
           </div>
         )}
       </div>
-      <PentaDn dir="DOWN" mult={multDn} />
+      <PentaDn mult={multDn}/>
     </div>
   );
 }
 
-// ── TARJETA NEXT ─────────────────────────────────────────────
-function CardNext({ rid }) {
+function CardNext({rid}) {
   return (
     <div className="card card-next" style={{minHeight:340,padding:0}}>
-      <PentaUp dir="UP" mult="—" />
-      <div className="card-body">
-        <div className="card-tag-row">
-          <span className="tag-txt">▶ NEXT</span>
-          <span className="card-num-txt">#{rid || '—'}</span>
-        </div>
-        <div className="no-round" style={{minHeight:160}}>
-          <div style={{fontSize:28,marginBottom:4}}>🎲</div>
-          <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.8,textAlign:'center'}}>
-            Próxima ronda<br/>Min: 500 CNKT+<br/>Max: 250,000 CNKT+
-          </div>
-        </div>
-        <div className="bet-btns" style={{marginTop:'auto',paddingTop:8}}>
-          <button className="btn-up" disabled>Enter UP ▲</button>
-          <button className="btn-dn" disabled>Enter DOWN ▼</button>
-        </div>
-      </div>
-      <PentaDn dir="DOWN" mult="—" />
+      <PentaUp/><div className="card-body">
+        <div className="card-tag-row"><span className="tag-txt">▶ NEXT</span><span className="card-num-txt">#{rid||'—'}</span></div>
+        <div className="no-round" style={{minHeight:160}}><div style={{fontSize:28,marginBottom:4}}>🎲</div><div style={{fontSize:12,color:'var(--muted)',lineHeight:1.8,textAlign:'center'}}>Próxima ronda<br/>Min: 500 CNKT+<br/>Max: 250,000 CNKT+</div></div>
+        <div className="bet-btns" style={{marginTop:'auto',paddingTop:8}}><button className="btn-up" disabled>Enter UP ▲</button><button className="btn-dn" disabled>Enter DOWN ▼</button></div>
+      </div><PentaDn/>
     </div>
   );
 }
 
-// ── MODAL ENTRADA ─────────────────────────────────────────────
-function Modal({ dir, rid, asset, precioCNKT, web3, contrato, contratoE, wallet, onClose, onSuccess }) {
-  const [cnkt, setCnkt] = useState('');
-  const [usd, setUsd] = useState('');
-  const [hint, setHint] = useState({txt:'Min 500 · Max 250,000', color:'var(--muted)'});
-  const [status, setStatus] = useState(null); // {msg, tipo}
-  const [loading, setLoading] = useState(false);
-  const isUp = dir === 'SUBE';
-
-  const updateHint = (c) => {
-    if(c>0&&c<500) setHint({txt:'⚠ Mínimo 500 CNKT+', color:'var(--dn)'});
-    else if(c>250000) setHint({txt:'⚠ Máximo 250,000', color:'var(--dn)'});
-    else if(c>=500) setHint({txt:`✓ ≈ $${(c*precioCNKT).toFixed(2)} USD`, color:'var(--up)'});
-    else setHint({txt:'Min 500 · Max 250,000', color:'var(--muted)'});
-  };
-
-  const onCNKT = e => {
-    const v = e.target.value; setCnkt(v);
-    const c = parseFloat(v)||0;
-    setUsd(c>0 ? (c*precioCNKT).toFixed(4) : '');
-    updateHint(c);
-  };
-  const onUSD = e => {
-    const v = e.target.value; setUsd(v);
-    const u = parseFloat(v)||0;
-    const c = u>0&&precioCNKT>0 ? Math.round(u/precioCNKT) : '';
-    setCnkt(c); updateHint(parseFloat(c)||0);
-  };
-
-  const confirm = async () => {
-    const c = parseFloat(cnkt);
-    if(!c||c<500||c>250000){setStatus({msg:'Monto inválido (500–250,000 CNKT+)',tipo:'err'});return}
-    const amountWei = web3.utils.toWei(c.toString(),'ether');
-    const dirNum = isUp ? 0 : 1;
+function Modal({dir,rid,asset,precioCNKT,web3,contrato,contratoE,wallet,onClose,onSuccess}) {
+  const [cnkt,setCnkt]=useState('');const[usd,setUsd]=useState('');
+  const[hint,setHint]=useState({txt:'Min 500 · Max 250,000',color:'var(--muted)'});
+  const[status,setStatus]=useState(null);const[loading,setLoading]=useState(false);
+  const isUp=dir==='SUBE';
+  const upd=c=>{if(c>0&&c<500)setHint({txt:'⚠ Mínimo 500 CNKT+',color:'var(--dn)'});else if(c>250000)setHint({txt:'⚠ Máximo 250,000',color:'var(--dn)'});else if(c>=500)setHint({txt:`✓ ≈ $${(c*precioCNKT).toFixed(2)} USD`,color:'var(--up)'});else setHint({txt:'Min 500 · Max 250,000',color:'var(--muted)'});};
+  const onC=e=>{const v=e.target.value;setCnkt(v);const c=parseFloat(v)||0;setUsd(c>0?(c*precioCNKT).toFixed(4):'');upd(c);};
+  const onU=e=>{const v=e.target.value;setUsd(v);const u=parseFloat(v)||0;const c=u>0&&precioCNKT>0?Math.round(u/precioCNKT):'';setCnkt(c);upd(parseFloat(c)||0);};
+  const confirm=async()=>{
+    const c=parseFloat(cnkt);if(!c||c<500||c>250000){setStatus({msg:'Monto inválido (500–250,000)',tipo:'err'});return}
+    const aw=web3.utils.toWei(c.toString(),'ether');
     setLoading(true);
-    try {
+    try{
       setStatus({msg:'Paso 1/2: Aprobando CNKT+...',tipo:'info'});
-      const al = await contratoE.methods.allowance(wallet, CFG.CONTRATO_VEGAS).call();
-      if(BigInt(al) < BigInt(amountWei))
-        await contratoE.methods.approve(CFG.CONTRATO_VEGAS, amountWei).send({from:wallet});
+      const al=await contratoE.methods.allowance(wallet,CFG.CONTRATO_VEGAS).call();
+      if(BigInt(al)<BigInt(aw))await contratoE.methods.approve(CFG.CONTRATO_VEGAS,aw).send({from:wallet});
       setStatus({msg:'Paso 2/2: Enviando entrada...',tipo:'info'});
-      await contrato.methods.placeBet(rid, dirNum, amountWei).send({from:wallet});
-      setStatus({msg:`✓ ${c} CNKT+ registrados correctamente`,tipo:'ok'});
-      onSuccess();
-      setTimeout(onClose, 2000);
-    } catch(e) {
-      setStatus({msg:'✗ '+(e.message||e),tipo:'err'});
-    }
+      await contrato.methods.placeBet(rid,isUp?0:1,aw).send({from:wallet});
+      setStatus({msg:`✓ ${c} CNKT+ registrados`,tipo:'ok'});
+      onSuccess();setTimeout(onClose,1800);
+    }catch(e){setStatus({msg:'✗ '+(e.message||e),tipo:'err'});}
     setLoading(false);
   };
-
   return (
     <div className="modal-bg" onClick={e=>e.target===e.currentTarget&&onClose()}>
       <div className={`modal-box ${isUp?'up':'dn'}`}>
         <button className="modal-close" onClick={onClose}>✕</button>
         <div className={`modal-dir ${isUp?'up':'dn'}`}>{isUp?'▲ UP — SUBE':'▼ DOWN — BAJA'}</div>
         <div className="modal-sub">Ronda #{rid} · {asset}</div>
-        <div className="price-ref">
-          <span style={{color:'var(--muted)',fontSize:12}}>Precio CNKT+</span>
-          <span className="price-ref-val">${precioCNKT.toFixed(6)}</span>
-        </div>
-        <div className="field">
-          <label>CNKT+ a ingresar</label>
-          <input type="number" value={cnkt} onChange={onCNKT} placeholder="500" min="500"/>
-          <div className="field-hint" style={{color:hint.color}}>{hint.txt}</div>
-        </div>
+        <div className="price-ref"><span style={{color:'var(--muted)',fontSize:12}}>Precio CNKT+</span><span className="price-ref-val">${precioCNKT.toFixed(6)}</span></div>
+        <div className="field"><label>CNKT+ a ingresar</label><input type="number" value={cnkt} onChange={onC} placeholder="500" min="500"/><div className="field-hint" style={{color:hint.color}}>{hint.txt}</div></div>
         <div className="or-div">— o escribe en USD —</div>
-        <div className="field">
-          <label>Equivalente USD</label>
-          <input type="number" value={usd} onChange={onUSD} placeholder="0.00" step="0.01"/>
-        </div>
-        <button className={`btn-confirm ${isUp?'up':'dn'}`} onClick={confirm} disabled={loading}>
-          {loading ? <span><span className="spinner"/>Procesando...</span> : `CONFIRMAR ${isUp?'▲ UP':'▼ DOWN'}`}
-        </button>
-        {status && <div className={`modal-st ${status.tipo}`}>{status.msg}</div>}
+        <div className="field"><label>Equivalente USD</label><input type="number" value={usd} onChange={onU} placeholder="0.00" step="0.01"/></div>
+        <button className={`btn-confirm ${isUp?'up':'dn'}`} onClick={confirm} disabled={loading}>{loading?<span><span className="spinner"/>Procesando...</span>:`CONFIRMAR ${isUp?'▲ UP':'▼ DOWN'}`}</button>
+        {status&&<div className={`modal-st ${status.tipo}`}>{status.msg}</div>}
       </div>
     </div>
   );
 }
 
-// ── CONN DROPDOWN ─────────────────────────────────────────────
-function ConnDropdown({ onMM, onMovil, onVer, error }) {
+function ConnDropdown({onMM,onMovil,onVer,onDisconnect,wallet,error}) {
+  if(wallet) return (
+    <div className="conn-drop">
+      <div className="conn-title">Wallet Conectada</div>
+      <div className="conn-wallet-addr">{wallet}</div>
+      <button className="conn-opt danger" onClick={onDisconnect} style={{color:'var(--dn)',borderColor:'rgba(237,75,158,0.3)'}}><span style={{fontSize:18}}>⏻</span> Desconectar</button>
+      <button className="conn-opt" onClick={onMM}><span style={{fontSize:18}}>🔄</span> Cambiar wallet</button>
+    </div>
+  );
   return (
     <div className="conn-drop">
       <div className="conn-title">Conectar Wallet</div>
       <button className="conn-opt" onClick={onMM}><span style={{fontSize:20}}>🦊</span> MetaMask</button>
       <button className="conn-opt" onClick={onMovil}><span style={{fontSize:20}}>📱</span> Celular (MM / Trust)</button>
       <button className="conn-ghost" onClick={onVer}>Solo ver sin wallet →</button>
-      {error && error.startsWith('link:') ? (
-        <div className="conn-info" dangerouslySetInnerHTML={{__html:error.slice(5)}}/>
-      ) : error ? (
-        <div className="conn-err">{error}</div>
-      ) : null}
+      {error&&error.startsWith('link:')?<div className="conn-info" dangerouslySetInnerHTML={{__html:error.slice(5)}}/>:error?<div className="conn-err">{error}</div>:null}
     </div>
   );
 }
 
-// ── APP PRINCIPAL ─────────────────────────────────────────────
 function App() {
-  const [web3, setWeb3] = useState(null);
-  const [contrato, setContrato] = useState(null);
-  const [contratoE, setContratoE] = useState(null);
-  const [wallet, setWallet] = useState(null);
-  const [esOwner, setEsOwner] = useState(false);
-  const [soloLectura, setSoloLectura] = useState(true);
-  const [showConn, setShowConn] = useState(false);
-  const [connErr, setConnErr] = useState('');
+  const [web3,setWeb3]=useState(null);const[contrato,setContrato]=useState(null);const[contratoE,setContratoE]=useState(null);
+  const[wallet,setWallet]=useState(null);const[esOwner,setEsOwner]=useState(false);const[soloLectura,setSoloLectura]=useState(true);
+  const[showConn,setShowConn]=useState(false);const[connErr,setConnErr]=useState('');
+  const[rondas,setRondas]=useState({live:null,liveId:null,exp1:null,exp1Id:null,exp2:null,exp2Id:null});
+  const[historial,setHistorial]=useState([]);const[precioBTC,setPrecioBTC]=useState(null);
+  const[precioCNKT,setPrecioCNKT]=useState(0.00142);const[timer,setTimer]=useState('--:--');const[timerUrgent,setTimerUrgent]=useState(false);
+  const[modal,setModal]=useState(null);const[resultModal,setResultModal]=useState(null);
+  const[toasts,setToasts]=useState([]);const[selAsset,setSelAsset]=useState(0);const[adminLoading,setAdminLoading]=useState('');
+  const prevLiveId=useRef(null);const prevWallet=useRef(null);
 
-  const [rondas, setRondas] = useState({live:null, liveId:null, exp1:null, exp1Id:null, exp2:null, exp2Id:null});
-  const [historial, setHistorial] = useState([]);
-  const [precioBTC, setPrecioBTC] = useState(null);
-  const [precioCNKT, setPrecioCNKT] = useState(0.00142);
-  const [timer, setTimer] = useState('--:--');
+  const addToast=useCallback((msg,tipo='ok')=>{const id=Date.now();setToasts(t=>[...t,{id,msg,tipo}]);setTimeout(()=>setToasts(t=>t.filter(x=>x.id!==id)),3500);},[]);
 
-  const [modal, setModal] = useState(null); // {dir}
-  const [toasts, setToasts] = useState([]);
-  const [selAsset, setSelAsset] = useState(0);
-  const [adminLoading, setAdminLoading] = useState('');
+  const initWeb3=useCallback(async(provider,addr,lectura=false)=>{
+    const w3=new Web3(provider);const cv=new w3.eth.Contract(ABI_V,CFG.CONTRATO_VEGAS);const ce=new w3.eth.Contract(ABI_E,CFG.CONTRATO_CNKT);
+    window._web3=w3;setWeb3(w3);setContrato(cv);setContratoE(ce);setWallet(addr);setSoloLectura(lectura);
+    if(!lectura&&addr){const owner=await cv.methods.owner().call();setEsOwner(owner.toLowerCase()===addr.toLowerCase());}
+    return{w3,cv,ce};
+  },[]);
 
-  const carouselRef = useRef(null);
+  const fetchPrecioCNKT=useCallback(async()=>{
+    try{const r=await fetch('/precio-cnkt');const d=await r.json();if(d?.ok&&d?.precio)setPrecioCNKT(d.precio);}catch(e){}
+  },[]);
 
-  // Toast
-  const addToast = useCallback((msg, tipo='ok') => {
-    const id = Date.now();
-    setToasts(t => [...t, {id,msg,tipo}]);
-    setTimeout(() => setToasts(t => t.filter(x=>x.id!==id)), 3500);
-  }, []);
+  const checkResultado=useCallback(async(cv,w3,oldRid,walletAddr)=>{
+    if(!oldRid||!walletAddr||!cv||!w3)return;
+    try{
+      const r=await cv.methods.getRoundInfo(oldRid).call();const st=parseInt(r.status);
+      const apostó=await cv.methods.hasBet(oldRid,walletAddr).call();
+      if(!apostó)return;
+      if(st===3){setResultModal({tipo:'cancel',ganancia:null});return;}
+      if(st===2){
+        const bets=await cv.methods.getRoundBets(oldRid).call();
+        const myBet=bets.find(b=>b.user.toLowerCase()===walletAddr.toLowerCase());
+        if(!myBet)return;
+        const ganó=parseInt(myBet.direction)===parseInt(r.result);
+        if(ganó){
+          const ws=parseInt(r.result)===0?r.totalSube:r.totalBaja;
+          const pp=BigInt(r.totalPool)*95n/100n;
+          const payout=(BigInt(myBet.amount)*pp/BigInt(ws)).toString();
+          setResultModal({tipo:'win',ganancia:payout});
+        }else{setResultModal({tipo:'lose',ganancia:null});}
+      }
+    }catch(e){}
+  },[]);
 
-  // Init Web3
-  const initWeb3 = useCallback(async (provider, addr, lectura=false) => {
-    const w3 = new Web3(provider);
-    const cv = new w3.eth.Contract(ABI_V, CFG.CONTRATO_VEGAS);
-    const ce = new w3.eth.Contract(ABI_E, CFG.CONTRATO_CNKT);
-    window._web3 = w3;
-    setWeb3(w3); setContrato(cv); setContratoE(ce);
-    setWallet(addr); setSoloLectura(lectura);
-    if(!lectura && addr) {
-      const owner = await cv.methods.owner().call();
-      setEsOwner(owner.toLowerCase() === addr.toLowerCase());
-    }
-    return {w3, cv, ce};
-  }, []);
-
-  // Precio CNKT
-  const fetchPrecioCNKT = useCallback(async () => {
-    try {
-      const r = await fetch('/precio-cnkt');
-      const d = await r.json();
-      if(d?.ok && d?.precio) setPrecioCNKT(d.precio);
-    } catch(e){}
-  }, []);
-
-  // Cargar rondas
-  const cargarRondas = useCallback(async (cv, w3) => {
-    if(!cv || !w3) return;
-    try {
-      const rid = parseInt(await cv.methods.currentRoundId().call());
-      let live=null, exp1=null, exp2=null;
-      if(rid>0) live = await cv.methods.getRoundInfo(rid).call();
-      if(rid>1) exp1 = await cv.methods.getRoundInfo(rid-1).call();
-      if(rid>2) exp2 = await cv.methods.getRoundInfo(rid-2).call();
-      setRondas({live: live&&(live.status==='0'||live.status===0)?live:null, liveId:rid, exp1, exp1Id:rid>1?rid-1:null, exp2, exp2Id:rid>2?rid-2:null});
-      // Precio BTC del oráculo
+  const cargarRondas=useCallback(async(cv,w3,walletAddr)=>{
+    if(!cv||!w3)return;
+    try{
+      const rid=parseInt(await cv.methods.currentRoundId().call());
+      let live=null,exp1=null,exp2=null;
+      if(rid>0)live=await cv.methods.getRoundInfo(rid).call();
+      if(rid>1)exp1=await cv.methods.getRoundInfo(rid-1).call();
+      if(rid>2)exp2=await cv.methods.getRoundInfo(rid-2).call();
+      setRondas({live:live&&(live.status==='0'||live.status===0)?live:null,liveId:rid,exp1,exp1Id:rid>1?rid-1:null,exp2,exp2Id:rid>2?rid-2:null});
       if(live&&(live.status==='0'||live.status===0)){
-        try{
-          const p = await cv.methods.getPrice(parseInt(live.asset)).call();
-          setPrecioBTC(parseInt(p)/1e8);
-        }catch(e){}
+        try{const p=await cv.methods.getPrice(parseInt(live.asset)).call();setPrecioBTC(parseInt(p)/1e8);}catch(e){}
+        const s=tLeft(live.closeTime);setTimer(fTime(s));setTimerUrgent(s<=60&&s>0);
       }
-      // Timer
-      if(live&&(live.status==='0'||live.status===0)){
-        setTimer(fTime(tLeft(live.closeTime)));
+      if(prevLiveId.current&&rid>prevLiveId.current&&walletAddr){
+        checkResultado(cv,w3,prevLiveId.current,walletAddr);
       }
-    } catch(e){}
-  }, []);
+      prevLiveId.current=rid;
+    }catch(e){}
+  },[checkResultado]);
 
-  // Cargar historial
-  const cargarHistorial = useCallback(async (cv, w3) => {
-    if(!cv||!w3) return;
-    try {
-      const rid = parseInt(await cv.methods.currentRoundId().call());
-      if(rid===0){setHistorial([]);return}
-      const ini = Math.max(1, rid-9);
-      const ps = [];
-      for(let i=rid;i>=ini;i--) ps.push(cv.methods.getRoundInfo(i).call().then(r=>({r,id:i})));
-      const res = await Promise.all(ps);
-      setHistorial(res);
-    } catch(e){}
-  }, []);
+  const cargarHistorial=useCallback(async(cv,w3)=>{
+    if(!cv||!w3)return;
+    try{
+      const rid=parseInt(await cv.methods.currentRoundId().call());
+      if(rid===0){setHistorial([]);return;}
+      const ini=Math.max(1,rid-9);const ps=[];
+      for(let i=rid;i>=ini;i--)ps.push(cv.methods.getRoundInfo(i).call().then(r=>({r,id:i})));
+      setHistorial(await Promise.all(ps));
+    }catch(e){}
+  },[]);
 
-  // Cargar todo
-  const cargarTodo = useCallback((cv, w3) => {
-    cargarRondas(cv, w3);
-    cargarHistorial(cv, w3);
-  }, [cargarRondas, cargarHistorial]);
+  const cargarTodo=useCallback((cv,w3,wAddr)=>{cargarRondas(cv,w3,wAddr);cargarHistorial(cv,w3);},[cargarRondas,cargarHistorial]);
 
-  // Auto-carga inicial
-  useEffect(() => {
-    const w3 = new Web3(new Web3.providers.HttpProvider(CFG.RPC));
-    const cv = new w3.eth.Contract(ABI_V, CFG.CONTRATO_VEGAS);
-    const ce = new w3.eth.Contract(ABI_E, CFG.CONTRATO_CNKT);
-    window._web3 = w3;
-    setWeb3(w3); setContrato(cv); setContratoE(ce);
-    fetchPrecioCNKT();
-    cargarTodo(cv, w3);
-    const interval = setInterval(() => cargarTodo(cv, w3), 15000);
-    const pInterval = setInterval(fetchPrecioCNKT, 60000);
-    return () => { clearInterval(interval); clearInterval(pInterval); };
-  }, []);
+  useEffect(()=>{
+    const w3=new Web3(new Web3.providers.HttpProvider(CFG.RPC));
+    const cv=new w3.eth.Contract(ABI_V,CFG.CONTRATO_VEGAS);
+    const ce=new w3.eth.Contract(ABI_E,CFG.CONTRATO_CNKT);
+    window._web3=w3;setWeb3(w3);setContrato(cv);setContratoE(ce);
+    fetchPrecioCNKT();cargarTodo(cv,w3,null);
+    const iv=setInterval(()=>cargarTodo(cv,w3,prevWallet.current),15000);
+    const pv=setInterval(fetchPrecioCNKT,60000);
+    return()=>{clearInterval(iv);clearInterval(pv);};
+  },[]);
 
-  // Timer
-  useEffect(() => {
-    if(!rondas.live) return;
-    const t = setInterval(() => {
-      setTimer(fTime(tLeft(rondas.live.closeTime)));
-    }, 1000);
-    return () => clearInterval(t);
-  }, [rondas.live]);
+  useEffect(()=>{
+    if(!rondas.live)return;
+    const t=setInterval(()=>{const s=tLeft(rondas.live.closeTime);setTimer(fTime(s));setTimerUrgent(s<=60&&s>0);},1000);
+    return()=>clearInterval(t);
+  },[rondas.live]);
 
-  // METAMASK
-  const conectarMM = async () => {
-    setConnErr('');
-    if(!window.ethereum){setConnErr('MetaMask no detectado.');return}
-    try {
-      const accounts = await window.ethereum.request({method:'eth_requestAccounts'});
-      const chainId = await window.ethereum.request({method:'eth_chainId'});
-      if(chainId !== CFG.POLYGON_CHAIN) {
-        try { await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:CFG.POLYGON_CHAIN}]}); }
-        catch(e) { setConnErr('Cambia a Polygon en MetaMask.'); return; }
-      }
-      const {w3,cv,ce} = await initWeb3(window.ethereum, accounts[0], false);
-      setShowConn(false);
-      addToast('Wallet conectada ✓','ok');
-      cargarTodo(cv, w3);
-    } catch(e) { setConnErr('Error: '+(e.message||e)); }
+  useEffect(()=>{prevWallet.current=wallet;},[wallet]);
+
+  const conectarMM=async()=>{
+    setConnErr('');if(!window.ethereum){setConnErr('MetaMask no detectado.');return;}
+    try{
+      const accounts=await window.ethereum.request({method:'eth_requestAccounts'});
+      const chainId=await window.ethereum.request({method:'eth_chainId'});
+      if(chainId!==CFG.POLYGON_CHAIN){try{await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:CFG.POLYGON_CHAIN}]});}catch(e){setConnErr('Cambia a Polygon en MetaMask.');return;}}
+      const{w3,cv,ce}=await initWeb3(window.ethereum,accounts[0],false);
+      setShowConn(false);addToast('Wallet conectada ✓','ok');cargarTodo(cv,w3,accounts[0]);
+    }catch(e){setConnErr('Error: '+(e.message||e));}
   };
 
-  const conectarMovil = () => {
-    const url = window.location.href;
-    const mm = `https://metamask.app.link/dapp/${window.location.host}`;
-    const tw = `https://link.trustwallet.com/open_url?coin_id=966&url=${encodeURIComponent(url)}`;
+  const conectarMovil=()=>{
+    const mm=`https://metamask.app.link/dapp/${window.location.host}`;
+    const tw=`https://link.trustwallet.com/open_url?coin_id=966&url=${encodeURIComponent(window.location.href)}`;
     setConnErr(`link:<a href="${mm}" style="display:block;padding:8px;background:var(--gold-dim);border-radius:6px;color:var(--gold);text-decoration:none;margin-bottom:4px;font-size:11px">🦊 MetaMask Mobile</a><a href="${tw}" style="display:block;padding:8px;background:rgba(255,255,255,0.03);border-radius:6px;color:#888;text-decoration:none;font-size:11px">🛡 Trust Wallet</a>`);
   };
 
-  const soloVer = () => { setShowConn(false); addToast('Modo solo vista','info'); };
+  const desconectar=()=>{
+    const w3=new Web3(new Web3.providers.HttpProvider(CFG.RPC));
+    const cv=new w3.eth.Contract(ABI_V,CFG.CONTRATO_VEGAS);
+    const ce=new w3.eth.Contract(ABI_E,CFG.CONTRATO_CNKT);
+    window._web3=w3;setWeb3(w3);setContrato(cv);setContratoE(ce);
+    setWallet(null);setSoloLectura(true);setEsOwner(false);setShowConn(false);setConnErr('');
+    prevWallet.current=null;addToast('Wallet desconectada','info');
+  };
 
-  // ADMIN
-  const abrirRonda = async () => {
-    if(!contrato||!wallet) return;
-    setAdminLoading('abriendo');
-    try {
-      await contrato.methods.openRound(selAsset).send({from:wallet});
-      addToast(ASSETS[selAsset]+' ronda abierta ✓','ok');
-      setTimeout(()=>cargarTodo(contrato,web3), 3000);
-    } catch(e) { addToast('Error: '+(e.message||e),'err'); }
+  const soloVer=()=>{setShowConn(false);addToast('Modo solo vista','info');};
+
+  const abrirRonda=async()=>{
+    if(!contrato||!wallet)return;setAdminLoading('abriendo');
+    try{await contrato.methods.openRound(selAsset).send({from:wallet});addToast(ASSETS[selAsset]+' ronda abierta ✓','ok');setTimeout(()=>cargarTodo(contrato,web3,wallet),3000);}
+    catch(e){addToast('Error: '+(e.message||e),'err');}
     setAdminLoading('');
   };
 
-  const resolverRonda = async () => {
-    if(!contrato||!wallet||!rondas.liveId) return;
-    setAdminLoading('resolviendo');
-    try {
-      await contrato.methods.resolveRound(rondas.liveId).send({from:wallet});
-      addToast('Ronda #'+rondas.liveId+' resuelta ✓','ok');
-      setTimeout(()=>cargarTodo(contrato,web3), 3000);
-    } catch(e) { addToast('Error: '+(e.message||e),'err'); }
+  const resolverRonda=async()=>{
+    if(!contrato||!wallet||!rondas.liveId)return;setAdminLoading('resolviendo');
+    try{await contrato.methods.resolveRound(rondas.liveId).send({from:wallet});addToast('Ronda #'+rondas.liveId+' resuelta ✓','ok');setTimeout(()=>cargarTodo(contrato,web3,wallet),3000);}
+    catch(e){addToast('Error: '+(e.message||e),'err');}
     setAdminLoading('');
   };
 
-  // HISTORIAL RENDER
-  const renderHistorial = () => {
-    if(!historial.length) return <div style={{color:'var(--muted)',fontSize:11,textAlign:'center',padding:32,fontFamily:'DM Mono,monospace'}}>SIN HISTORIAL</div>;
-    const sL = ['Abierta','Cerrada','Resuelta','Cancelada'];
-    const sC = ['var(--gold)','var(--muted)','var(--up)','var(--dn)'];
-    return (
-      <table>
-        <thead><tr><th>Ronda</th><th>Activo</th><th>Apertura</th><th>Cierre</th><th>Pool</th><th>Resultado</th><th>Estado</th></tr></thead>
-        <tbody>
-          {historial.map(({r,id}) => {
-            const st = parseInt(r.status);
-            const pA = fUSD(parseInt(r.priceAtOpen)/1e8);
-            const pC = r.priceAtClose!=='0' ? fUSD(parseInt(r.priceAtClose)/1e8) : '—';
-            const pool = web3 ? parseFloat(web3.utils.fromWei(r.totalPool.toString(),'ether')).toFixed(2) : '—';
-            const res = st===2 ? (parseInt(r.result)===0 ? <span className="badge-up">▲ UP</span> : <span className="badge-dn">▼ DOWN</span>) : '—';
-            return (
-              <tr key={id}>
-                <td style={{color:'var(--muted)'}}>#{id}</td>
-                <td style={{fontWeight:700,color:'var(--gold)',fontFamily:'Kanit,sans-serif'}}>{ASSETS[parseInt(r.asset)]}</td>
-                <td>{pA}</td><td>{pC}</td><td>{pool} CNKT+</td><td>{res}</td>
-                <td style={{color:sC[st],fontSize:11}}>{sL[st]}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+  const renderHistorial=()=>{
+    if(!historial.length)return<div style={{color:'var(--muted)',fontSize:11,textAlign:'center',padding:32,fontFamily:'DM Mono,monospace'}}>SIN HISTORIAL</div>;
+    const sL=['Abierta','Cerrada','Resuelta','Cancelada'],sC=['var(--gold)','var(--muted)','var(--up)','var(--dn)'];
+    return(
+      <table><thead><tr><th>Ronda</th><th>Activo</th><th>Apertura</th><th>Cierre</th><th>Pool</th><th>Resultado</th><th>Estado</th></tr></thead>
+      <tbody>{historial.map(({r,id})=>{
+        const st=parseInt(r.status);
+        const pA=parseInt(r.priceAtOpen)/1e8,pC=r.priceAtClose!=='0'?parseInt(r.priceAtClose)/1e8:null;
+        const pool=web3?parseFloat(web3.utils.fromWei(r.totalPool.toString(),'ether')).toFixed(2):'—';
+        const res=st===2?(parseInt(r.result)===0?<span className="badge-up">▲ UP</span>:<span className="badge-dn">▼ DOWN</span>):st===3?<span className="badge-cancel">CANCEL</span>:'—';
+        return(<tr key={id}><td style={{color:'var(--muted)'}}>#{id}</td><td style={{fontWeight:700,color:'var(--gold)',fontFamily:'Kanit,sans-serif'}}>{ASSETS[parseInt(r.asset)]}</td><td>${pA.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td><td>{pC?'$'+pC.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'—'}</td><td>{pool} CNKT+</td><td>{res}</td><td style={{color:sC[st],fontSize:11}}>{sL[st]}</td></tr>);
+      })}</tbody></table>
     );
   };
 
-  return (
-    <>
-      {/* HEADER */}
-      <header className="header">
-        <div className="logo">
-          <div className="logo-badge">C+</div>
-          <div>
-            <div className="logo-name">CNKT <span style={{color:'var(--muted)',fontSize:12,fontWeight:400}}>by EVOX</span></div>
-          </div>
-        </div>
-
-        <div className="price-bar">
-          <div className="price-chip active">
-            <span>₿</span>
-            <span className="price-chip-val">{precioBTC ? fUSD(precioBTC) : '—'}</span>
-            <span style={{fontSize:10,color:'var(--muted)'}}>BTC</span>
-          </div>
-          <div className="price-chip">
-            <span style={{fontSize:10,color:'var(--gold)'}}>CNKT+</span>
-            <span className="price-chip-val" style={{color:'var(--gold)'}}>${precioCNKT.toFixed(6)}</span>
-          </div>
-        </div>
-
-        <div className="header-actions">
-          <div className="timer-badge">
-            {timer} <span className="timer-badge-sub">5m</span>
-          </div>
-          {!soloLectura && wallet ? (
-            <div className="wallet-pill" onClick={()=>setShowConn(!showConn)}>
-              <div className="wallet-dot"/>
-              {wallet.slice(0,6)}...{wallet.slice(-4)}
-            </div>
-          ) : (
-            <button className="btn-connect" onClick={()=>setShowConn(!showConn)}>CONECTAR</button>
-          )}
-        </div>
-      </header>
-
-      {/* CONN DROPDOWN */}
-      {showConn && (
-        <>
-          <div style={{position:'fixed',inset:0,zIndex:199}} onClick={()=>setShowConn(false)}/>
-          <ConnDropdown onMM={conectarMM} onMovil={conectarMovil} onVer={soloVer} error={connErr}/>
-        </>
-      )}
-
-      {/* CARRUSEL */}
-      <div className="carousel-section">
-        <div className="carousel-track" ref={carouselRef}>
-          <div className="carousel-padding"/>
-
-          <CardExpired ronda={rondas.exp2} id={rondas.exp2Id}/>
-          <CardExpired ronda={rondas.exp1} id={rondas.exp1Id}/>
-
-          <CardLive
-            ronda={rondas.live}
-            rid={rondas.liveId}
-            wallet={!soloLectura?wallet:null}
-            soloLectura={soloLectura}
-            web3={web3}
-            contrato={contrato}
-            onBet={dir => {
-              if(soloLectura){addToast('Conecta tu wallet para apostar','info');setShowConn(true);return}
-              setModal({dir});
-            }}
-          />
-
-          <CardNext rid={rondas.liveId ? rondas.liveId+1 : null}/>
-
-          <div className="card card-later">
-            <div style={{fontSize:28,opacity:0.4}}>🕐</div>
-            <div style={{fontSize:11,color:'var(--muted)',letterSpacing:1,textTransform:'uppercase'}}>Later</div>
-            <div style={{fontSize:13,fontWeight:700,fontFamily:'DM Mono,monospace',color:'var(--muted)'}}>~10 min</div>
-          </div>
-
-          <div className="carousel-padding"/>
-        </div>
+  return <>
+    <header className="header">
+      <div className="logo"><div className="logo-badge">C+</div><div><div className="logo-name">CNKT <span style={{color:'var(--muted)',fontSize:12,fontWeight:400}}>by EVOX</span></div></div></div>
+      <div className="price-bar">
+        <div className="price-chip active"><span>₿</span><span className="price-chip-val">{precioBTC?('$'+precioBTC.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})):'—'}</span><span style={{fontSize:10,color:'var(--muted)'}}>BTC</span></div>
+        <div className="price-chip"><span style={{fontSize:10,color:'var(--gold)'}}>CNKT+</span><span className="price-chip-val" style={{color:'var(--gold)'}}>${precioCNKT.toFixed(6)}</span></div>
       </div>
-
-      {/* BOTTOM */}
-      <div className="bottom">
-
-        {/* ADMIN */}
-        {esOwner && (
-          <div className="admin-grid">
-            <div className="admin-card">
-              <div className="admin-title">Abrir Ronda</div>
-              <div className="asset-chips">
-                {ASSETS.map((a,i) => (
-                  <button key={a} className={`asset-chip ${selAsset===i?'sel':''}`} onClick={()=>setSelAsset(i)}>{a}</button>
-                ))}
-              </div>
-              <button className="btn-admin btn-open" disabled={adminLoading==='abriendo'} onClick={abrirRonda}>
-                {adminLoading==='abriendo' ? '...' : '▶ Abrir Ronda'}
-              </button>
-            </div>
-            <div className="admin-card">
-              <div className="admin-title">Resolver Ronda</div>
-              <div style={{fontSize:11,color:'var(--muted)',marginBottom:12,lineHeight:1.8,fontFamily:'DM Mono,monospace'}}>Consulta Chainlink y distribuye fondos automáticamente.</div>
-              <button className="btn-admin btn-resolve" disabled={adminLoading==='resolviendo'} onClick={resolverRonda}>
-                {adminLoading==='resolviendo' ? '...' : '✓ Resolver Ronda'}
-              </button>
-            </div>
-          </div>
+      <div className="header-actions">
+        <div className={`timer-badge ${timerUrgent?'urgent':''}`}>{timer} <span style={{fontSize:10,color:'var(--muted)',fontWeight:400,marginLeft:2}}>10m</span></div>
+        {!soloLectura&&wallet?(
+          <div className="wallet-pill" onClick={()=>setShowConn(!showConn)}><div className="wallet-dot"/>{wallet.slice(0,6)}...{wallet.slice(-4)} ▾</div>
+        ):(
+          <button className="btn-connect" onClick={()=>setShowConn(!showConn)}>CONECTAR</button>
         )}
-
-        {/* HISTORIAL */}
-        <div className="hist-card">
-          <div className="hist-head">
-            <div className="hist-title">Historial de Rondas</div>
-            <div className="hist-sub">AUTO-ACTUALIZA</div>
-          </div>
-          {renderHistorial()}
-        </div>
-
       </div>
+    </header>
 
-      {/* MODAL */}
-      {modal && contrato && web3 && (
-        <Modal
-          dir={modal.dir}
-          rid={rondas.liveId}
-          asset={rondas.live ? ASSETS[parseInt(rondas.live.asset)] : 'BTC'}
-          precioCNKT={precioCNKT}
-          web3={web3}
-          contrato={contrato}
-          contratoE={contratoE}
-          wallet={wallet}
-          onClose={()=>setModal(null)}
-          onSuccess={()=>{
-            addToast('Entrada '+(modal.dir==='SUBE'?'▲':'▼')+' registrada ✓','ok');
-            cargarTodo(contrato,web3);
-          }}
-        />
-      )}
+    {showConn&&<><div style={{position:'fixed',inset:0,zIndex:199}} onClick={()=>setShowConn(false)}/><ConnDropdown onMM={conectarMM} onMovil={conectarMovil} onVer={soloVer} onDisconnect={desconectar} wallet={!soloLectura?wallet:null} error={connErr}/></>}
 
-      {/* TOASTS */}
-      <div className="toast-wrap">
-        {toasts.map(t => <div key={t.id} className={`toast-item ${t.tipo}`}>{t.msg}</div>)}
+    <div className="carousel-section">
+      <div className="carousel-track">
+        <div className="carousel-padding"/>
+        <CardExpired ronda={rondas.exp2} id={rondas.exp2Id} web3={web3}/>
+        <CardExpired ronda={rondas.exp1} id={rondas.exp1Id} web3={web3}/>
+        <CardLive ronda={rondas.live} rid={rondas.liveId} wallet={!soloLectura?wallet:null} soloLectura={soloLectura} web3={web3} contrato={contrato} onBet={dir=>{if(soloLectura){addToast('Conecta tu wallet para apostar','info');setShowConn(true);return;}setModal({dir});}}/>
+        <CardNext rid={rondas.liveId?rondas.liveId+1:null}/>
+        <div className="card card-later"><div style={{fontSize:28,opacity:0.4}}>🕐</div><div style={{fontSize:11,color:'var(--muted)',letterSpacing:1,textTransform:'uppercase'}}>Later</div><div style={{fontSize:13,fontWeight:700,fontFamily:'DM Mono,monospace',color:'var(--muted)'}}>~10 min</div></div>
+        <div className="carousel-padding"/>
       </div>
-    </>
-  );
+    </div>
+
+    <div className="bottom">
+      {esOwner&&<div className="admin-grid">
+        <div className="admin-card"><div className="admin-title">Abrir Ronda</div><div className="asset-chips">{ASSETS.map((a,i)=><button key={a} className={`asset-chip ${selAsset===i?'sel':''}`} onClick={()=>setSelAsset(i)}>{a}</button>)}</div><button className="btn-admin btn-open" disabled={adminLoading==='abriendo'} onClick={abrirRonda}>{adminLoading==='abriendo'?'...':'▶ Abrir Ronda'}</button></div>
+        <div className="admin-card"><div className="admin-title">Resolver Ronda</div><div style={{fontSize:11,color:'var(--muted)',marginBottom:12,lineHeight:1.8,fontFamily:'DM Mono,monospace'}}>Consulta Chainlink y distribuye fondos automáticamente.</div><button className="btn-admin btn-resolve" disabled={adminLoading==='resolviendo'} onClick={resolverRonda}>{adminLoading==='resolviendo'?'...':'✓ Resolver Ronda'}</button></div>
+      </div>}
+      <div className="hist-card"><div className="hist-head"><div className="hist-title">Historial de Rondas</div><div className="hist-sub">AUTO-ACTUALIZA</div></div>{renderHistorial()}</div>
+    </div>
+
+    {modal&&contrato&&web3&&<Modal dir={modal.dir} rid={rondas.liveId} asset={rondas.live?ASSETS[parseInt(rondas.live.asset)]:'BTC'} precioCNKT={precioCNKT} web3={web3} contrato={contrato} contratoE={contratoE} wallet={wallet} onClose={()=>setModal(null)} onSuccess={()=>{addToast('Entrada '+(modal.dir==='SUBE'?'▲':'▼')+' registrada ✓','ok');cargarTodo(contrato,web3,wallet);}}/>}
+    {resultModal&&<ResultModal tipo={resultModal.tipo} ganancia={resultModal.ganancia} web3={web3} onClose={()=>setResultModal(null)}/>}
+    <div className="toast-wrap">{toasts.map(t=><div key={t.id} className={`toast-item ${t.tipo}`}>{t.msg}</div>)}</div>
+  </>;
 }
-
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
 </body>
