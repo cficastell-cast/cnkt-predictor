@@ -464,7 +464,7 @@ function CardLive({ronda,rid,wallet,soloLectura,web3,contrato,onBet}) {
             <button className="btn-up" disabled={cerradas||soloLectura||!wallet} onClick={()=>onBet('SUBE')}>Enter UP ▲</button>
             <button className="btn-dn" disabled={cerradas||soloLectura||!wallet} onClick={()=>onBet('BAJA')}>Enter DOWN ▼</button>
           </div>
-        ))}
+        )}
       </div>
       <PentaDn mult={multDn}/>
     </div>
