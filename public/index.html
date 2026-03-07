@@ -282,7 +282,7 @@ function CardExpired({ronda,id,web3}) {
       <PentaUp/><div className="card-body">
         <div className="card-tag-row"><span className="tag-txt" style={{color:'var(--up)'}}>⏳ CALCULANDO</span><span className="card-num-txt">#{id}</span></div>
         <div className="calculando-wrap" style={{flex:1,justifyContent:'center'}}>
-          <dotlottie-wc src="https://lottie.host/1b3592b4-cf02-40e1-950a-fe9fed6fb3cc/YRVEvH3BMD.lottie" style={{width:'110px',height:'110px'}} autoplay loop></dotlottie-wc>
+          <div dangerouslySetInnerHTML={{__html:'<dotlottie-wc src="https://lottie.host/1b3592b4-cf02-40e1-950a-fe9fed6fb3cc/YRVEvH3BMD.lottie" style="width:110px;height:110px" autoplay loop></dotlottie-wc>'}}/>
           <div className="calculando-txt">CALCULANDO...</div>
         </div>
       </div><PentaDn/>
@@ -408,7 +408,7 @@ function CardLive({ronda,rid,wallet,soloLectura,web3,contrato,onBet}) {
         <div className="pool-pcts"><span className="pool-pct-u">{pctUp.toFixed(0)}%</span><span className="pool-pct-d">{(100-pctUp).toFixed(0)}%</span></div>
         {secsLeft<=0?(
           <div className="calculando-wrap">
-            <dotlottie-wc src="https://lottie.host/1b3592b4-cf02-40e1-950a-fe9fed6fb3cc/YRVEvH3BMD.lottie" style={{width:'130px',height:'130px'}} autoplay loop></dotlottie-wc>
+            <div dangerouslySetInnerHTML={{__html:'<dotlottie-wc src="https://lottie.host/1b3592b4-cf02-40e1-950a-fe9fed6fb3cc/YRVEvH3BMD.lottie" style="width:130px;height:130px" autoplay loop></dotlottie-wc>'}}/>
             <div className="calculando-txt">CALCULANDO...</div>
           </div>
         ):cerradas?(
