@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CNKT Predictor</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0a0f;--surface:#12121a;--border:#1e1e2e;
+    --accent:#7fff6e;--accent2:#ff6e7f;--accent3:#6e9fff;
+    --text:#e8e8f0;--muted:#5a5a7a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;min-height:100vh;padding:24px}
+  .grid-bg{position:fixed;top:0;left:0;width:100%;height:100%;background-image:linear-gradient(rgba(127,255,110,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(127,255,110,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+  .container{max-width:960px;margin:0 auto;position:relative;z-index:1}
+
+  /* HEADER */
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+  h1{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px}
+  h1 span{color:var(--accent)}
+  .status-pill{display:flex;align-items:center;gap:8px;padding:6px 16px;border-radius:100px;border:1px solid var(--border);font-size:13px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+  .dot.on{background:var(--accent);box-shadow:0 0 8px var(--accent);animation:pulse 1.5s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+  /* OVERLAY */
+  .overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999}
+  .box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:40px;width:420px;text-align:center}
+  .box h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px}
+  .box p{color:var(--muted);font-size:12px;margin-bottom:20px;line-height:1.7}
+  .btn-main{width:100%;background:var(--accent);color:#0a0a0f;padding:12px;border-radius:8px;border:none;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;transition:filter 0.2s}
+  .btn-main:hover{filter:brightness(1.1)}
+  .disclaimer{background:rgba(255,110,127,0.05);border:1px solid rgba(255,110,127,0.2);border-radius:8px;padding:14px;margin-bottom:16px;text-align:left;font-size:11px;color:var(--accent2);line-height:1.8}
+  .vegas-logo{font-family:'Syne',sans-serif;font-size:48px;font-weight:800;margin-bottom:8px;letter-spacing:-2px}
+  .vegas-logo .v{color:var(--accent)}
+
+  /* CARDS TOP */
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
+  .card-label{font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px}
+  .card-value{font-family:'Syne',sans-serif;font-size:22px;font-weight:700}
+  .green{color:var(--accent)}.blue{color:var(--accent3)}.red{color:var(--accent2)}
+  .gold{color:#FFD700}
+
+  /* RONDA ACTIVA */
+  .ronda-panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:24px}
+  .ronda-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+  .ronda-header h2{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--muted)}
+  .ronda-id{font-size:12px;color:var(--muted)}
+
+  /* ACTIVO Y PRECIO */
+  .activo-precio{display:flex;align-items:center;gap:20px;margin-bottom:24px;padding:16px;background:var(--bg);border:1px solid var(--border);border-radius:8px}
+  .activo-nombre{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--accent)}
+  .activo-precio-val{font-family:'Syne',sans-serif;font-size:28px;font-weight:700}
+  .activo-precio-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+  .precio-apertura{font-size:12px;color:var(--muted);margin-top:4px}
+
+  /* TIMER */
+  .timer-section{margin-bottom:20px}
+  .timer-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+  .timer-bar-wrap{background:var(--bg);border:1px solid var(--border);border-radius:4px;height:6px;margin-bottom:8px;overflow:hidden}
+  .timer-bar{height:100%;background:var(--accent);border-radius:4px;transition:width 1s linear,background 0.3s}
+  .timer-bar.warning{background:var(--accent2)}
+  .timer-value{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--accent)}
+  .timer-value.warning{color:var(--accent2)}
+  .timer-status{font-size:11px;color:var(--muted);margin-top:4px}
+
+  /* POOL */
+  .pool-section{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+  .pool-item{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center}
+  .pool-item.sube{border-color:rgba(127,255,110,0.3)}
+  .pool-item.baja{border-color:rgba(255,110,127,0.3)}
+  .pool-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+  .pool-label.sube{color:var(--accent)}
+  .pool-label.baja{color:var(--accent2)}
+  .pool-amount{font-family:'Syne',sans-serif;font-size:18px;font-weight:800}
+  .pool-pct{font-size:11px;color:var(--muted);margin-top:2px}
+  .pool-bar-wrap{background:var(--bg);border:1px solid var(--border);border-radius:4px;height:8px;margin-bottom:12px;overflow:hidden;display:flex}
+  .pool-bar-sube{background:var(--accent);height:100%;transition:width 0.5s}
+  .pool-bar-baja{background:var(--accent2);height:100%;transition:width 0.5s}
+
+  /* ENTRADA */
+  .entrada-section{border-top:1px solid var(--border);padding-top:20px}
+  .entrada-section h3{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:16px}
+  .entrada-input-wrap{display:flex;gap:12px;align-items:flex-end;margin-bottom:16px}
+  .field{flex:1}
+  .field label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px}
+  .field input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Space Mono',monospace;font-size:14px;padding:10px 12px;border-radius:6px;outline:none;transition:border-color 0.2s}
+  .field input:focus{border-color:var(--accent)}
+  .hint{font-size:11px;color:var(--muted);margin-top:4px}
+  .btns-entrada{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .btn-sube{padding:16px;border-radius:8px;border:2px solid var(--accent);background:rgba(127,255,110,0.08);color:var(--accent);font-family:'Syne',sans-serif;font-size:16px;font-weight:800;cursor:pointer;transition:all 0.2s;letter-spacing:1px}
+  .btn-sube:hover:not(:disabled){background:var(--accent);color:#0a0a0f;transform:translateY(-2px)}
+  .btn-baja{padding:16px;border-radius:8px;border:2px solid var(--accent2);background:rgba(255,110,127,0.08);color:var(--accent2);font-family:'Syne',sans-serif;font-size:16px;font-weight:800;cursor:pointer;transition:all 0.2s;letter-spacing:1px}
+  .btn-baja:hover:not(:disabled){background:var(--accent2);color:#0a0a0f;transform:translateY(-2px)}
+  .btn-sube:disabled,.btn-baja:disabled{opacity:0.3;cursor:not-allowed;transform:none}
+
+  /* ESTADO ENTRADA */
+  .entrada-status{margin-top:12px;padding:10px 14px;border-radius:6px;font-size:12px;display:none}
+  .entrada-status.ok{background:rgba(127,255,110,0.08);border:1px solid rgba(127,255,110,0.3);color:var(--accent)}
+  .entrada-status.err{background:rgba(255,110,127,0.08);border:1px solid rgba(255,110,127,0.3);color:var(--accent2)}
+  .entrada-status.info{background:rgba(110,159,255,0.08);border:1px solid rgba(110,159,255,0.3);color:var(--accent3)}
+
+  /* SIN RONDA */
+  .sin-ronda{text-align:center;padding:40px;color:var(--muted)}
+  .sin-ronda .icon{font-size:48px;margin-bottom:16px}
+  .sin-ronda p{font-size:13px;line-height:1.8}
+
+  /* HISTORIAL */
+  .historial-panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:24px}
+  .historial-panel h2{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:16px}
+  table{width:100%;border-collapse:collapse;font-size:11px}
+  th{text-align:left;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;letter-spacing:1px}
+  td{padding:8px 8px;border-bottom:1px solid var(--border)}
+  .badge{display:inline-block;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700}
+  .badge.sube{background:rgba(127,255,110,0.15);color:var(--accent);border:1px solid rgba(127,255,110,0.3)}
+  .badge.baja{background:rgba(255,110,127,0.15);color:var(--accent2);border:1px solid rgba(255,110,127,0.3)}
+  .badge.ganó{background:rgba(127,255,110,0.15);color:var(--accent)}
+  .badge.perdió{background:rgba(255,110,127,0.15);color:var(--accent2)}
+  .badge.pendiente{background:rgba(110,159,255,0.15);color:var(--accent3)}
+
+  /* WALLET BADGE */
+  .wallet-badge{font-size:11px;color:var(--muted);padding:6px 12px;border:1px solid var(--border);border-radius:6px}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 20px;font-size:13px;z-index:1000;opacity:0;transform:translateY(10px);transition:all 0.3s;pointer-events:none}
+  .toast.show{opacity:1;transform:translateY(0)}
+  .toast.ok{border-color:var(--accent);color:var(--accent)}
+  .toast.err{border-color:var(--accent2);color:var(--accent2)}
+  .toast.info{border-color:var(--accent3);color:var(--accent3)}
+
+  /* SPINNER */
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* SELECTOR ACTIVOS (admin) */
+  .asset-selector{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .asset-btn{padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s}
+  .asset-btn:hover{border-color:var(--accent3);color:var(--accent3)}
+  .asset-btn.selected{border-color:var(--accent);background:rgba(127,255,110,0.1);color:var(--accent)}
+
+  /* PANELS GRID */
+  .panels{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px}
+  .panel h2{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:16px}
+  .btn-admin{width:100%;padding:12px;border-radius:8px;border:none;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;margin-bottom:8px}
+  .btn-abrir{background:var(--accent);color:#0a0a0f}
+  .btn-abrir:hover{filter:brightness(1.1)}
+  .btn-abrir:disabled{opacity:0.3;cursor:not-allowed}
+  .btn-resolver{background:transparent;border:1px solid var(--accent3);color:var(--accent3)}
+  .btn-resolver:hover{background:var(--accent3);color:#0a0a0f}
+  .btn-resolver:disabled{opacity:0.3;cursor:not-allowed}
+
+  @media(max-width:600px){
+    .cards{grid-template-columns:repeat(2,1fr)}
+    .panels{grid-template-columns:1fr}
+    .btns-entrada{grid-template-columns:1fr}
+    .pool-section{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<!-- OVERLAY CONEXIÓN -->
+<div class="overlay" id="overlayConexion">
+  <div class="box">
+    <div class="vegas-logo"><span class="v" style="color:#FFD700">CNKT</span></div>
+    <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:12px;letter-spacing:2px">by EVOX</div>
+    <h2><span style="color:#FFD700">CNKT</span> <span style="color:var(--accent)">Predictor</span></h2>
+    <p>Plataforma de predicciones multiactivo.<br>Conecta tu wallet para participar.</p>
+    <div class="disclaimer">
+      ⚠️ IMPORTANTE ANTES DE PARTICIPAR<br>
+      • Necesitas CNKT+ en tu wallet<br>
+      • Entrada mínima: $10 USD en CNKT+<br>
+      • Entrada máxima: $500 USD en CNKT+<br>
+      • Las entradas cierran 2 min antes del resultado<br>
+      • Opera sobre Polygon — necesitas MATIC para gas
+    </div>
+    <button class="btn-main" onclick="conectarWallet()">🦊 Conectar MetaMask</button>
+    <div id="conexionError" style="color:var(--accent2);font-size:12px;margin-top:12px;"></div>
+  </div>
+</div>
+
+<!-- APP PRINCIPAL -->
+<div class="container" id="mainApp" style="display:none">
+  <header>
+    <h1><span style="color:#FFD700">CNKT</span> <span>Predictor</span> <span style="font-size:13px;color:var(--muted);font-weight:400;letter-spacing:1px">by EVOX</span></h1>
+    <div style="display:flex;gap:12px;align-items:center;">
+      <div class="wallet-badge" id="walletBadge">—</div>
+      <div class="status-pill">
+        <div class="dot on"></div>
+        <span id="redStatus">Polygon</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- CARDS STATS -->
+  <div class="cards">
+    <div class="card">
+      <div class="card-label">Tu CNKT+</div>
+      <div class="card-value green" id="statCNKT">—</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Ronda Actual</div>
+      <div class="card-value blue" id="statRonda">—</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Pool Total</div>
+      <div class="card-value" id="statPool">—</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Tu Entrada</div>
+      <div class="card-value" id="statTuEntrada">—</div>
+    </div>
+  </div>
+
+  <!-- PANEL RONDA ACTIVA -->
+  <div class="ronda-panel" id="rondaPanel">
+    <div class="ronda-header">
+      <h2>🎲 Ronda Activa</h2>
+      <span class="ronda-id" id="rondaId"></span>
+    </div>
+
+    <!-- Sin ronda -->
+    <div class="sin-ronda" id="sinRonda">
+      <div class="icon">⏳</div>
+      <p>No hay ronda activa en este momento.<br>Espera a que el operador abra una nueva ronda.</p>
+    </div>
+
+    <!-- Con ronda -->
+    <div id="conRonda" style="display:none">
+
+      <!-- Activo y precio -->
+      <div class="activo-precio">
+        <div>
+          <div class="activo-precio-label">Activo</div>
+          <div class="activo-nombre" id="activoNombre">BTC</div>
+        </div>
+        <div style="flex:1">
+          <div class="activo-precio-label">Precio Actual</div>
+          <div class="activo-precio-val" id="precioActual">$—</div>
+          <div class="precio-apertura" id="precioApertura">Apertura: $—</div>
+        </div>
+        <div style="text-align:right">
+          <div class="activo-precio-label">Variación</div>
+          <div class="card-value" id="variacion">—</div>
+        </div>
+      </div>
+
+      <!-- Timer -->
+      <div class="timer-section">
+        <div class="timer-label">Tiempo para apostar</div>
+        <div class="timer-bar-wrap">
+          <div class="timer-bar" id="timerBar" style="width:100%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="timer-value" id="timerValue">--:--</div>
+          <div class="timer-status" id="timerStatus">Entradas abiertas</div>
+        </div>
+      </div>
+
+      <!-- Pool bilateral -->
+      <div style="margin-bottom:12px">
+        <div class="timer-label">Distribución del pool</div>
+        <div class="pool-bar-wrap">
+          <div class="pool-bar-sube" id="poolBarSube" style="width:50%"></div>
+          <div class="pool-bar-baja" id="poolBarBaja" style="width:50%"></div>
+        </div>
+      </div>
+      <div class="pool-section">
+        <div class="pool-item sube">
+          <div class="pool-label sube">▲ SUBE</div>
+          <div class="pool-amount green" id="poolSube">0 CNKT+</div>
+          <div class="pool-pct" id="poolSubePct">—%</div>
+        </div>
+        <div class="pool-item baja">
+          <div class="pool-label baja">▼ BAJA</div>
+          <div class="pool-amount red" id="poolBaja">0 CNKT+</div>
+          <div class="pool-pct" id="poolBajaPct">—%</div>
+        </div>
+      </div>
+
+      <!-- Apostar -->
+      <div class="entrada-section">
+        <h3>Hacer mi entrada</h3>
+        <div class="entrada-input-wrap">
+          <div class="field">
+            <label>Cantidad CNKT+</label>
+            <input type="number" id="inputEntrada" placeholder="100" min="10" oninput="calcularEntrada()">
+            <div class="hint" id="entradaHint">Mín: 10 CNKT+ · Máx: 500 CNKT+</div>
+          </div>
+          <div style="text-align:right;padding-bottom:28px">
+            <div style="font-size:10px;color:var(--muted);margin-bottom:4px">PREMIO EST.</div>
+            <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--accent)" id="premioEst">—</div>
+          </div>
+        </div>
+        <div class="btns-entrada">
+          <button class="btn-sube" id="btnSube" onclick="apostar('SUBE')" disabled>▲ SUBE</button>
+          <button class="btn-baja" id="btnBaja" onclick="apostar('BAJA')" disabled>▼ BAJA</button>
+        </div>
+        <div class="entrada-status" id="entradaStatus"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL ADMIN (solo visible si es owner) -->
+  <div class="panels" id="adminPanel" style="display:none">
+    <div class="panel">
+      <h2>⚙️ Admin — Abrir Ronda</h2>
+      <div style="margin-bottom:12px;font-size:11px;color:var(--muted)">Selecciona el activo:</div>
+      <div class="asset-selector" id="assetSelector">
+        <button class="asset-btn selected" onclick="selectAsset(0,this)">BTC</button>
+        <button class="asset-btn" onclick="selectAsset(1,this)">ETH</button>
+        <button class="asset-btn" onclick="selectAsset(2,this)">SOL</button>
+        <button class="asset-btn" onclick="selectAsset(3,this)">BNB</button>
+        <button class="asset-btn" onclick="selectAsset(4,this)">MATIC</button>
+      </div>
+      <button class="btn-admin btn-abrir" id="btnAbrirRonda" onclick="abrirRonda()">▶ ABRIR RONDA</button>
+    </div>
+    <div class="panel">
+      <h2>⚙️ Admin — Resolver</h2>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.8">
+        Resuelve la ronda activa cuando el tiempo haya terminado. El contrato consultará Chainlink y distribuirá los fondos automáticamente.
+      </div>
+      <button class="btn-admin btn-resolver" id="btnResolver" onclick="resolverRonda()">✓ RESOLVER RONDA</button>
+    </div>
+  </div>
+
+  <!-- HISTORIAL -->
+  <div class="historial-panel">
+    <h2>📋 Historial de Rondas</h2>
+    <div id="historialTabla">
+      <div style="color:var(--muted);font-size:12px;text-align:center;padding:24px">Cargando historial...</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.10.0/web3.min.js"></script>
+<script>
+// ============================================================
+//  CONFIGURACIÓN
+// ============================================================
+const CONFIG = {
+  CONTRATO_VEGAS:  '0x1502c359396Ff76728E62C792519c5501db6c46a',
+  CONTRATO_CNKT:   '0x87bdfbe98Ba55104701b2F2e999982a317905637',
+  EVOX_WALLET:     '0x52C94080e4CA22875ab3B16D9D7C886784185A39',
+  POLYGON_CHAIN_ID: '0x89', // 137 en hex
+  POLYGON_RPC:     'https://polygon-rpc.com',
+};
+
+const ASSETS = ['BTC','ETH','SOL','BNB','MATIC'];
+
+// ABI mínimo del contrato Vegas
+const ABI_VEGAS = [
+  {"inputs":[{"internalType":"uint8","name":"_asset","type":"uint8"}],"name":"openRound","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"internalType":"uint256","name":"_roundId","type":"uint256"},{"internalType":"uint8","name":"_direction","type":"uint8"},{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"placeBet","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"internalType":"uint256","name":"_roundId","type":"uint256"}],"name":"resolveRound","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[],"name":"currentRoundId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"uint256","name":"_roundId","type":"uint256"}],"name":"getRoundInfo","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint8","name":"asset","type":"uint8"},{"internalType":"uint8","name":"status","type":"uint8"},{"internalType":"uint256","name":"openTime","type":"uint256"},{"internalType":"uint256","name":"closeTime","type":"uint256"},{"internalType":"uint256","name":"resolveTime","type":"uint256"},{"internalType":"int256","name":"priceAtOpen","type":"int256"},{"internalType":"int256","name":"priceAtClose","type":"int256"},{"internalType":"uint256","name":"totalSube","type":"uint256"},{"internalType":"uint256","name":"totalBaja","type":"uint256"},{"internalType":"uint256","name":"totalPool","type":"uint256"},{"internalType":"uint8","name":"result","type":"uint8"}],"internalType":"struct ProyectoVegas.Round","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"uint256","name":"_roundId","type":"uint256"},{"internalType":"address","name":"","type":"address"}],"name":"hasBet","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"uint8","name":"_asset","type":"uint8"}],"name":"getPrice","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"},
+];
+
+// ABI mínimo ERC20 para approve y balanceOf
+const ABI_ERC20 = [
+  {"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+];
+
+// ============================================================
+//  ESTADO GLOBAL
+// ============================================================
+let web3, contratoVegas, contratoCNKT;
+let userWallet = null;
+let esOwner = false;
+let rondaActual = null;
+let timerInterval = null;
+let selectedAsset = 0;
+let historial = [];
+
+// ============================================================
+//  UTILS
+// ============================================================
+function showToast(msg, tipo='ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show ' + tipo;
+  setTimeout(() => t.className = 'toast', 3500);
+}
+
+function mostrarStatus(msg, tipo='info') {
+  const el = document.getElementById('entradaStatus');
+  el.textContent = msg;
+  el.className = 'entrada-status ' + tipo;
+  el.style.display = 'block';
+}
+
+function ocultarStatus() {
+  document.getElementById('entradaStatus').style.display = 'none';
+}
+
+function formatCNKT(wei) {
+  if (!wei) return '0';
+  const val = parseFloat(web3.utils.fromWei(wei.toString(), 'ether'));
+  return val.toFixed(2);
+}
+
+function formatUSD(chainlinkPrice) {
+  // Chainlink devuelve 8 decimales
+  return '$' + (parseInt(chainlinkPrice) / 1e8).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function tiempoRestante(closeTime) {
+  const ahora = Math.floor(Date.now() / 1000);
+  return Math.max(0, parseInt(closeTime) - ahora);
+}
+
+function formatTimer(segundos) {
+  const m = Math.floor(segundos / 60);
+  const s = segundos % 60;
+  return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+// ============================================================
+//  CONEXIÓN WALLET
+// ============================================================
+async function conectarWallet() {
+  const errEl = document.getElementById('conexionError');
+  errEl.textContent = '';
+
+  if (!window.ethereum) {
+    errEl.textContent = 'MetaMask no detectado. Instálalo en tu navegador.';
+    return;
+  }
+
+  try {
+    // Pedir cuentas
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    userWallet = accounts[0];
+
+    // Verificar que esté en Polygon
+    const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+    if (chainId !== CONFIG.POLYGON_CHAIN_ID) {
+      // Intentar cambiar a Polygon
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: CONFIG.POLYGON_CHAIN_ID }],
+        });
+      } catch(e) {
+        errEl.textContent = 'Por favor cambia tu red a Polygon en MetaMask.';
+        return;
+      }
+    }
+
+    // Inicializar Web3 y contratos
+    web3 = new Web3(window.ethereum);
+    contratoVegas = new web3.eth.Contract(ABI_VEGAS, CONFIG.CONTRATO_VEGAS);
+    contratoCNKT  = new web3.eth.Contract(ABI_ERC20,  CONFIG.CONTRATO_CNKT);
+
+    // Verificar si es owner
+    const owner = await contratoVegas.methods.owner().call();
+    esOwner = (owner.toLowerCase() === userWallet.toLowerCase());
+
+    // Mostrar app
+    document.getElementById('overlayConexion').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    document.getElementById('walletBadge').textContent = userWallet.slice(0,6) + '...' + userWallet.slice(-4);
+
+    if (esOwner) {
+      document.getElementById('adminPanel').style.display = 'grid';
+      showToast('Conectado como Owner ✓', 'ok');
+    } else {
+      showToast('Wallet conectada ✓', 'ok');
+    }
+
+    // Cargar datos
+    await cargarTodo();
+    setInterval(cargarTodo, 15000);
+
+  } catch(e) {
+    errEl.textContent = 'Error: ' + (e.message || e);
+  }
+}
+
+// ============================================================
+//  CARGAR DATOS PRINCIPALES
+// ============================================================
+async function cargarTodo() {
+  await Promise.all([
+    cargarBalance(),
+    cargarRondaActiva(),
+    cargarHistorial(),
+  ]);
+}
+
+async function cargarBalance() {
+  try {
+    const bal = await contratoCNKT.methods.balanceOf(userWallet).call();
+    document.getElementById('statCNKT').textContent = formatCNKT(bal) + ' CNKT+';
+  } catch(e) {}
+}
+
+async function cargarRondaActiva() {
+  try {
+    const roundId = await contratoVegas.methods.currentRoundId().call();
+    document.getElementById('statRonda').textContent = '#' + roundId;
+
+    if (roundId === '0' || roundId === 0) {
+      mostrarSinRonda(); return;
+    }
+
+    const ronda = await contratoVegas.methods.getRoundInfo(roundId).call();
+    rondaActual = ronda;
+
+    // Status: 0=ABIERTA, 1=CERRADA, 2=RESUELTA, 3=CANCELADA
+    if (ronda.status !== '0' && ronda.status !== 0) {
+      mostrarSinRonda(); return;
+    }
+
+    mostrarRonda(ronda, roundId);
+
+  } catch(e) {
+    mostrarSinRonda();
+  }
+}
+
+function mostrarSinRonda() {
+  document.getElementById('sinRonda').style.display = 'block';
+  document.getElementById('conRonda').style.display = 'none';
+  document.getElementById('statPool').textContent = '—';
+  document.getElementById('statTuEntrada').textContent = '—';
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+async function mostrarRonda(ronda, roundId) {
+  document.getElementById('sinRonda').style.display = 'none';
+  document.getElementById('conRonda').style.display = 'block';
+  document.getElementById('rondaId').textContent = 'Ronda #' + roundId;
+
+  // Activo
+  const assetName = ASSETS[parseInt(ronda.asset)];
+  document.getElementById('activoNombre').textContent = assetName;
+
+  // Precio apertura
+  const precioApertura = parseInt(ronda.priceAtOpen) / 1e8;
+  document.getElementById('precioApertura').textContent = 'Apertura: $' + precioApertura.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  // Precio actual via Chainlink
+  try {
+    const precioActual = await contratoVegas.methods.getPrice(parseInt(ronda.asset)).call();
+    const precioNum = parseInt(precioActual) / 1e8;
+    document.getElementById('precioActual').textContent = '$' + precioNum.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+    // Variación
+    const variacion = ((precioNum - precioApertura) / precioApertura * 100);
+    const varEl = document.getElementById('variacion');
+    varEl.textContent = (variacion >= 0 ? '+' : '') + variacion.toFixed(3) + '%';
+    varEl.className = 'card-value ' + (variacion >= 0 ? 'green' : 'red');
+  } catch(e) {}
+
+  // Pool
+  const totalSube = parseFloat(web3.utils.fromWei(ronda.totalSube.toString(), 'ether'));
+  const totalBaja = parseFloat(web3.utils.fromWei(ronda.totalBaja.toString(), 'ether'));
+  const totalPool = totalSube + totalBaja;
+
+  document.getElementById('poolSube').textContent = totalSube.toFixed(2) + ' CNKT+';
+  document.getElementById('poolBaja').textContent = totalBaja.toFixed(2) + ' CNKT+';
+  document.getElementById('statPool').textContent = totalPool.toFixed(2) + ' CNKT+';
+
+  const pctSube = totalPool > 0 ? (totalSube / totalPool * 100) : 50;
+  const pctBaja = totalPool > 0 ? (totalBaja / totalPool * 100) : 50;
+  document.getElementById('poolSubePct').textContent = pctSube.toFixed(1) + '%';
+  document.getElementById('poolBajaPct').textContent = pctBaja.toFixed(1) + '%';
+  document.getElementById('poolBarSube').style.width = pctSube + '%';
+  document.getElementById('poolBarBaja').style.width = pctBaja + '%';
+
+  // Verificar si el usuario ya apostó
+  try {
+    const yaBet = await contratoVegas.methods.hasBet(roundId, userWallet).call();
+    if (yaBet) {
+      document.getElementById('btnSube').disabled = true;
+      document.getElementById('btnBaja').disabled = true;
+      document.getElementById('statTuEntrada').textContent = '✓ Entrada registrada';
+      mostrarStatus('✓ Ya realizaste tu entrada en esta ronda', 'ok');
+    } else {
+      ocultarStatus();
+      document.getElementById('statTuEntrada').textContent = '—';
+    }
+  } catch(e) {}
+
+  // Timer
+  iniciarTimer(ronda);
+}
+
+function iniciarTimer(ronda) {
+  if (timerInterval) clearInterval(timerInterval);
+
+  const duracionTotal = parseInt(ronda.closeTime) - parseInt(ronda.openTime);
+
+  function actualizarTimer() {
+    const restante = tiempoRestante(ronda.closeTime);
+    const pct = Math.min(100, (restante / duracionTotal) * 100);
+
+    const timerBar = document.getElementById('timerBar');
+    const timerVal = document.getElementById('timerValue');
+    const timerSts = document.getElementById('timerStatus');
+
+    timerBar.style.width = pct + '%';
+    timerVal.textContent = formatTimer(restante);
+
+    if (restante <= 0) {
+      timerBar.classList.add('warning');
+      timerVal.classList.add('warning');
+      timerSts.textContent = '🔒 Entradas cerradas';
+      document.getElementById('btnSube').disabled = true;
+      document.getElementById('btnBaja').disabled = true;
+      clearInterval(timerInterval);
+    } else if (restante <= 120) {
+      timerBar.classList.add('warning');
+      timerVal.classList.add('warning');
+      timerSts.textContent = '⚠️ Cierre próximo';
+      habilitarBotones();
+    } else {
+      timerBar.classList.remove('warning');
+      timerVal.classList.remove('warning');
+      timerSts.textContent = '✅ Entradas abiertas';
+      habilitarBotones();
+    }
+  }
+
+  actualizarTimer();
+  timerInterval = setInterval(actualizarTimer, 1000);
+}
+
+function habilitarBotones() {
+  // Solo habilitar si el usuario no ha apostado
+  contratoVegas.methods.currentRoundId().call().then(rid => {
+    contratoVegas.methods.hasBet(rid, userWallet).call().then(yaBet => {
+      if (!yaBet) {
+        document.getElementById('btnSube').disabled = false;
+        document.getElementById('btnBaja').disabled = false;
+      }
+    }).catch(()=>{});
+  }).catch(()=>{});
+}
+
+// ============================================================
+//  CALCULAR PREMIO ESTIMADO
+// ============================================================
+function calcularEntrada() {
+  const monto = parseFloat(document.getElementById('inputEntrada').value) || 0;
+  const hintEl = document.getElementById('entradaHint');
+  const premioEl = document.getElementById('premioEst');
+
+  if (monto < 10) {
+    hintEl.style.color = 'var(--accent2)';
+    hintEl.textContent = '⚠ Mínimo 10 CNKT+';
+    premioEl.textContent = '—';
+    return;
+  }
+  if (monto > 500) {
+    hintEl.style.color = 'var(--accent2)';
+    hintEl.textContent = '⚠ Máximo 500 CNKT+';
+    premioEl.textContent = '—';
+    return;
+  }
+
+  hintEl.style.color = 'var(--muted)';
+  hintEl.textContent = 'Mín: 10 CNKT+ · Máx: 500 CNKT+';
+
+  // Estimación simple basada en pool actual
+  if (rondaActual) {
+    const pool = parseFloat(web3.utils.fromWei(rondaActual.totalPool.toString(), 'ether')) + monto;
+    const premio = (monto / pool) * pool * 0.95;
+    premioEl.textContent = premio.toFixed(2) + ' CNKT+';
+  } else {
+    premioEl.textContent = (monto * 0.95).toFixed(2) + '+';
+  }
+}
+
+// ============================================================
+//  APOSTAR
+// ============================================================
+async function apostar(direccion) {
+  const monto = parseFloat(document.getElementById('inputEntrada').value);
+  if (!monto || monto < 10 || monto > 500) {
+    showToast('Ingresa un monto válido (10–500 CNKT+)', 'err'); return;
+  }
+
+  const roundId = await contratoVegas.methods.currentRoundId().call();
+  const amountWei = web3.utils.toWei(monto.toString(), 'ether');
+  const dirNum = direccion === 'SUBE' ? 0 : 1;
+
+  try {
+    // Paso 1: Aprobar CNKT+ al contrato
+    mostrarStatus('<span class="spinner"></span>Paso 1/2: Aprobando CNKT+...', 'info');
+    document.getElementById('btnSube').disabled = true;
+    document.getElementById('btnBaja').disabled = true;
+
+    // Verificar allowance actual
+    const allowance = await contratoCNKT.methods.allowance(userWallet, CONFIG.CONTRATO_VEGAS).call();
+    if (BigInt(allowance) < BigInt(amountWei)) {
+      await contratoCNKT.methods.approve(CONFIG.CONTRATO_VEGAS, amountWei).send({ from: userWallet });
+    }
+
+    // Paso 2: Hacer la entrada
+    mostrarStatus('<span class="spinner"></span>Paso 2/2: Enviando entrada...', 'info');
+    await contratoVegas.methods.placeBet(roundId, dirNum, amountWei).send({ from: userWallet });
+
+    mostrarStatus('✓ Entrada de ' + monto + ' CNKT+ a ' + direccion + ' registrada con éxito', 'ok');
+    showToast('¡Entrada registrada! ' + (direccion === 'SUBE' ? '▲' : '▼') + ' ' + direccion, 'ok');
+    document.getElementById('statTuEntrada').textContent = monto + ' CNKT+ ' + (direccion === 'SUBE' ? '▲' : '▼');
+
+    // Recargar datos
+    setTimeout(cargarTodo, 3000);
+
+  } catch(e) {
+    mostrarStatus('✗ Error: ' + (e.message || e), 'err');
+    document.getElementById('btnSube').disabled = false;
+    document.getElementById('btnBaja').disabled = false;
+    showToast('Error al apostar', 'err');
+  }
+}
+
+// ============================================================
+//  ADMIN: ABRIR RONDA
+// ============================================================
+function selectAsset(idx, btn) {
+  selectedAsset = idx;
+  document.querySelectorAll('.asset-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+async function abrirRonda() {
+  const btn = document.getElementById('btnAbrirRonda');
+  btn.disabled = true;
+  btn.textContent = 'Abriendo...';
+  try {
+    await contratoVegas.methods.openRound(selectedAsset).send({ from: userWallet });
+    showToast('Ronda abierta para ' + ASSETS[selectedAsset] + ' ✓', 'ok');
+    setTimeout(cargarTodo, 3000);
+  } catch(e) {
+    showToast('Error: ' + (e.message || e), 'err');
+  }
+  btn.disabled = false;
+  btn.textContent = '▶ ABRIR RONDA';
+}
+
+// ============================================================
+//  ADMIN: RESOLVER RONDA
+// ============================================================
+async function resolverRonda() {
+  const roundId = await contratoVegas.methods.currentRoundId().call();
+  if (!roundId || roundId === '0') { showToast('No hay ronda activa', 'err'); return; }
+
+  const btn = document.getElementById('btnResolver');
+  btn.disabled = true;
+  btn.textContent = 'Resolviendo...';
+  try {
+    await contratoVegas.methods.resolveRound(roundId).send({ from: userWallet });
+    showToast('Ronda #' + roundId + ' resuelta ✓', 'ok');
+    setTimeout(cargarTodo, 3000);
+  } catch(e) {
+    showToast('Error: ' + (e.message || e), 'err');
+  }
+  btn.disabled = false;
+  btn.textContent = '✓ RESOLVER RONDA';
+}
+
+// ============================================================
+//  HISTORIAL (últimas rondas)
+// ============================================================
+async function cargarHistorial() {
+  try {
+    const roundId = parseInt(await contratoVegas.methods.currentRoundId().call());
+    if (roundId === 0) {
+      document.getElementById('historialTabla').innerHTML = '<div style="color:var(--muted);font-size:12px;text-align:center;padding:24px">Sin rondas aún...</div>';
+      return;
+    }
+
+    const promesas = [];
+    const inicio = Math.max(1, roundId - 9);
+    for (let i = roundId; i >= inicio; i--) {
+      promesas.push(contratoVegas.methods.getRoundInfo(i).call());
+    }
+
+    const rondas = await Promise.all(promesas);
+    const statusLabels = ['Abierta','Cerrada','Resuelta','Cancelada'];
+    const statusColors = ['var(--accent3)','var(--muted)','var(--accent)','var(--accent2)'];
+
+    const rows = rondas.map((r,i) => {
+      const id = roundId - i;
+      const asset = ASSETS[parseInt(r.asset)];
+      const status = parseInt(r.status);
+      const pApertura = (parseInt(r.priceAtOpen) / 1e8).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+      const pCierre = r.priceAtClose !== '0' ? (parseInt(r.priceAtClose) / 1e8).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
+      const pool = parseFloat(web3.utils.fromWei(r.totalPool.toString(), 'ether')).toFixed(2);
+      const resultado = status === 2 ? (parseInt(r.result) === 0 ? '<span class="badge sube">▲ SUBE</span>' : '<span class="badge baja">▼ BAJA</span>') : '—';
+
+      return `<tr>
+        <td style="color:var(--muted)">#${id}</td>
+        <td style="font-family:'Syne',sans-serif;font-weight:700;color:var(--accent)">${asset}</td>
+        <td>$${pApertura}</td>
+        <td>${pCierre !== '—' ? '$'+pCierre : '—'}</td>
+        <td>${pool} CNKT+</td>
+        <td>${resultado}</td>
+        <td style="color:${statusColors[status]}">${statusLabels[status]}</td>
+      </tr>`;
+    });
+
+    document.getElementById('historialTabla').innerHTML = `
+      <table>
+        <thead><tr>
+          <th>#</th><th>Activo</th><th>Apertura</th><th>Cierre</th><th>Pool</th><th>Resultado</th><th>Estado</th>
+        </tr></thead>
+        <tbody>${rows.join('')}</tbody>
+      </table>`;
+  } catch(e) {
+    document.getElementById('historialTabla').innerHTML = '<div style="color:var(--muted);font-size:12px;text-align:center;padding:24px">Error cargando historial</div>';
+  }
+}
+
+// Escuchar cambios de cuenta en MetaMask
+if (window.ethereum) {
+  window.ethereum.on('accountsChanged', () => location.reload());
+  window.ethereum.on('chainChanged', () => location.reload());
+}
+</script>
+</body>
+</html>
