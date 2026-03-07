@@ -713,6 +713,22 @@ function App() {
     setAdminLoading('');
   };
 
+  const cambiarEvoxWallet = async () => {
+    if(!newEvoxWallet||!newEvoxWallet.startsWith('0x')||newEvoxWallet.length!==42){
+      setEvoxWalletStatus({msg:'Dirección inválida',tipo:'err'}); return;
+    }
+    try {
+      setEvoxWalletStatus({msg:'Confirmando en MetaMask...',tipo:'info'});
+      const gasPrice = await web3.eth.getGasPrice();
+      const gasFast = (BigInt(gasPrice)*150n/100n<30000000000n?'30000000000':(BigInt(gasPrice)*150n/100n).toString());
+      await contrato.methods.setEvoxWallet(newEvoxWallet).send({from:wallet, gasPrice:gasFast});
+      setEvoxWalletStatus({msg:'✓ Wallet actualizada correctamente',tipo:'ok'});
+      setNewEvoxWallet('');
+    } catch(e) {
+      setEvoxWalletStatus({msg:'✗ '+(e.message||e),tipo:'err'});
+    }
+  };
+
   const cargarStats = async () => {
     if(!contrato||!web3) return;
     setStatsLoading(true);
@@ -879,6 +895,21 @@ function App() {
         <div className="admin-grid">
         <div className="admin-card"><div className="admin-title">Abrir Ronda</div><div className="asset-chips">{ASSETS.map((a,i)=><button key={a} className={`asset-chip ${selAsset===i?'sel':''}`} onClick={()=>setSelAsset(i)}>{a}</button>)}</div><button className="btn-admin btn-open" disabled={adminLoading==='abriendo'} onClick={abrirRonda}>{adminLoading==='abriendo'?'...':'▶ Abrir Ronda'}</button></div>
         <div className="admin-card"><div className="admin-title">Resolver Ronda</div><div style={{fontSize:11,color:'var(--muted)',marginBottom:12,lineHeight:1.8,fontFamily:'DM Mono,monospace'}}>Consulta Chainlink y distribuye fondos automáticamente.</div><button className="btn-admin btn-resolve" disabled={adminLoading==='resolviendo'} onClick={resolverRonda}>{adminLoading==='resolviendo'?'...':'✓ Resolver Ronda'}</button></div>
+        <div className="admin-card">
+          <div className="admin-title">Wallet de Comisiones EVOX</div>
+          <div style={{fontSize:11,color:'var(--muted)',marginBottom:10,fontFamily:'DM Mono,monospace',lineHeight:1.6}}>
+            Actual:<br/><span style={{color:'var(--gold)',fontSize:10,wordBreak:'break-all'}}>{CFG.EVOX_WALLET}</span>
+          </div>
+          <input
+            type="text"
+            placeholder="0x... nueva wallet"
+            value={newEvoxWallet}
+            onChange={e=>setNewEvoxWallet(e.target.value)}
+            style={{width:'100%',background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:10,padding:'10px 12px',color:'var(--text)',fontFamily:'DM Mono,monospace',fontSize:11,marginBottom:10,outline:'none'}}
+          />
+          {evoxWalletStatus&&<div style={{fontSize:11,marginBottom:8,color:evoxWalletStatus.tipo==='ok'?'var(--up)':evoxWalletStatus.tipo==='err'?'var(--dn)':'var(--gold)',fontFamily:'DM Mono,monospace'}}>{evoxWalletStatus.msg}</div>}
+          <button className="btn-admin btn-open" onClick={cambiarEvoxWallet}>💳 Cambiar Wallet</button>
+        </div>
       </div>
       </>
       }
