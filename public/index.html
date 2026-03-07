@@ -306,6 +306,7 @@ function CardLive({ronda,rid,wallet,soloLectura,web3,contrato,onBet}) {
   const [precio,setPrecio]=useState(null);
   const [secsLeft,setSecsLeft]=useState(600);
   const [yaBet,setYaBet]=useState(false);
+  const [miApuesta,setMiApuesta]=useState(null); // {direction, amount}
   useEffect(()=>{
     if(!ronda||!web3)return;
     const fp=async()=>{try{const p=await contrato.methods.getPrice(parseInt(ronda.asset)).call();setPrecio(parseInt(p)/1e8);}catch(e){}};
@@ -317,10 +318,22 @@ function CardLive({ronda,rid,wallet,soloLectura,web3,contrato,onBet}) {
   },[ronda,web3]);
   useEffect(()=>{
     if(!ronda||!web3||soloLectura||!wallet)return;
-    contrato.methods.hasBet(rid,wallet).call().then(b=>setYaBet(b)).catch(()=>{});
+    const fetchBet = async () => {
+      try {
+        const b = await contrato.methods.hasBet(rid,wallet).call();
+        setYaBet(b);
+        if(b){
+          const bets = await contrato.methods.getRoundBets(rid).call();
+          const mine = bets.find(x=>x.user.toLowerCase()===wallet.toLowerCase());
+          if(mine) setMiApuesta({direction:parseInt(mine.direction), amount:mine.amount});
+        }
+      } catch(e){}
+    };
+    fetchBet();
   },[ronda,wallet]);
-  // Entradas cerradas cuando queden menos de 2 min (120 seg)
-  const cerradas=secsLeft<=120, urgente=secsLeft<=120&&secsLeft>0;
+  // Entradas cerradas cuando queden menos de 2 min (120 seg), pero el reloj sigue hasta 0
+  const cerradas=secsLeft<=120;
+  const urgente=secsLeft<=120&&secsLeft>0;
   if(!ronda) return (
     <div className="card card-live" style={{minHeight:380,padding:0}}>
       <PentaUp/><div className="card-body">
@@ -342,7 +355,7 @@ function CardLive({ronda,rid,wallet,soloLectura,web3,contrato,onBet}) {
         <div className="card-tag-row">
           <div style={{display:'flex',alignItems:'center',gap:6}}><div className="tag-live-dot"/><span className="tag-txt" style={{color:'#7B5EFF'}}>LIVE</span></div>
           <div style={{display:'flex',alignItems:'center',gap:6}}>
-            <span style={{fontSize:12,fontFamily:'DM Mono,monospace',color:urgente?'var(--dn)':'var(--gold)',fontWeight:700}}>{cerradas?'00:00':fTime(secsLeft)}</span>
+            <span style={{fontSize:12,fontFamily:'DM Mono,monospace',color:urgente?'var(--dn)':'var(--gold)',fontWeight:700}}>{fTime(secsLeft)}</span>
             <span className="card-num-txt">#{rid}</span>
           </div>
         </div>
@@ -356,8 +369,51 @@ function CardLive({ronda,rid,wallet,soloLectura,web3,contrato,onBet}) {
         <div className="pool-bar"><div className="pool-bar-u" style={{width:pctUp+'%'}}/><div className="pool-bar-d" style={{width:(100-pctUp)+'%'}}/></div>
         <div className="pool-pcts"><span className="pool-pct-u">{pctUp.toFixed(0)}%</span><span className="pool-pct-d">{(100-pctUp).toFixed(0)}%</span></div>
         {cerradas&&<div className="banner-closed">🔒 ENTRADAS CERRADAS</div>}
-        {yaBet?(
-          <div className="entrado-badge">✓ Entrada registrada</div>
+        {yaBet&&miApuesta?(
+          <div style={{marginTop:'auto',paddingTop:8}}>
+            {/* Tu apuesta */}
+            <div style={{
+              padding:'10px 12px',borderRadius:10,marginBottom:6,
+              background:miApuesta.direction===0?'rgba(31,199,212,0.1)':'rgba(237,75,158,0.1)',
+              border:miApuesta.direction===0?'1px solid rgba(31,199,212,0.35)':'1px solid rgba(237,75,158,0.35)',
+              display:'flex',alignItems:'center',justifyContent:'space-between'
+            }}>
+              <div>
+                <div style={{fontSize:11,color:'var(--muted)',fontFamily:'DM Mono,monospace',letterSpacing:1}}>TU APUESTA</div>
+                <div style={{fontSize:15,fontWeight:800,color:miApuesta.direction===0?'var(--up)':'var(--dn)',letterSpacing:1}}>
+                  {miApuesta.direction===0?'▲ UP':'▼ DOWN'}
+                </div>
+              </div>
+              <div style={{textAlign:'right'}}>
+                <div style={{fontSize:11,color:'var(--muted)',fontFamily:'DM Mono,monospace',letterSpacing:1}}>MONTO</div>
+                <div style={{fontSize:13,fontWeight:700,fontFamily:'DM Mono,monospace',color:'var(--text)'}}>
+                  {web3?parseFloat(web3.utils.fromWei(miApuesta.amount.toString(),'ether')).toFixed(0):'-'} CNKT+
+                </div>
+              </div>
+            </div>
+            {/* Multiplicador en tiempo real */}
+            <div style={{
+              padding:'10px 12px',borderRadius:10,
+              background:'var(--gold-dim)',border:'1px solid rgba(255,215,0,0.25)',
+              display:'flex',alignItems:'center',justifyContent:'space-between'
+            }}>
+              <div style={{fontSize:11,color:'var(--muted)',fontFamily:'DM Mono,monospace',letterSpacing:1}}>SI GANAS RECIBES</div>
+              <div style={{fontSize:18,fontWeight:800,color:'var(--gold)',fontFamily:'DM Mono,monospace'}}>
+                {(()=>{
+                  try{
+                    const tP=parseFloat(web3.utils.fromWei(ronda.totalPool.toString(),'ether'));
+                    const mySide=miApuesta.direction===0?parseFloat(web3.utils.fromWei(ronda.totalSube.toString(),'ether')):parseFloat(web3.utils.fromWei(ronda.totalBaja.toString(),'ether'));
+                    const myAmt=parseFloat(web3.utils.fromWei(miApuesta.amount.toString(),'ether'));
+                    if(!tP||!mySide)return'—';
+                    const payout=(myAmt*(tP*0.95/mySide)).toFixed(2);
+                    return payout+' CNKT+';
+                  }catch(e){return'—';}
+                })()}
+              </div>
+            </div>
+          </div>
+        ):yaBet?(
+          <div className="entrado-badge">✓ Cargando tu apuesta...</div>
         ):(
           <div className="bet-btns">
             <button className="btn-up" disabled={cerradas||soloLectura||!wallet} onClick={()=>onBet('SUBE')}>Enter UP ▲</button>
@@ -470,7 +526,7 @@ function App() {
   const[precioCNKT,setPrecioCNKT]=useState(0.00142);const[timer,setTimer]=useState('--:--');const[timerUrgent,setTimerUrgent]=useState(false);
   const[modal,setModal]=useState(null);const[resultModal,setResultModal]=useState(null);
   const[toasts,setToasts]=useState([]);const[selAsset,setSelAsset]=useState(0);const[adminLoading,setAdminLoading]=useState('');
-  const prevLiveId=useRef(null);const prevWallet=useRef(null);
+  const prevLiveId=useRef(null);const prevWallet=useRef(null);const carouselRef=useRef(null);const liveCardRef=useRef(null);
 
   const addToast=useCallback((msg,tipo='ok')=>{const id=Date.now();setToasts(t=>[...t,{id,msg,tipo}]);setTimeout(()=>setToasts(t=>t.filter(x=>x.id!==id)),3500);},[]);
 
@@ -559,6 +615,17 @@ function App() {
 
   useEffect(()=>{prevWallet.current=wallet;},[wallet]);
 
+  // Centrar tarjeta LIVE al cargar
+  useEffect(()=>{
+    if(!liveCardRef.current||!carouselRef.current)return;
+    const track=carouselRef.current;
+    const card=liveCardRef.current;
+    const trackW=track.offsetWidth;
+    const cardLeft=card.offsetLeft;
+    const cardW=card.offsetWidth;
+    track.scrollLeft=cardLeft-(trackW/2)+(cardW/2);
+  },[rondas.liveId]);
+
   const conectarMM=async()=>{
     setConnErr('');if(!window.ethereum){setConnErr('MetaMask no detectado.');return;}
     try{
@@ -636,11 +703,11 @@ function App() {
     {showConn&&<><div style={{position:'fixed',inset:0,zIndex:199}} onClick={()=>setShowConn(false)}/><ConnDropdown onMM={conectarMM} onMovil={conectarMovil} onVer={soloVer} onDisconnect={desconectar} wallet={!soloLectura?wallet:null} error={connErr}/></>}
 
     <div className="carousel-section">
-      <div className="carousel-track">
+      <div className="carousel-track" ref={carouselRef}>
         <div className="carousel-padding"/>
         <CardExpired ronda={rondas.exp2} id={rondas.exp2Id} web3={web3}/>
         <CardExpired ronda={rondas.exp1} id={rondas.exp1Id} web3={web3}/>
-        <CardLive ronda={rondas.live} rid={rondas.liveId} wallet={!soloLectura?wallet:null} soloLectura={soloLectura} web3={web3} contrato={contrato} onBet={dir=>{if(soloLectura){addToast('Conecta tu wallet para apostar','info');setShowConn(true);return;}setModal({dir});}}/>
+        <div ref={liveCardRef} style={{flexShrink:0,scrollSnapAlign:"center"}}><CardLive ronda={rondas.live} rid={rondas.liveId} wallet={!soloLectura?wallet:null} soloLectura={soloLectura} web3={web3} contrato={contrato} onBet={dir=>{if(soloLectura){addToast('Conecta tu wallet para apostar','info');setShowConn(true);return;}setModal({dir});}}/></div>
         <CardNext rid={rondas.liveId?rondas.liveId+1:null}/>
         <div className="card card-later"><div style={{fontSize:28,opacity:0.4}}>🕐</div><div style={{fontSize:11,color:'var(--muted)',letterSpacing:1,textTransform:'uppercase'}}>Later</div><div style={{fontSize:13,fontWeight:700,fontFamily:'DM Mono,monospace',color:'var(--muted)'}}>~10 min</div></div>
         <div className="carousel-padding"/>
