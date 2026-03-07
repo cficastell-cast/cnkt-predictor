@@ -306,15 +306,26 @@ function CardLive({ronda,rid,wallet,soloLectura,web3,contrato,onBet}) {
   const [precio,setPrecio]=useState(null);
   const [secsLeft,setSecsLeft]=useState(600);
   const [yaBet,setYaBet]=useState(false);
-  const [miApuesta,setMiApuesta]=useState(null); // {direction, amount}
+  const [miApuesta,setMiApuesta]=useState(null);
+  const [totales,setTotales]=useState({sube:ronda?ronda.totalSube:'0',baja:ronda?ronda.totalBaja:'0',pool:ronda?ronda.totalPool:'0'});
+
   useEffect(()=>{
     if(!ronda||!web3)return;
+    // Precio
     const fp=async()=>{try{const p=await contrato.methods.getPrice(parseInt(ronda.asset)).call();setPrecio(parseInt(p)/1e8);}catch(e){}};
     fp(); const pi=setInterval(fp,15000);
-    // Contar hasta resolveTime (10 min completos)
+    // Timer
     const ti=setInterval(()=>setSecsLeft(tLeft(ronda.resolveTime)),1000);
     setSecsLeft(tLeft(ronda.resolveTime));
-    return()=>{clearInterval(pi);clearInterval(ti);};
+    // Totales en tiempo real (para multiplicadores)
+    const ft=async()=>{
+      try{
+        const r=await contrato.methods.getRoundInfo(rid).call();
+        setTotales({sube:r.totalSube,baja:r.totalBaja,pool:r.totalPool});
+      }catch(e){}
+    };
+    ft(); const pt=setInterval(ft,10000);
+    return()=>{clearInterval(pi);clearInterval(ti);clearInterval(pt);};
   },[ronda,web3]);
   useEffect(()=>{
     if(!ronda||!web3||soloLectura||!wallet)return;
@@ -343,11 +354,11 @@ function CardLive({ronda,rid,wallet,soloLectura,web3,contrato,onBet}) {
     </div>
   );
   const pA=parseInt(ronda.priceAtOpen)/1e8, delta=precio?(precio-pA)/pA*100:null;
-  const tSf=web3?parseFloat(web3.utils.fromWei(ronda.totalSube.toString(),'ether')):0;
-  const tBf=web3?parseFloat(web3.utils.fromWei(ronda.totalBaja.toString(),'ether')):0;
+  const tSf=web3?parseFloat(web3.utils.fromWei(totales.sube.toString(),'ether')):0;
+  const tBf=web3?parseFloat(web3.utils.fromWei(totales.baja.toString(),'ether')):0;
   const tPf=tSf+tBf, pctUp=tPf>0?(tSf/tPf*100):50;
-  const multUp=web3?calcMult(web3,ronda.totalPool,ronda.totalSube):'—';
-  const multDn=web3?calcMult(web3,ronda.totalPool,ronda.totalBaja):'—';
+  const multUp=web3?calcMult(web3,totales.pool,totales.sube):'—';
+  const multDn=web3?calcMult(web3,totales.pool,totales.baja):'—';
   return (
     <div className="card card-live" style={{minHeight:400,padding:0}}>
       <PentaUp mult={multUp}/>
@@ -401,8 +412,8 @@ function CardLive({ronda,rid,wallet,soloLectura,web3,contrato,onBet}) {
               <div style={{fontSize:18,fontWeight:800,color:'var(--gold)',fontFamily:'DM Mono,monospace'}}>
                 {(()=>{
                   try{
-                    const tP=parseFloat(web3.utils.fromWei(ronda.totalPool.toString(),'ether'));
-                    const mySide=miApuesta.direction===0?parseFloat(web3.utils.fromWei(ronda.totalSube.toString(),'ether')):parseFloat(web3.utils.fromWei(ronda.totalBaja.toString(),'ether'));
+                    const tP=parseFloat(web3.utils.fromWei(totales.pool.toString(),'ether'));
+                    const mySide=miApuesta.direction===0?parseFloat(web3.utils.fromWei(totales.sube.toString(),'ether')):parseFloat(web3.utils.fromWei(totales.baja.toString(),'ether'));
                     const myAmt=parseFloat(web3.utils.fromWei(miApuesta.amount.toString(),'ether'));
                     if(!tP||!mySide)return'—';
                     const payout=(myAmt*(tP*0.95/mySide)).toFixed(2);
