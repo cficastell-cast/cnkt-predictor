@@ -275,15 +275,16 @@ function formatTimer(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+Stri
 // ---- PRECIO CNKT+ ----
 async function fetchPrecioCNKT(){
   try{
-    const amount=(1000*1e18).toString();
-    const url=`https://aggregator-api.kyberswap.com/polygon/api/v1/routes?tokenIn=${CONFIG.CONTRATO_CNKT}&tokenOut=${CONFIG.USDC_POLYGON}&amountIn=${amount}&saveGas=0&gasInclude=0`;
-    const r=await fetch(url);
+    const r=await fetch('/precio-cnkt');
     const data=await r.json();
-    if(data?.data?.routeSummary?.amountOut){
-      precioCNKT=parseInt(data.data.routeSummary.amountOut)/1e6/1000;
+    if(data?.ok&&data?.precio){
+      precioCNKT=data.precio;
       const str='$'+precioCNKT.toFixed(6);
       document.getElementById('statPrecioCNKT').textContent=str;
       document.getElementById('refPrecio').textContent=str+' por CNKT+';
+    }else{
+      document.getElementById('statPrecioCNKT').textContent='~$'+precioCNKT.toFixed(6);
+      document.getElementById('refPrecio').textContent='~$'+precioCNKT.toFixed(6)+' por CNKT+';
     }
   }catch(e){
     document.getElementById('statPrecioCNKT').textContent='~$'+precioCNKT.toFixed(6);
