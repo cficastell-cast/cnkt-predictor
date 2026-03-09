@@ -213,7 +213,7 @@ const CFG = {
   CONTRATO_VEGAS: '0x3472d4f0F1dC4d87ecA0d4c306ED7e198b157cD7',
   CONTRATO_CNKT:  '0x87bdfbe98Ba55104701b2F2e999982a317905637',
   POLYGON_CHAIN:  '0x89',
-  RPC: 'https://polygon-mainnet.g.alchemy.com/v2/RjgxBguZAwG-m9PqEv8WN',
+  RPC: 'https://lb.drpc.live/polygon/Ar3L-kT8Bk9doi0RpPub-aqieN8HG-0R8Z7_tuZZzRRv',
 };
 const ASSETS = ['BTC','ETH','SOL','BNB','MATIC'];
 const ABI_V = [
@@ -572,13 +572,13 @@ function App() {
   const[precioCNKT,setPrecioCNKT]=useState(0.00142);const[timer,setTimer]=useState('--:--');const[timerUrgent,setTimerUrgent]=useState(false);
   const[modal,setModal]=useState(null);const[resultModal,setResultModal]=useState(null);const[showGuia,setShowGuia]=useState(false);const[stats,setStats]=useState(null);const[statsLoading,setStatsLoading]=useState(false);const[newEvoxWallet,setNewEvoxWallet]=useState('');const[evoxWalletStatus,setEvoxWalletStatus]=useState(null);
   const[toasts,setToasts]=useState([]);const[selAsset,setSelAsset]=useState(0);const[adminLoading,setAdminLoading]=useState('');
-  const prevLiveId=useRef(null);const prevWallet=useRef(null);const carouselRef=useRef(null);const liveCardRef=useRef(null);
+  const prevLiveId=useRef(null);const prevWallet=useRef(null);const carouselRef=useRef(null);const liveCardRef=useRef(null);const contratoRef=useRef(null);const web3Ref=useRef(null);
 
   const addToast=useCallback((msg,tipo='ok')=>{const id=Date.now();setToasts(t=>[...t,{id,msg,tipo}]);setTimeout(()=>setToasts(t=>t.filter(x=>x.id!==id)),3500);},[]);
 
   const initWeb3=useCallback(async(provider,addr,lectura=false)=>{
     const w3=new Web3(provider);const cv=new w3.eth.Contract(ABI_V,CFG.CONTRATO_VEGAS);const ce=new w3.eth.Contract(ABI_E,CFG.CONTRATO_CNKT);
-    window._web3=w3;setWeb3(w3);setContrato(cv);setContratoE(ce);setWallet(addr);setSoloLectura(lectura);
+    window._web3=w3;setWeb3(w3);setContrato(cv);setContratoE(ce);setWallet(addr);setSoloLectura(lectura);web3Ref.current=w3;contratoRef.current=cv;
     if(!lectura&&addr){const owner=await cv.methods.owner().call();setEsOwner(owner.toLowerCase()===addr.toLowerCase());}
     return{w3,cv,ce};
   },[]);
@@ -649,9 +649,9 @@ function App() {
     const w3=new Web3(new Web3.providers.HttpProvider(CFG.RPC));
     const cv=new w3.eth.Contract(ABI_V,CFG.CONTRATO_VEGAS);
     const ce=new w3.eth.Contract(ABI_E,CFG.CONTRATO_CNKT);
-    window._web3=w3;setWeb3(w3);setContrato(cv);setContratoE(ce);
+    window._web3=w3;setWeb3(w3);setContrato(cv);setContratoE(ce);web3Ref.current=w3;contratoRef.current=cv;
     fetchPrecioCNKT();cargarTodo(cv,w3,null);
-    const iv=setInterval(()=>cargarTodo(cv,w3,prevWallet.current),15000);
+    const iv=setInterval(()=>cargarTodo(contratoRef.current,web3Ref.current,prevWallet.current),15000);
     const pv=setInterval(fetchPrecioCNKT,60000);
     return()=>{clearInterval(iv);clearInterval(pv);};
   },[]);
@@ -701,7 +701,7 @@ function App() {
     const w3=new Web3(new Web3.providers.HttpProvider(CFG.RPC));
     const cv=new w3.eth.Contract(ABI_V,CFG.CONTRATO_VEGAS);
     const ce=new w3.eth.Contract(ABI_E,CFG.CONTRATO_CNKT);
-    window._web3=w3;setWeb3(w3);setContrato(cv);setContratoE(ce);
+    window._web3=w3;setWeb3(w3);setContrato(cv);setContratoE(ce);web3Ref.current=w3;contratoRef.current=cv;
     setWallet(null);setSoloLectura(true);setEsOwner(false);setShowConn(false);setConnErr('');
     prevWallet.current=null;addToast('Wallet desconectada','info');
   };
