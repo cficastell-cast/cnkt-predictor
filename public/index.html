@@ -213,7 +213,7 @@ const CFG = {
   CONTRATO_VEGAS: '0x3472d4f0F1dC4d87ecA0d4c306ED7e198b157cD7',
   CONTRATO_CNKT:  '0x87bdfbe98Ba55104701b2F2e999982a317905637',
   POLYGON_CHAIN:  '0x89',
-  RPC: '/rpc',
+  RPC: 'https://polygon-mainnet.g.alchemy.com/v2/RjgxBguZAwG-m9PqEv8WN',
 };
 const ASSETS = ['BTC','ETH','SOL','BNB','MATIC'];
 const ABI_V = [
@@ -617,7 +617,10 @@ function App() {
       if(rid>0)live=await cv.methods.getRoundInfo(rid).call();
       if(rid>1)exp1=await cv.methods.getRoundInfo(rid-1).call();
       if(rid>2)exp2=await cv.methods.getRoundInfo(rid-2).call();
-      setRondas({live:live&&(live.status==='0'||live.status===0)?live:null,liveId:rid,exp1,exp1Id:rid>1?rid-1:null,exp2,exp2Id:rid>2?rid-2:null});
+      // live puede ser status 0 (abierta) o calculando (status 0 pero pasó resolveTime)
+      // Solo ponemos null si ya fue resuelta (status 2) o cancelada (status 3)
+      const showLive=live&&(parseInt(live.status)===0);
+      setRondas({live:showLive?live:null,liveId:rid,exp1,exp1Id:rid>1?rid-1:null,exp2,exp2Id:rid>2?rid-2:null});
       if(live&&(live.status==='0'||live.status===0)){
         try{const p=await cv.methods.getPrice(parseInt(live.asset)).call();setPrecioBTC(parseInt(p)/1e8);}catch(e){}
         const s=tLeft(live.resolveTime);setTimer(fTime(s));setTimerUrgent(s<=120&&s>0);
@@ -655,7 +658,12 @@ function App() {
 
   useEffect(()=>{
     if(!rondas.live)return;
-    const t=setInterval(()=>{const s=tLeft(rondas.live.resolveTime);setTimer(fTime(s));setTimerUrgent(s<=120&&s>0);},1000);
+    const t=setInterval(()=>{
+      const s=tLeft(rondas.live.resolveTime);
+      setTimer(fTime(Math.max(0,s)));
+      setTimerUrgent(s<=120&&s>0);
+      if(s<=0)setTimer('00:00');
+    },1000);
     return()=>clearInterval(t);
   },[rondas.live]);
 
