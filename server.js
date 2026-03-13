@@ -4,6 +4,13 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+
+// Fix CSP — permite eval (requerido por web3.js y Babel)
+app.use((req, res, next) => {
+  res.setHeader("Content-Security-Policy", "default-src 'self' 'unsafe-eval' 'unsafe-inline' https: data: blob:; script-src 'self' 'unsafe-eval' 'unsafe-inline' https: blob:; connect-src *;");
+  next();
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Proxy precio CNKT+ via KyberSwap (evita CORS)
