@@ -31,10 +31,10 @@ app.get('/precio-cnkt', async (req, res) => {
   }
 });
 
-// Proxy RPC Alchemy (oculta API key)
+// Proxy RPC (oculta API key)
 app.post('/rpc', async (req, res) => {
   try {
-    const response = await fetch(process.env.ALCHEMY_URL, {
+    const response = await fetch(process.env.RPC_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(req.body)
