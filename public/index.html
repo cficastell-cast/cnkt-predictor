@@ -7,10 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.10.0/web3.min.js"></script>
-<script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.3/dist/dotlottie-wc.js" type="module"></script>
-<script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.3/dist/dotlottie-wc.js" type="module"></script>
 <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.3/dist/dotlottie-wc.js" type="module"></script>
 <style>
 :root{
@@ -92,7 +89,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .pool-pct-u{color:var(--up)}
 .pool-pct-d{color:var(--dn)}
 .banner-closed{background:rgba(237,75,158,0.1);border:1px solid rgba(237,75,158,0.35);border-radius:8px;padding:7px 10px;text-align:center;font-size:11px;font-weight:700;color:var(--dn);letter-spacing:1px;margin:4px 0;animation:pulse 1.5s infinite}
-.banner-calc{background:rgba(123,94,255,0.1);border:1px solid rgba(123,94,255,0.35);border-radius:8px;padding:10px;text-align:center;font-size:12px;font-weight:700;color:var(--live);letter-spacing:1px;margin:4px 0;animation:calcPulse 1s infinite}
 @keyframes calcPulse{0%{opacity:0.4;box-shadow:0 0 0px rgba(123,94,255,0)}50%{opacity:1;box-shadow:0 0 16px rgba(123,94,255,0.3)}100%{opacity:0.4;box-shadow:0 0 0px rgba(123,94,255,0)}}
 .bet-btns{display:flex;flex-direction:column;gap:7px;margin-top:auto;padding-top:8px}
 .btn-up{padding:11px;border-radius:12px;border:none;background:var(--up);color:#000;font-family:'Kanit',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all 0.3s;letter-spacing:0.5px}
@@ -191,776 +187,2124 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .toast-item.ok{border-color:rgba(31,199,212,0.4);color:var(--up)}
 .toast-item.err{border-color:rgba(237,75,158,0.4);color:var(--dn)}
 .toast-item.info{border-color:rgba(255,215,0,0.4);color:var(--gold)}
-.calculando-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 0;margin-top:auto}
-.calculando-txt{font-size:16px;font-weight:800;letter-spacing:3px;font-family:'DM Mono',monospace;animation:calcPulse 1.2s ease-in-out infinite}
-@keyframes calcPulse{0%,100%{color:rgba(31,199,212,0.3)}50%{color:rgba(31,199,212,1);text-shadow:0 0 20px rgba(31,199,212,0.8)}}
-.calculando-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 0;gap:4px}
-.calculando-txt{font-size:16px;font-weight:800;letter-spacing:3px;font-family:'DM Mono',monospace;animation:calcPulse 1.2s ease-in-out infinite}
-@keyframes calcPulse{0%,100%{color:#1FC7D4;opacity:1;text-shadow:0 0 10px rgba(31,199,212,0.8)}50%{color:#7B5EFF;opacity:0.6;text-shadow:0 0 20px rgba(123,94,255,0.6)}}
-.spinner{display:inline-block;width:11px;height:11px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:5px}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes calcPulse{0%,100%{opacity:1;color:#1FC7D4}50%{opacity:0.3;color:#7B5EFF}}
 .calculando-wrap{display:flex;flex-direction:column;align-items:center;padding:4px 0;gap:4px}
 .calculando-txt{font-size:14px;font-weight:800;letter-spacing:3px;color:var(--up);animation:calcPulse 1.2s ease-in-out infinite}
+@keyframes calcPulse{0%,100%{opacity:1;color:#1FC7D4}50%{opacity:0.3;color:#7B5EFF}}
+.spinner{display:inline-block;width:11px;height:11px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:5px}
+@keyframes spin{to{transform:rotate(360deg)}}
 @media(max-width:600px){.price-bar{display:none}.admin-grid{grid-template-columns:1fr}.carousel-padding{width:20px}}
 </style>
 </head>
 <body>
 <div id="root"></div>
-<script type="text/babel">
-const { useState, useEffect, useRef, useCallback } = React;
+<script>
+const {
+  useState,
+  useEffect,
+  useRef,
+  useCallback
+} = React;
 const CFG = {
   CONTRATO_VEGAS: '0x3472d4f0F1dC4d87ecA0d4c306ED7e198b157cD7',
-  CONTRATO_CNKT:  '0x87bdfbe98Ba55104701b2F2e999982a317905637',
-  POLYGON_CHAIN:  '0x89',
-  RPC: 'https://lb.drpc.live/polygon/Ar3L-kT8Bk9doi0RpPub-aqieN8HG-0R8Z7_tuZZzRRv',
+  CONTRATO_CNKT: '0x87bdfbe98Ba55104701b2F2e999982a317905637',
+  POLYGON_CHAIN: '0x89',
+  RPC: 'https://lb.drpc.live/polygon/Ar3L-kT8Bk9doi0RpPub-aqieN8HG-0R8Z7_tuZZzRRv'
 };
-const ASSETS = ['BTC','ETH','SOL','BNB','MATIC'];
-const ABI_V = [
-  {inputs:[{internalType:"uint8",name:"_asset",type:"uint8"}],name:"openRound",outputs:[],stateMutability:"nonpayable",type:"function"},
-  {inputs:[{internalType:"uint256",name:"_roundId",type:"uint256"},{internalType:"uint8",name:"_direction",type:"uint8"},{internalType:"uint256",name:"_amount",type:"uint256"}],name:"placeBet",outputs:[],stateMutability:"nonpayable",type:"function"},
-  {inputs:[{internalType:"address",name:"_wallet",type:"address"}],name:"setEvoxWallet",outputs:[],stateMutability:"nonpayable",type:"function"},
-  {inputs:[{internalType:"uint256",name:"_roundId",type:"uint256"}],name:"resolveRound",outputs:[],stateMutability:"nonpayable",type:"function"},
-  {inputs:[],name:"currentRoundId",outputs:[{internalType:"uint256",name:"",type:"uint256"}],stateMutability:"view",type:"function"},
-  {inputs:[{internalType:"uint256",name:"_roundId",type:"uint256"}],name:"getRoundInfo",outputs:[{components:[{internalType:"uint256",name:"id",type:"uint256"},{internalType:"uint8",name:"asset",type:"uint8"},{internalType:"uint8",name:"status",type:"uint8"},{internalType:"uint256",name:"openTime",type:"uint256"},{internalType:"uint256",name:"closeTime",type:"uint256"},{internalType:"uint256",name:"resolveTime",type:"uint256"},{internalType:"int256",name:"priceAtOpen",type:"int256"},{internalType:"int256",name:"priceAtClose",type:"int256"},{internalType:"uint256",name:"totalSube",type:"uint256"},{internalType:"uint256",name:"totalBaja",type:"uint256"},{internalType:"uint256",name:"totalPool",type:"uint256"},{internalType:"uint8",name:"result",type:"uint8"}],internalType:"struct ProyectoVegas.Round",name:"",type:"tuple"}],stateMutability:"view",type:"function"},
-  {inputs:[{internalType:"uint256",name:"_roundId",type:"uint256"},{internalType:"address",name:"",type:"address"}],name:"hasBet",outputs:[{internalType:"bool",name:"",type:"bool"}],stateMutability:"view",type:"function"},
-  {inputs:[{internalType:"uint256",name:"_roundId",type:"uint256"}],name:"getRoundBets",outputs:[{components:[{internalType:"address",name:"user",type:"address"},{internalType:"uint256",name:"amount",type:"uint256"},{internalType:"uint8",name:"direction",type:"uint8"}],internalType:"struct ProyectoVegas.Bet[]",name:"",type:"tuple[]"}],stateMutability:"view",type:"function"},
-  {inputs:[],name:"owner",outputs:[{internalType:"address",name:"",type:"address"}],stateMutability:"view",type:"function"},
-  {inputs:[{internalType:"uint8",name:"_asset",type:"uint8"}],name:"getPrice",outputs:[{internalType:"int256",name:"",type:"int256"}],stateMutability:"view",type:"function"},
-];
-const ABI_E = [
-  {inputs:[{internalType:"address",name:"spender",type:"address"},{internalType:"uint256",name:"amount",type:"uint256"}],name:"approve",outputs:[{internalType:"bool",name:"",type:"bool"}],stateMutability:"nonpayable",type:"function"},
-  {inputs:[{internalType:"address",name:"account",type:"address"}],name:"balanceOf",outputs:[{internalType:"uint256",name:"",type:"uint256"}],stateMutability:"view",type:"function"},
-  {inputs:[{internalType:"address",name:"owner",type:"address"},{internalType:"address",name:"spender",type:"address"}],name:"allowance",outputs:[{internalType:"uint256",name:"",type:"uint256"}],stateMutability:"view",type:"function"},
-];
-const fUSD = v => '$' + parseFloat(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-const tLeft = ct => Math.max(0, parseInt(ct) - Math.floor(Date.now()/1000));
-const fTime = s => String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
-const calcMult = (web3,total,side) => {
-  try { const t=parseFloat(web3.utils.fromWei(total.toString(),'ether')); const s=parseFloat(web3.utils.fromWei(side.toString(),'ether')); if(!t||!s)return'—'; return(t*0.95/s).toFixed(2)+'x'; } catch(e){return'—';}
+const ASSETS = ['BTC', 'ETH', 'SOL', 'BNB', 'MATIC'];
+const ABI_V = [{
+  inputs: [{
+    internalType: "uint8",
+    name: "_asset",
+    type: "uint8"
+  }],
+  name: "openRound",
+  outputs: [],
+  stateMutability: "nonpayable",
+  type: "function"
+}, {
+  inputs: [{
+    internalType: "uint256",
+    name: "_roundId",
+    type: "uint256"
+  }, {
+    internalType: "uint8",
+    name: "_direction",
+    type: "uint8"
+  }, {
+    internalType: "uint256",
+    name: "_amount",
+    type: "uint256"
+  }],
+  name: "placeBet",
+  outputs: [],
+  stateMutability: "nonpayable",
+  type: "function"
+}, {
+  inputs: [{
+    internalType: "address",
+    name: "_wallet",
+    type: "address"
+  }],
+  name: "setEvoxWallet",
+  outputs: [],
+  stateMutability: "nonpayable",
+  type: "function"
+}, {
+  inputs: [{
+    internalType: "uint256",
+    name: "_roundId",
+    type: "uint256"
+  }],
+  name: "resolveRound",
+  outputs: [],
+  stateMutability: "nonpayable",
+  type: "function"
+}, {
+  inputs: [],
+  name: "currentRoundId",
+  outputs: [{
+    internalType: "uint256",
+    name: "",
+    type: "uint256"
+  }],
+  stateMutability: "view",
+  type: "function"
+}, {
+  inputs: [{
+    internalType: "uint256",
+    name: "_roundId",
+    type: "uint256"
+  }],
+  name: "getRoundInfo",
+  outputs: [{
+    components: [{
+      internalType: "uint256",
+      name: "id",
+      type: "uint256"
+    }, {
+      internalType: "uint8",
+      name: "asset",
+      type: "uint8"
+    }, {
+      internalType: "uint8",
+      name: "status",
+      type: "uint8"
+    }, {
+      internalType: "uint256",
+      name: "openTime",
+      type: "uint256"
+    }, {
+      internalType: "uint256",
+      name: "closeTime",
+      type: "uint256"
+    }, {
+      internalType: "uint256",
+      name: "resolveTime",
+      type: "uint256"
+    }, {
+      internalType: "int256",
+      name: "priceAtOpen",
+      type: "int256"
+    }, {
+      internalType: "int256",
+      name: "priceAtClose",
+      type: "int256"
+    }, {
+      internalType: "uint256",
+      name: "totalSube",
+      type: "uint256"
+    }, {
+      internalType: "uint256",
+      name: "totalBaja",
+      type: "uint256"
+    }, {
+      internalType: "uint256",
+      name: "totalPool",
+      type: "uint256"
+    }, {
+      internalType: "uint8",
+      name: "result",
+      type: "uint8"
+    }],
+    internalType: "struct ProyectoVegas.Round",
+    name: "",
+    type: "tuple"
+  }],
+  stateMutability: "view",
+  type: "function"
+}, {
+  inputs: [{
+    internalType: "uint256",
+    name: "_roundId",
+    type: "uint256"
+  }, {
+    internalType: "address",
+    name: "",
+    type: "address"
+  }],
+  name: "hasBet",
+  outputs: [{
+    internalType: "bool",
+    name: "",
+    type: "bool"
+  }],
+  stateMutability: "view",
+  type: "function"
+}, {
+  inputs: [{
+    internalType: "uint256",
+    name: "_roundId",
+    type: "uint256"
+  }],
+  name: "getRoundBets",
+  outputs: [{
+    components: [{
+      internalType: "address",
+      name: "user",
+      type: "address"
+    }, {
+      internalType: "uint256",
+      name: "amount",
+      type: "uint256"
+    }, {
+      internalType: "uint8",
+      name: "direction",
+      type: "uint8"
+    }],
+    internalType: "struct ProyectoVegas.Bet[]",
+    name: "",
+    type: "tuple[]"
+  }],
+  stateMutability: "view",
+  type: "function"
+}, {
+  inputs: [],
+  name: "owner",
+  outputs: [{
+    internalType: "address",
+    name: "",
+    type: "address"
+  }],
+  stateMutability: "view",
+  type: "function"
+}, {
+  inputs: [{
+    internalType: "uint8",
+    name: "_asset",
+    type: "uint8"
+  }],
+  name: "getPrice",
+  outputs: [{
+    internalType: "int256",
+    name: "",
+    type: "int256"
+  }],
+  stateMutability: "view",
+  type: "function"
+}];
+const ABI_E = [{
+  inputs: [{
+    internalType: "address",
+    name: "spender",
+    type: "address"
+  }, {
+    internalType: "uint256",
+    name: "amount",
+    type: "uint256"
+  }],
+  name: "approve",
+  outputs: [{
+    internalType: "bool",
+    name: "",
+    type: "bool"
+  }],
+  stateMutability: "nonpayable",
+  type: "function"
+}, {
+  inputs: [{
+    internalType: "address",
+    name: "account",
+    type: "address"
+  }],
+  name: "balanceOf",
+  outputs: [{
+    internalType: "uint256",
+    name: "",
+    type: "uint256"
+  }],
+  stateMutability: "view",
+  type: "function"
+}, {
+  inputs: [{
+    internalType: "address",
+    name: "owner",
+    type: "address"
+  }, {
+    internalType: "address",
+    name: "spender",
+    type: "address"
+  }],
+  name: "allowance",
+  outputs: [{
+    internalType: "uint256",
+    name: "",
+    type: "uint256"
+  }],
+  stateMutability: "view",
+  type: "function"
+}];
+const fUSD = v => '$' + parseFloat(v).toLocaleString('en-US', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2
+});
+const tLeft = ct => Math.max(0, parseInt(ct) - Math.floor(Date.now() / 1000));
+const fTime = s => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+const calcMult = (web3, total, side) => {
+  try {
+    const t = parseFloat(web3.utils.fromWei(total.toString(), 'ether'));
+    const s = parseFloat(web3.utils.fromWei(side.toString(), 'ether'));
+    if (!t || !s) return '—';
+    return (t * 0.95 / s).toFixed(2) + 'x';
+  } catch (e) {
+    return '—';
+  }
 };
-
 function Confetti() {
-  const pcs = Array.from({length:55},(_,i)=>({id:i,left:Math.random()*100,delay:Math.random()*1.8,dur:2+Math.random()*2,color:['#FFD700','#1FC7D4','#ED4B9E','#7B5EFF','#00E5A0','#fff'][Math.floor(Math.random()*6)],size:5+Math.random()*9,round:Math.random()>0.5}));
-  return <div className="confetti-wrap">{pcs.map(p=><div key={p.id} className="cp" style={{left:p.left+'%',width:p.size,height:p.size,background:p.color,animationDuration:p.dur+'s',animationDelay:p.delay+'s',borderRadius:p.round?'50%':'2px'}}/>)}</div>;
+  const pcs = Array.from({
+    length: 55
+  }, (_, i) => ({
+    id: i,
+    left: Math.random() * 100,
+    delay: Math.random() * 1.8,
+    dur: 2 + Math.random() * 2,
+    color: ['#FFD700', '#1FC7D4', '#ED4B9E', '#7B5EFF', '#00E5A0', '#fff'][Math.floor(Math.random() * 6)],
+    size: 5 + Math.random() * 9,
+    round: Math.random() > 0.5
+  }));
+  return /*#__PURE__*/React.createElement("div", {
+    className: "confetti-wrap"
+  }, pcs.map(p => /*#__PURE__*/React.createElement("div", {
+    key: p.id,
+    className: "cp",
+    style: {
+      left: p.left + '%',
+      width: p.size,
+      height: p.size,
+      background: p.color,
+      animationDuration: p.dur + 's',
+      animationDelay: p.delay + 's',
+      borderRadius: p.round ? '50%' : '2px'
+    }
+  })));
 }
-
-function ResultModal({tipo,ganancia,web3,onClose}) {
-  const isWin=tipo==='win', isCancel=tipo==='cancel';
-  const gFmt=web3&&ganancia?parseFloat(web3.utils.fromWei(ganancia.toString(),'ether')).toFixed(2):null;
-  return <>
-    {isWin&&<Confetti/>}
-    <div className="result-bg" onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div className={`result-box ${tipo}`}>
-        <span className="result-emoji">{isWin?'🎉':isCancel?'↩️':'😔'}</span>
-        <div className={`result-title ${tipo}`}>{isWin?'¡GANASTE!':isCancel?'RONDA CANCELADA':'MEJOR SUERTE'}</div>
-        <div className="result-sub">{isWin?'Los CNKT+ ya fueron enviados a tu wallet.':isCancel?'No hubo apuestas en ambos lados.\nTus fondos fueron devueltos automáticamente.':'Esta vez no fue — el mercado decidió diferente.\n¡La próxima ronda es tuya!'}</div>
-        {isWin&&gFmt&&<><div className="result-amount">+{gFmt}</div><div className="result-lbl">CNKT+ RECIBIDOS</div></>}
-        <button className="result-btn" onClick={onClose}>{isWin?'Seguir jugando 🚀':isCancel?'Entendido':'Intentar de nuevo'}</button>
-      </div>
-    </div>
-  </>;
+function ResultModal(_ref) {
+  let {
+    tipo,
+    ganancia,
+    web3,
+    onClose
+  } = _ref;
+  const isWin = tipo === 'win',
+    isCancel = tipo === 'cancel';
+  const gFmt = web3 && ganancia ? parseFloat(web3.utils.fromWei(ganancia.toString(), 'ether')).toFixed(2) : null;
+  return /*#__PURE__*/React.createElement(React.Fragment, null, isWin && /*#__PURE__*/React.createElement(Confetti, null), /*#__PURE__*/React.createElement("div", {
+    className: "result-bg",
+    onClick: e => e.target === e.currentTarget && onClose()
+  }, /*#__PURE__*/React.createElement("div", {
+    className: `result-box ${tipo}`
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "result-emoji"
+  }, isWin ? '🎉' : isCancel ? '↩️' : '😔'), /*#__PURE__*/React.createElement("div", {
+    className: `result-title ${tipo}`
+  }, isWin ? '¡GANASTE!' : isCancel ? 'RONDA CANCELADA' : 'MEJOR SUERTE'), /*#__PURE__*/React.createElement("div", {
+    className: "result-sub"
+  }, isWin ? 'Los CNKT+ ya fueron enviados a tu wallet.' : isCancel ? 'No hubo apuestas en ambos lados.\nTus fondos fueron devueltos automáticamente.' : 'Esta vez no fue — el mercado decidió diferente.\n¡La próxima ronda es tuya!'), isWin && gFmt && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "result-amount"
+  }, "+", gFmt), /*#__PURE__*/React.createElement("div", {
+    className: "result-lbl"
+  }, "CNKT+ RECIBIDOS")), /*#__PURE__*/React.createElement("button", {
+    className: "result-btn",
+    onClick: onClose
+  }, isWin ? 'Seguir jugando 🚀' : isCancel ? 'Entendido' : 'Intentar de nuevo'))));
 }
-
-function PentaUp({mult,winner,loser}) {
-  return <div className={`penta-up ${winner?'winner':loser?'loser':''}`}><div className="penta-dir up">UP</div><div className="penta-mult up">{mult||'—'} Payout</div></div>;
+function PentaUp(_ref2) {
+  let {
+    mult,
+    winner,
+    loser
+  } = _ref2;
+  return /*#__PURE__*/React.createElement("div", {
+    className: `penta-up ${winner ? 'winner' : loser ? 'loser' : ''}`
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "penta-dir up"
+  }, "UP"), /*#__PURE__*/React.createElement("div", {
+    className: "penta-mult up"
+  }, mult || '—', " Payout"));
 }
-function PentaDn({mult,winner,loser}) {
-  return <div className={`penta-dn ${winner?'winner':loser?'loser':''}`}><div className="penta-dir dn">DOWN</div><div className="penta-mult dn">{mult||'—'} Payout</div></div>;
+function PentaDn(_ref3) {
+  let {
+    mult,
+    winner,
+    loser
+  } = _ref3;
+  return /*#__PURE__*/React.createElement("div", {
+    className: `penta-dn ${winner ? 'winner' : loser ? 'loser' : ''}`
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "penta-dir dn"
+  }, "DOWN"), /*#__PURE__*/React.createElement("div", {
+    className: "penta-mult dn"
+  }, mult || '—', " Payout"));
 }
-
-function CardExpired({ronda,id,web3}) {
-  if(!ronda) return (
-    <div className="card card-exp" style={{minHeight:320,padding:0}}>
-      <PentaUp/><div className="card-body"><div className="card-tag-row"><span className="tag-txt">⊘ EXPIRADA</span><span className="card-num-txt">#—</span></div><div className="no-round" style={{minHeight:140}}><div style={{fontSize:22,opacity:0.3}}>—</div></div></div><PentaDn/>
-    </div>
-  );
-  const st=parseInt(ronda.status),isCancelled=st===3,isResolved=st===2;
-  // Si sigue ABIERTA pero ya pasó el tiempo — está calculando
-  const isCalculando=st===0&&Math.floor(Date.now()/1000)>parseInt(ronda.resolveTime);
-  if(isCalculando) return (
-    <div className="card card-exp" style={{minHeight:320,padding:0,border:'1px solid rgba(31,199,212,0.3)'}}>
-      <PentaUp/><div className="card-body">
-        <div className="card-tag-row"><span className="tag-txt" style={{color:'var(--up)'}}>⏳ CALCULANDO</span><span className="card-num-txt">#{id}</span></div>
-        <div className="calculando-wrap" style={{flex:1,justifyContent:'center'}}>
-          <div dangerouslySetInnerHTML={{__html:'<dotlottie-wc src="https://lottie.host/1b3592b4-cf02-40e1-950a-fe9fed6fb3cc/YRVEvH3BMD.lottie" style="width:110px;height:110px" autoplay loop></dotlottie-wc>'}}/>
-          <div className="calculando-txt">CALCULANDO...</div>
-        </div>
-      </div><PentaDn/>
-    </div>
-  );
-  const pA=parseInt(ronda.priceAtOpen)/1e8;
-  const pC=ronda.priceAtClose!=='0'?parseInt(ronda.priceAtClose)/1e8:null;
-  const upWon=isResolved&&parseInt(ronda.result)===0,dnWon=isResolved&&parseInt(ronda.result)===1;
-  const delta=pA&&pC?(pC-pA):null;
-  return (
-    <div className="card card-exp" style={{minHeight:320,padding:0}}>
-      <PentaUp winner={upWon} loser={isResolved&&dnWon}/>
-      <div className="card-body">
-        <div className="card-tag-row">
-          <span className="tag-txt" style={{color:isCancelled?'var(--dn)':isResolved?(upWon?'var(--up)':'var(--dn)'):'var(--muted)'}}>{isCancelled?'⊗ CANCELADA':isResolved?'✓ RESUELTA':'⊘ EXPIRADA'}</span>
-          <span className="card-num-txt">#{id}</span>
-        </div>
-        {isCancelled?(
-          <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:8,padding:'16px 0'}}>
-            <div style={{fontSize:30}}>↩️</div>
-            <div style={{textAlign:'center',padding:'10px 12px',borderRadius:10,background:'rgba(237,75,158,0.08)',border:'1px solid rgba(237,75,158,0.25)',color:'var(--dn)',fontSize:13,fontWeight:800,letterSpacing:1,lineHeight:1.6,width:'100%'}}>
-              RONDA CANCELADA<br/><span style={{fontSize:10,fontWeight:400,color:'var(--muted)',letterSpacing:0}}>Fondos devueltos a tu wallet</span>
-            </div>
-          </div>
-        ):(
-          <>
-            <div className="price-center">
-              <div className="price-label-sm">Closed Price</div>
-              <div className="price-main" style={{fontSize:18,color:upWon?'var(--up)':dnWon?'var(--dn)':'var(--text)'}}>{pC?fUSD(pC):'—'}</div>
-              {delta!==null&&<div className={`price-delta ${delta>=0?'up':'dn'}`}>{delta>=0?'▲':'▼'} ${Math.abs(delta).toFixed(2)}</div>}
-            </div>
-            <div className="info-row"><span className="info-lbl">Locked</span><span className="info-val">{fUSD(pA)}</span></div>
-            {isResolved&&(
-              <div style={{textAlign:'center',padding:'10px 8px',borderRadius:10,background:upWon?'rgba(31,199,212,0.12)':'rgba(237,75,158,0.12)',border:upWon?'1px solid rgba(31,199,212,0.35)':'1px solid rgba(237,75,158,0.35)',fontSize:15,fontWeight:800,color:upWon?'var(--up)':'var(--dn)',letterSpacing:2,marginTop:4}}>
-                {upWon?'▲ UP GANÓ':'▼ DOWN GANÓ'}
-              </div>
-            )}
-            {!isResolved&&<div style={{textAlign:'center',fontSize:11,color:'var(--muted)',marginTop:4,fontFamily:'DM Mono,monospace'}}>Sin resolver</div>}
-          </>
-        )}
-      </div>
-      <PentaDn winner={dnWon} loser={isResolved&&upWon}/>
-    </div>
-  );
+function CardExpired(_ref4) {
+  let {
+    ronda,
+    id,
+    web3
+  } = _ref4;
+  if (!ronda) return /*#__PURE__*/React.createElement("div", {
+    className: "card card-exp",
+    style: {
+      minHeight: 320,
+      padding: 0
+    }
+  }, /*#__PURE__*/React.createElement(PentaUp, null), /*#__PURE__*/React.createElement("div", {
+    className: "card-body"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card-tag-row"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "tag-txt"
+  }, "\u2298 EXPIRADA"), /*#__PURE__*/React.createElement("span", {
+    className: "card-num-txt"
+  }, "#\u2014")), /*#__PURE__*/React.createElement("div", {
+    className: "no-round",
+    style: {
+      minHeight: 140
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 22,
+      opacity: 0.3
+    }
+  }, "\u2014"))), /*#__PURE__*/React.createElement(PentaDn, null));
+  const st = parseInt(ronda.status),
+    isCancelled = st === 3,
+    isResolved = st === 2;
+  const isCalculando = st === 0 && Math.floor(Date.now() / 1000) > parseInt(ronda.resolveTime);
+  if (isCalculando) return /*#__PURE__*/React.createElement("div", {
+    className: "card card-exp",
+    style: {
+      minHeight: 320,
+      padding: 0,
+      border: '1px solid rgba(31,199,212,0.3)'
+    }
+  }, /*#__PURE__*/React.createElement(PentaUp, null), /*#__PURE__*/React.createElement("div", {
+    className: "card-body"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card-tag-row"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "tag-txt",
+    style: {
+      color: 'var(--up)'
+    }
+  }, "\u23F3 CALCULANDO"), /*#__PURE__*/React.createElement("span", {
+    className: "card-num-txt"
+  }, "#", id)), /*#__PURE__*/React.createElement("div", {
+    className: "calculando-wrap",
+    style: {
+      flex: 1,
+      justifyContent: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    dangerouslySetInnerHTML: {
+      __html: '<dotlottie-wc src="https://lottie.host/1b3592b4-cf02-40e1-950a-fe9fed6fb3cc/YRVEvH3BMD.lottie" style="width:110px;height:110px" autoplay loop></dotlottie-wc>'
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "calculando-txt"
+  }, "CALCULANDO..."))), /*#__PURE__*/React.createElement(PentaDn, null));
+  const pA = parseInt(ronda.priceAtOpen) / 1e8;
+  const pC = ronda.priceAtClose !== '0' ? parseInt(ronda.priceAtClose) / 1e8 : null;
+  const upWon = isResolved && parseInt(ronda.result) === 0,
+    dnWon = isResolved && parseInt(ronda.result) === 1;
+  const delta = pA && pC ? pC - pA : null;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "card card-exp",
+    style: {
+      minHeight: 320,
+      padding: 0
+    }
+  }, /*#__PURE__*/React.createElement(PentaUp, {
+    winner: upWon,
+    loser: isResolved && dnWon
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "card-body"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card-tag-row"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "tag-txt",
+    style: {
+      color: isCancelled ? 'var(--dn)' : isResolved ? upWon ? 'var(--up)' : 'var(--dn)' : 'var(--muted)'
+    }
+  }, isCancelled ? '⊗ CANCELADA' : isResolved ? '✓ RESUELTA' : '⊘ EXPIRADA'), /*#__PURE__*/React.createElement("span", {
+    className: "card-num-txt"
+  }, "#", id)), isCancelled ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      padding: '16px 0'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 30
+    }
+  }, "\u21A9\uFE0F"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: 'center',
+      padding: '10px 12px',
+      borderRadius: 10,
+      background: 'rgba(237,75,158,0.08)',
+      border: '1px solid rgba(237,75,158,0.25)',
+      color: 'var(--dn)',
+      fontSize: 13,
+      fontWeight: 800,
+      letterSpacing: 1,
+      lineHeight: 1.6,
+      width: '100%'
+    }
+  }, "RONDA CANCELADA", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 10,
+      fontWeight: 400,
+      color: 'var(--muted)',
+      letterSpacing: 0
+    }
+  }, "Fondos devueltos a tu wallet"))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "price-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "price-label-sm"
+  }, "Closed Price"), /*#__PURE__*/React.createElement("div", {
+    className: "price-main",
+    style: {
+      fontSize: 18,
+      color: upWon ? 'var(--up)' : dnWon ? 'var(--dn)' : 'var(--text)'
+    }
+  }, pC ? fUSD(pC) : '—'), delta !== null && /*#__PURE__*/React.createElement("div", {
+    className: `price-delta ${delta >= 0 ? 'up' : 'dn'}`
+  }, delta >= 0 ? '▲' : '▼', " $", Math.abs(delta).toFixed(2))), /*#__PURE__*/React.createElement("div", {
+    className: "info-row"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "info-lbl"
+  }, "Locked"), /*#__PURE__*/React.createElement("span", {
+    className: "info-val"
+  }, fUSD(pA))), isResolved && /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: 'center',
+      padding: '10px 8px',
+      borderRadius: 10,
+      background: upWon ? 'rgba(31,199,212,0.12)' : 'rgba(237,75,158,0.12)',
+      border: upWon ? '1px solid rgba(31,199,212,0.35)' : '1px solid rgba(237,75,158,0.35)',
+      fontSize: 15,
+      fontWeight: 800,
+      color: upWon ? 'var(--up)' : 'var(--dn)',
+      letterSpacing: 2,
+      marginTop: 4
+    }
+  }, upWon ? '▲ UP GANÓ' : '▼ DOWN GANÓ'), !isResolved && /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: 'center',
+      fontSize: 11,
+      color: 'var(--muted)',
+      marginTop: 4,
+      fontFamily: 'DM Mono,monospace'
+    }
+  }, "Sin resolver"))), /*#__PURE__*/React.createElement(PentaDn, {
+    winner: dnWon,
+    loser: isResolved && upWon
+  }));
 }
-
-function CardLive({ronda,rid,wallet,soloLectura,web3,contrato,onBet}) {
-  const [precio,setPrecio]=useState(null);
-  const [secsLeft,setSecsLeft]=useState(600);
-  const [yaBet,setYaBet]=useState(false);
-  const [miApuesta,setMiApuesta]=useState(null);
-  const [totales,setTotales]=useState({sube:ronda?ronda.totalSube:'0',baja:ronda?ronda.totalBaja:'0',pool:ronda?ronda.totalPool:'0'});
-
-  useEffect(()=>{
-    if(!ronda||!web3)return;
-    // Precio
-    const fp=async()=>{try{const p=await contrato.methods.getPrice(parseInt(ronda.asset)).call();setPrecio(parseInt(p)/1e8);}catch(e){}};
-    fp(); const pi=setInterval(fp,15000);
-    // Timer
-    const ti=setInterval(()=>setSecsLeft(tLeft(ronda.resolveTime)),1000);
-    setSecsLeft(tLeft(ronda.resolveTime));
-    // Totales en tiempo real (para multiplicadores)
-    const ft=async()=>{
-      try{
-        const r=await contrato.methods.getRoundInfo(rid).call();
-        setTotales({sube:r.totalSube,baja:r.totalBaja,pool:r.totalPool});
-      }catch(e){}
+function CardLive(_ref5) {
+  let {
+    ronda,
+    rid,
+    wallet,
+    soloLectura,
+    web3,
+    contrato,
+    onBet
+  } = _ref5;
+  const [precio, setPrecio] = useState(null);
+  const [secsLeft, setSecsLeft] = useState(600);
+  const [yaBet, setYaBet] = useState(false);
+  const [miApuesta, setMiApuesta] = useState(null);
+  const [totales, setTotales] = useState({
+    sube: ronda ? ronda.totalSube : '0',
+    baja: ronda ? ronda.totalBaja : '0',
+    pool: ronda ? ronda.totalPool : '0'
+  });
+  useEffect(() => {
+    if (!ronda || !web3) return;
+    const fp = async () => {
+      try {
+        const p = await contrato.methods.getPrice(parseInt(ronda.asset)).call();
+        setPrecio(parseInt(p) / 1e8);
+      } catch (e) {}
     };
-    ft(); const pt=setInterval(ft,10000);
-    return()=>{clearInterval(pi);clearInterval(ti);clearInterval(pt);};
-  },[ronda,web3]);
-  useEffect(()=>{
-    if(!ronda||!web3||soloLectura||!wallet)return;
+    fp();
+    const pi = setInterval(fp, 15000);
+    const ti = setInterval(() => setSecsLeft(tLeft(ronda.resolveTime)), 1000);
+    setSecsLeft(tLeft(ronda.resolveTime));
+    const ft = async () => {
+      try {
+        const r = await contrato.methods.getRoundInfo(rid).call();
+        setTotales({
+          sube: r.totalSube,
+          baja: r.totalBaja,
+          pool: r.totalPool
+        });
+      } catch (e) {}
+    };
+    ft();
+    const pt = setInterval(ft, 10000);
+    return () => {
+      clearInterval(pi);
+      clearInterval(ti);
+      clearInterval(pt);
+    };
+  }, [ronda, web3]);
+  useEffect(() => {
+    if (!ronda || !web3 || soloLectura || !wallet) return;
     const fetchBet = async () => {
       try {
-        const b = await contrato.methods.hasBet(rid,wallet).call();
+        const b = await contrato.methods.hasBet(rid, wallet).call();
         setYaBet(b);
-        if(b){
+        if (b) {
           const bets = await contrato.methods.getRoundBets(rid).call();
-          const mine = bets.find(x=>x.user.toLowerCase()===wallet.toLowerCase());
-          if(mine) setMiApuesta({direction:parseInt(mine.direction), amount:mine.amount});
+          const mine = bets.find(x => x.user.toLowerCase() === wallet.toLowerCase());
+          if (mine) setMiApuesta({
+            direction: parseInt(mine.direction),
+            amount: mine.amount
+          });
         }
-      } catch(e){}
+      } catch (e) {}
     };
     fetchBet();
-  },[ronda,wallet]);
-  // Entradas cerradas cuando queden menos de 2 min (120 seg), pero el reloj sigue hasta 0
-  const cerradas=secsLeft<=120;
-  const urgente=secsLeft<=120&&secsLeft>0;
-  if(!ronda) return (
-    <div className="card card-live" style={{minHeight:380,padding:0}}>
-      <PentaUp/><div className="card-body">
-        <div className="card-tag-row"><div style={{display:'flex',alignItems:'center',gap:6}}><div className="tag-live-dot"/><span className="tag-txt" style={{color:'#7B5EFF'}}>LIVE</span></div></div>
-        <div className="no-round"><div style={{fontSize:32,marginBottom:4}}>⏳</div><div style={{fontSize:13,fontWeight:700,color:'var(--muted)'}}>Sin ronda activa</div><div style={{fontSize:11,color:'var(--muted)',lineHeight:1.8}}>El keeper abrirá<br/>una nueva ronda pronto</div></div>
-      </div><PentaDn/>
-    </div>
-  );
-  const pA=parseInt(ronda.priceAtOpen)/1e8, delta=precio?(precio-pA)/pA*100:null;
-  const tSf=web3?parseFloat(web3.utils.fromWei(totales.sube.toString(),'ether')):0;
-  const tBf=web3?parseFloat(web3.utils.fromWei(totales.baja.toString(),'ether')):0;
-  const tPf=tSf+tBf, pctUp=tPf>0?(tSf/tPf*100):50;
-  const multUp=web3?calcMult(web3,totales.pool,totales.sube):'—';
-  const multDn=web3?calcMult(web3,totales.pool,totales.baja):'—';
-  return (
-    <div className="card card-live" style={{minHeight:400,padding:0}}>
-      <PentaUp mult={multUp}/>
-      <div className="card-body">
-        <div className="card-tag-row">
-          <div style={{display:'flex',alignItems:'center',gap:6}}><div className="tag-live-dot"/><span className="tag-txt" style={{color:'#7B5EFF'}}>LIVE</span></div>
-          <div style={{display:'flex',alignItems:'center',gap:6}}>
-            <span style={{fontSize:12,fontFamily:'DM Mono,monospace',color:urgente?'var(--dn)':'var(--gold)',fontWeight:700}}>{fTime(secsLeft)}</span>
-            <span className="card-num-txt">#{rid}</span>
-          </div>
-        </div>
-        <div className="price-center">
-          <div className="price-label-sm">Last Price</div>
-          <div className="price-main">{precio?fUSD(precio):'...'}</div>
-          {delta!==null&&<div className={`price-delta ${delta>=0?'up':'dn'}`}>{delta>=0?'▲':'▼'} {Math.abs(delta).toFixed(3)}%</div>}
-        </div>
-        <div className="info-row"><span className="info-lbl">Locked Price</span><span className="info-val">{fUSD(pA)}</span></div>
-        <div className="info-row"><span className="info-lbl">Prize Pool</span><span className="info-val gold">{tPf.toFixed(2)} CNKT+</span></div>
-        <div className="pool-bar"><div className="pool-bar-u" style={{width:pctUp+'%'}}/><div className="pool-bar-d" style={{width:(100-pctUp)+'%'}}/></div>
-        <div className="pool-pcts"><span className="pool-pct-u">{pctUp.toFixed(0)}%</span><span className="pool-pct-d">{(100-pctUp).toFixed(0)}%</span></div>
-        {secsLeft<=0?(
-          <div className="calculando-wrap">
-            <div dangerouslySetInnerHTML={{__html:'<dotlottie-wc src="https://lottie.host/1b3592b4-cf02-40e1-950a-fe9fed6fb3cc/YRVEvH3BMD.lottie" style="width:130px;height:130px" autoplay loop></dotlottie-wc>'}}/>
-            <div className="calculando-txt">CALCULANDO...</div>
-          </div>
-        ):cerradas?(
-          <div className="banner-closed">🔒 ENTRADAS CERRADAS</div>
-        ):null}
-        {secsLeft<=0?null:yaBet&&miApuesta?(
-          <div style={{marginTop:'auto',paddingTop:8}}>
-            {/* Tu apuesta */}
-            <div style={{
-              padding:'10px 12px',borderRadius:10,marginBottom:6,
-              background:miApuesta.direction===0?'rgba(31,199,212,0.1)':'rgba(237,75,158,0.1)',
-              border:miApuesta.direction===0?'1px solid rgba(31,199,212,0.35)':'1px solid rgba(237,75,158,0.35)',
-              display:'flex',alignItems:'center',justifyContent:'space-between'
-            }}>
-              <div>
-                <div style={{fontSize:11,color:'var(--muted)',fontFamily:'DM Mono,monospace',letterSpacing:1}}>TU APUESTA</div>
-                <div style={{fontSize:15,fontWeight:800,color:miApuesta.direction===0?'var(--up)':'var(--dn)',letterSpacing:1}}>
-                  {miApuesta.direction===0?'▲ UP':'▼ DOWN'}
-                </div>
-              </div>
-              <div style={{textAlign:'right'}}>
-                <div style={{fontSize:11,color:'var(--muted)',fontFamily:'DM Mono,monospace',letterSpacing:1}}>MONTO</div>
-                <div style={{fontSize:13,fontWeight:700,fontFamily:'DM Mono,monospace',color:'var(--text)'}}>
-                  {web3?parseFloat(web3.utils.fromWei(miApuesta.amount.toString(),'ether')).toFixed(0):'-'} CNKT+
-                </div>
-              </div>
-            </div>
-            {/* Multiplicador en tiempo real */}
-            <div style={{
-              padding:'10px 12px',borderRadius:10,
-              background:'var(--gold-dim)',border:'1px solid rgba(255,215,0,0.25)',
-              display:'flex',alignItems:'center',justifyContent:'space-between'
-            }}>
-              <div style={{fontSize:11,color:'var(--muted)',fontFamily:'DM Mono,monospace',letterSpacing:1}}>SI GANAS RECIBES</div>
-              <div style={{fontSize:18,fontWeight:800,color:'var(--gold)',fontFamily:'DM Mono,monospace'}}>
-                {(()=>{
-                  try{
-                    const tP=parseFloat(web3.utils.fromWei(totales.pool.toString(),'ether'));
-                    const mySide=miApuesta.direction===0?parseFloat(web3.utils.fromWei(totales.sube.toString(),'ether')):parseFloat(web3.utils.fromWei(totales.baja.toString(),'ether'));
-                    const myAmt=parseFloat(web3.utils.fromWei(miApuesta.amount.toString(),'ether'));
-                    if(!tP||!mySide)return'—';
-                    const payout=(myAmt*(tP*0.95/mySide)).toFixed(2);
-                    return payout+' CNKT+';
-                  }catch(e){return'—';}
-                })()}
-              </div>
-            </div>
-          </div>
-        ):yaBet?(
-          <div className="entrado-badge">✓ Cargando tu apuesta...</div>
-        ):(
-          <div className="bet-btns">
-            <button className="btn-up" disabled={cerradas||soloLectura||!wallet} onClick={()=>onBet('SUBE')}>Enter UP ▲</button>
-            <button className="btn-dn" disabled={cerradas||soloLectura||!wallet} onClick={()=>onBet('BAJA')}>Enter DOWN ▼</button>
-          </div>
-        )}
-      </div>
-      <PentaDn mult={multDn}/>
-    </div>
-  );
+  }, [ronda, wallet]);
+  const cerradas = secsLeft <= 120;
+  const urgente = secsLeft <= 120 && secsLeft > 0;
+  if (!ronda) return /*#__PURE__*/React.createElement("div", {
+    className: "card card-live",
+    style: {
+      minHeight: 380,
+      padding: 0
+    }
+  }, /*#__PURE__*/React.createElement(PentaUp, null), /*#__PURE__*/React.createElement("div", {
+    className: "card-body"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card-tag-row"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "tag-live-dot"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "tag-txt",
+    style: {
+      color: '#7B5EFF'
+    }
+  }, "LIVE"))), /*#__PURE__*/React.createElement("div", {
+    className: "no-round"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 32,
+      marginBottom: 4
+    }
+  }, "\u23F3"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 700,
+      color: 'var(--muted)'
+    }
+  }, "Sin ronda activa"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: 'var(--muted)',
+      lineHeight: 1.8
+    }
+  }, "El keeper abrir\xE1", /*#__PURE__*/React.createElement("br", null), "una nueva ronda pronto"))), /*#__PURE__*/React.createElement(PentaDn, null));
+  const pA = parseInt(ronda.priceAtOpen) / 1e8,
+    delta = precio ? (precio - pA) / pA * 100 : null;
+  const tSf = web3 ? parseFloat(web3.utils.fromWei(totales.sube.toString(), 'ether')) : 0;
+  const tBf = web3 ? parseFloat(web3.utils.fromWei(totales.baja.toString(), 'ether')) : 0;
+  const tPf = tSf + tBf,
+    pctUp = tPf > 0 ? tSf / tPf * 100 : 50;
+  const multUp = web3 ? calcMult(web3, totales.pool, totales.sube) : '—';
+  const multDn = web3 ? calcMult(web3, totales.pool, totales.baja) : '—';
+  return /*#__PURE__*/React.createElement("div", {
+    className: "card card-live",
+    style: {
+      minHeight: 400,
+      padding: 0
+    }
+  }, /*#__PURE__*/React.createElement(PentaUp, {
+    mult: multUp
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "card-body"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card-tag-row"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "tag-live-dot"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "tag-txt",
+    style: {
+      color: '#7B5EFF'
+    }
+  }, "LIVE")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12,
+      fontFamily: 'DM Mono,monospace',
+      color: urgente ? 'var(--dn)' : 'var(--gold)',
+      fontWeight: 700
+    }
+  }, fTime(secsLeft)), /*#__PURE__*/React.createElement("span", {
+    className: "card-num-txt"
+  }, "#", rid))), /*#__PURE__*/React.createElement("div", {
+    className: "price-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "price-label-sm"
+  }, "Last Price"), /*#__PURE__*/React.createElement("div", {
+    className: "price-main"
+  }, precio ? fUSD(precio) : '...'), delta !== null && /*#__PURE__*/React.createElement("div", {
+    className: `price-delta ${delta >= 0 ? 'up' : 'dn'}`
+  }, delta >= 0 ? '▲' : '▼', " ", Math.abs(delta).toFixed(3), "%")), /*#__PURE__*/React.createElement("div", {
+    className: "info-row"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "info-lbl"
+  }, "Locked Price"), /*#__PURE__*/React.createElement("span", {
+    className: "info-val"
+  }, fUSD(pA))), /*#__PURE__*/React.createElement("div", {
+    className: "info-row"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "info-lbl"
+  }, "Prize Pool"), /*#__PURE__*/React.createElement("span", {
+    className: "info-val gold"
+  }, tPf.toFixed(2), " CNKT+")), /*#__PURE__*/React.createElement("div", {
+    className: "pool-bar"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "pool-bar-u",
+    style: {
+      width: pctUp + '%'
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "pool-bar-d",
+    style: {
+      width: 100 - pctUp + '%'
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "pool-pcts"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "pool-pct-u"
+  }, pctUp.toFixed(0), "%"), /*#__PURE__*/React.createElement("span", {
+    className: "pool-pct-d"
+  }, (100 - pctUp).toFixed(0), "%")), secsLeft <= 0 ? /*#__PURE__*/React.createElement("div", {
+    className: "calculando-wrap"
+  }, /*#__PURE__*/React.createElement("div", {
+    dangerouslySetInnerHTML: {
+      __html: '<dotlottie-wc src="https://lottie.host/1b3592b4-cf02-40e1-950a-fe9fed6fb3cc/YRVEvH3BMD.lottie" style="width:130px;height:130px" autoplay loop></dotlottie-wc>'
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "calculando-txt"
+  }, "CALCULANDO...")) : cerradas ? /*#__PURE__*/React.createElement("div", {
+    className: "banner-closed"
+  }, "\uD83D\uDD12 ENTRADAS CERRADAS") : null, secsLeft <= 0 ? null : yaBet && miApuesta ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 'auto',
+      paddingTop: 8
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '10px 12px',
+      borderRadius: 10,
+      marginBottom: 6,
+      background: miApuesta.direction === 0 ? 'rgba(31,199,212,0.1)' : 'rgba(237,75,158,0.1)',
+      border: miApuesta.direction === 0 ? '1px solid rgba(31,199,212,0.35)' : '1px solid rgba(237,75,158,0.35)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between'
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: 'var(--muted)',
+      fontFamily: 'DM Mono,monospace',
+      letterSpacing: 1
+    }
+  }, "TU APUESTA"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 15,
+      fontWeight: 800,
+      color: miApuesta.direction === 0 ? 'var(--up)' : 'var(--dn)',
+      letterSpacing: 1
+    }
+  }, miApuesta.direction === 0 ? '▲ UP' : '▼ DOWN')), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: 'right'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: 'var(--muted)',
+      fontFamily: 'DM Mono,monospace',
+      letterSpacing: 1
+    }
+  }, "MONTO"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 700,
+      fontFamily: 'DM Mono,monospace',
+      color: 'var(--text)'
+    }
+  }, web3 ? parseFloat(web3.utils.fromWei(miApuesta.amount.toString(), 'ether')).toFixed(0) : '-', " CNKT+"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '10px 12px',
+      borderRadius: 10,
+      background: 'var(--gold-dim)',
+      border: '1px solid rgba(255,215,0,0.25)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: 'var(--muted)',
+      fontFamily: 'DM Mono,monospace',
+      letterSpacing: 1
+    }
+  }, "SI GANAS RECIBES"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 18,
+      fontWeight: 800,
+      color: 'var(--gold)',
+      fontFamily: 'DM Mono,monospace'
+    }
+  }, (() => {
+    try {
+      const tP = parseFloat(web3.utils.fromWei(totales.pool.toString(), 'ether'));
+      const mySide = miApuesta.direction === 0 ? parseFloat(web3.utils.fromWei(totales.sube.toString(), 'ether')) : parseFloat(web3.utils.fromWei(totales.baja.toString(), 'ether'));
+      const myAmt = parseFloat(web3.utils.fromWei(miApuesta.amount.toString(), 'ether'));
+      if (!tP || !mySide) return '—';
+      return (myAmt * (tP * 0.95 / mySide)).toFixed(2) + ' CNKT+';
+    } catch (e) {
+      return '—';
+    }
+  })()))) : yaBet ? /*#__PURE__*/React.createElement("div", {
+    className: "entrado-badge"
+  }, "\u2713 Cargando tu apuesta...") : /*#__PURE__*/React.createElement("div", {
+    className: "bet-btns"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn-up",
+    disabled: cerradas || soloLectura || !wallet,
+    onClick: () => onBet('SUBE')
+  }, "Enter UP \u25B2"), /*#__PURE__*/React.createElement("button", {
+    className: "btn-dn",
+    disabled: cerradas || soloLectura || !wallet,
+    onClick: () => onBet('BAJA')
+  }, "Enter DOWN \u25BC"))), /*#__PURE__*/React.createElement(PentaDn, {
+    mult: multDn
+  }));
 }
-
-function CardNext({rid}) {
-  return (
-    <div className="card card-next" style={{minHeight:340,padding:0}}>
-      <PentaUp/><div className="card-body">
-        <div className="card-tag-row"><span className="tag-txt">▶ NEXT</span><span className="card-num-txt">#{rid||'—'}</span></div>
-        <div className="no-round" style={{minHeight:160}}><div style={{fontSize:28,marginBottom:4}}>🎲</div><div style={{fontSize:12,color:'var(--muted)',lineHeight:1.8,textAlign:'center'}}>Próxima ronda<br/>Min: 500 CNKT+<br/>Max: 250,000 CNKT+</div></div>
-        <div className="bet-btns" style={{marginTop:'auto',paddingTop:8}}><button className="btn-up" disabled>Enter UP ▲</button><button className="btn-dn" disabled>Enter DOWN ▼</button></div>
-      </div><PentaDn/>
-    </div>
-  );
+function CardNext(_ref6) {
+  let {
+    rid
+  } = _ref6;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "card card-next",
+    style: {
+      minHeight: 340,
+      padding: 0
+    }
+  }, /*#__PURE__*/React.createElement(PentaUp, null), /*#__PURE__*/React.createElement("div", {
+    className: "card-body"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card-tag-row"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "tag-txt"
+  }, "\u25B6 NEXT"), /*#__PURE__*/React.createElement("span", {
+    className: "card-num-txt"
+  }, "#", rid || '—')), /*#__PURE__*/React.createElement("div", {
+    className: "no-round",
+    style: {
+      minHeight: 160
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 28,
+      marginBottom: 4
+    }
+  }, "\uD83C\uDFB2"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: 'var(--muted)',
+      lineHeight: 1.8,
+      textAlign: 'center'
+    }
+  }, "Pr\xF3xima ronda", /*#__PURE__*/React.createElement("br", null), "Min: 500 CNKT+", /*#__PURE__*/React.createElement("br", null), "Max: 250,000 CNKT+")), /*#__PURE__*/React.createElement("div", {
+    className: "bet-btns",
+    style: {
+      marginTop: 'auto',
+      paddingTop: 8
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn-up",
+    disabled: true
+  }, "Enter UP \u25B2"), /*#__PURE__*/React.createElement("button", {
+    className: "btn-dn",
+    disabled: true
+  }, "Enter DOWN \u25BC"))), /*#__PURE__*/React.createElement(PentaDn, null));
 }
-
-function Modal({dir,rid,asset,precioCNKT,web3,contrato,contratoE,wallet,onClose,onSuccess}) {
-  const [cnkt,setCnkt]=useState('');const[usd,setUsd]=useState('');
-  const[hint,setHint]=useState({txt:'Min 500 · Max 250,000',color:'var(--muted)'});
-  const[status,setStatus]=useState(null);const[loading,setLoading]=useState(false);
-  const isUp=dir==='SUBE';
-  const upd=c=>{if(c>0&&c<500)setHint({txt:'⚠ Mínimo 500 CNKT+',color:'var(--dn)'});else if(c>250000)setHint({txt:'⚠ Máximo 250,000',color:'var(--dn)'});else if(c>=500)setHint({txt:`✓ ≈ $${(c*precioCNKT).toFixed(2)} USD`,color:'var(--up)'});else setHint({txt:'Min 500 · Max 250,000',color:'var(--muted)'});};
-  const onC=e=>{const v=e.target.value;setCnkt(v);const c=parseFloat(v)||0;setUsd(c>0?(c*precioCNKT).toFixed(4):'');upd(c);};
-  const onU=e=>{const v=e.target.value;setUsd(v);const u=parseFloat(v)||0;const c=u>0&&precioCNKT>0?Math.round(u/precioCNKT):'';setCnkt(c);upd(parseFloat(c)||0);};
-  const confirm=async()=>{
-    const c=parseFloat(cnkt);if(!c||c<500||c>250000){setStatus({msg:'Monto inválido (500–250,000)',tipo:'err'});return}
-    const aw=web3.utils.toWei(c.toString(),'ether');
+function Modal(_ref7) {
+  let {
+    dir,
+    rid,
+    asset,
+    precioCNKT,
+    web3,
+    contrato,
+    contratoE,
+    wallet,
+    onClose,
+    onSuccess
+  } = _ref7;
+  const [cnkt, setCnkt] = useState('');
+  const [usd, setUsd] = useState('');
+  const [hint, setHint] = useState({
+    txt: 'Min 500 · Max 250,000',
+    color: 'var(--muted)'
+  });
+  const [status, setStatus] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const isUp = dir === 'SUBE';
+  const upd = c => {
+    if (c > 0 && c < 500) setHint({
+      txt: '⚠ Mínimo 500 CNKT+',
+      color: 'var(--dn)'
+    });else if (c > 250000) setHint({
+      txt: '⚠ Máximo 250,000',
+      color: 'var(--dn)'
+    });else if (c >= 500) setHint({
+      txt: `✓ ≈ $${(c * precioCNKT).toFixed(2)} USD`,
+      color: 'var(--up)'
+    });else setHint({
+      txt: 'Min 500 · Max 250,000',
+      color: 'var(--muted)'
+    });
+  };
+  const onC = e => {
+    const v = e.target.value;
+    setCnkt(v);
+    const c = parseFloat(v) || 0;
+    setUsd(c > 0 ? (c * precioCNKT).toFixed(4) : '');
+    upd(c);
+  };
+  const onU = e => {
+    const v = e.target.value;
+    setUsd(v);
+    const u = parseFloat(v) || 0;
+    const c = u > 0 && precioCNKT > 0 ? Math.round(u / precioCNKT) : '';
+    setCnkt(c);
+    upd(parseFloat(c) || 0);
+  };
+  const confirm = async () => {
+    const c = parseFloat(cnkt);
+    if (!c || c < 500 || c > 250000) {
+      setStatus({
+        msg: 'Monto inválido (500–250,000)',
+        tipo: 'err'
+      });
+      return;
+    }
+    const aw = web3.utils.toWei(c.toString(), 'ether');
     setLoading(true);
-    try{
-      // Verificar que esté en Polygon
-      const chainId=await window.ethereum.request({method:'eth_chainId'});
-      if(chainId!==CFG.POLYGON_CHAIN){
-        setStatus({msg:'Cambiando a red Polygon...',tipo:'info'});
-        try{await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:CFG.POLYGON_CHAIN}]});}
-        catch(e){setStatus({msg:'Cambia a la red Polygon en MetaMask y vuelve a intentar.',tipo:'err'});setLoading(false);return;}
+    try {
+      const chainId = await window.ethereum.request({
+        method: 'eth_chainId'
+      });
+      if (chainId !== CFG.POLYGON_CHAIN) {
+        setStatus({
+          msg: 'Cambiando a red Polygon...',
+          tipo: 'info'
+        });
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{
+              chainId: CFG.POLYGON_CHAIN
+            }]
+          });
+        } catch (e) {
+          setStatus({
+            msg: 'Cambia a la red Polygon en MetaMask y vuelve a intentar.',
+            tipo: 'err'
+          });
+          setLoading(false);
+          return;
+        }
       }
-      setStatus({msg:'Paso 1/2: Aprobando CNKT+ (solo se hace una vez)...',tipo:'info'});
-      const al=await contratoE.methods.allowance(wallet,CFG.CONTRATO_VEGAS).call();
-      const MAX='115792089237316195423570985008687907853269984665640564039457584007913129639935';
+      setStatus({
+        msg: 'Paso 1/2: Aprobando CNKT+ (solo se hace una vez)...',
+        tipo: 'info'
+      });
+      const al = await contratoE.methods.allowance(wallet, CFG.CONTRATO_VEGAS).call();
+      const MAX = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
       const gasPrice = await web3.eth.getGasPrice();
-      const gasPriceFast = (BigInt(gasPrice) * 150n / 100n < 30000000000n ? '30000000000' : (BigInt(gasPrice) * 150n / 100n).toString()); // mínimo 30 Gwei
-      if(BigInt(al)<BigInt(aw))await contratoE.methods.approve(CFG.CONTRATO_VEGAS,MAX).send({from:wallet, gasPrice:gasPriceFast});
-      setStatus({msg:'Paso 2/2: Enviando entrada...',tipo:'info'});
-      await contrato.methods.placeBet(rid,isUp?0:1,aw).send({from:wallet, gasPrice:gasPriceFast});
-      setStatus({msg:`✓ ${c} CNKT+ registrados`,tipo:'ok'});
-      onSuccess();setTimeout(onClose,1800);
-    }catch(e){
-      const msg = e.message||'';
-      if(msg.includes('not mined within')||msg.includes('50 blocks')){
-        setStatus({msg:'⏳ TX enviada — Polygon está lento, espera un momento y revisa tu wallet. La apuesta puede haber sido registrada.',tipo:'info'});
-      } else if(msg.includes('User denied')||msg.includes('user rejected')){
-        setStatus({msg:'Cancelaste la transacción.',tipo:'err'});
+      const gasPriceFast = BigInt(gasPrice) * 150n / 100n < 30000000000n ? '30000000000' : (BigInt(gasPrice) * 150n / 100n).toString();
+      if (BigInt(al) < BigInt(aw)) await contratoE.methods.approve(CFG.CONTRATO_VEGAS, MAX).send({
+        from: wallet,
+        gasPrice: gasPriceFast
+      });
+      setStatus({
+        msg: 'Paso 2/2: Enviando entrada...',
+        tipo: 'info'
+      });
+      await contrato.methods.placeBet(rid, isUp ? 0 : 1, aw).send({
+        from: wallet,
+        gasPrice: gasPriceFast
+      });
+      setStatus({
+        msg: `✓ ${c} CNKT+ registrados`,
+        tipo: 'ok'
+      });
+      onSuccess();
+      setTimeout(onClose, 1800);
+    } catch (e) {
+      const msg = e.message || '';
+      if (msg.includes('not mined within') || msg.includes('50 blocks')) {
+        setStatus({
+          msg: '⏳ TX enviada — Polygon está lento, espera un momento.',
+          tipo: 'info'
+        });
+      } else if (msg.includes('User denied') || msg.includes('user rejected')) {
+        setStatus({
+          msg: 'Cancelaste la transacción.',
+          tipo: 'err'
+        });
       } else {
-        setStatus({msg:'✗ '+msg,tipo:'err'});
+        setStatus({
+          msg: '✗ ' + msg,
+          tipo: 'err'
+        });
       }
     }
     setLoading(false);
   };
-  return (
-    <div className="modal-bg" onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div className={`modal-box ${isUp?'up':'dn'}`}>
-        <button className="modal-close" onClick={onClose}>✕</button>
-        <div className={`modal-dir ${isUp?'up':'dn'}`}>{isUp?'▲ UP — SUBE':'▼ DOWN — BAJA'}</div>
-        <div className="modal-sub">Ronda #{rid} · {asset}</div>
-        <div className="price-ref"><span style={{color:'var(--muted)',fontSize:12}}>Precio CNKT+</span><span className="price-ref-val">${precioCNKT.toFixed(6)}</span></div>
-        <div className="field"><label>CNKT+ a ingresar</label><input type="number" value={cnkt} onChange={onC} placeholder="500" min="500"/><div className="field-hint" style={{color:hint.color}}>{hint.txt}</div></div>
-        <div className="or-div">— o escribe en USD —</div>
-        <div className="field"><label>Equivalente USD</label><input type="number" value={usd} onChange={onU} placeholder="0.00" step="0.01"/></div>
-        <button className={`btn-confirm ${isUp?'up':'dn'}`} onClick={confirm} disabled={loading}>{loading?<span><span className="spinner"/>Procesando...</span>:`CONFIRMAR ${isUp?'▲ UP':'▼ DOWN'}`}</button>
-        {status&&<div className={`modal-st ${status.tipo}`}>{status.msg}</div>}
-      </div>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: "modal-bg",
+    onClick: e => e.target === e.currentTarget && onClose()
+  }, /*#__PURE__*/React.createElement("div", {
+    className: `modal-box ${isUp ? 'up' : 'dn'}`
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "modal-close",
+    onClick: onClose
+  }, "\u2715"), /*#__PURE__*/React.createElement("div", {
+    className: `modal-dir ${isUp ? 'up' : 'dn'}`
+  }, isUp ? '▲ UP — SUBE' : '▼ DOWN — BAJA'), /*#__PURE__*/React.createElement("div", {
+    className: "modal-sub"
+  }, "Ronda #", rid, " \xB7 ", asset), /*#__PURE__*/React.createElement("div", {
+    className: "price-ref"
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: 'var(--muted)',
+      fontSize: 12
+    }
+  }, "Precio CNKT+"), /*#__PURE__*/React.createElement("span", {
+    className: "price-ref-val"
+  }, "$", precioCNKT.toFixed(6))), /*#__PURE__*/React.createElement("div", {
+    className: "field"
+  }, /*#__PURE__*/React.createElement("label", null, "CNKT+ a ingresar"), /*#__PURE__*/React.createElement("input", {
+    type: "number",
+    value: cnkt,
+    onChange: onC,
+    placeholder: "500",
+    min: "500"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "field-hint",
+    style: {
+      color: hint.color
+    }
+  }, hint.txt)), /*#__PURE__*/React.createElement("div", {
+    className: "or-div"
+  }, "\u2014 o escribe en USD \u2014"), /*#__PURE__*/React.createElement("div", {
+    className: "field"
+  }, /*#__PURE__*/React.createElement("label", null, "Equivalente USD"), /*#__PURE__*/React.createElement("input", {
+    type: "number",
+    value: usd,
+    onChange: onU,
+    placeholder: "0.00",
+    step: "0.01"
+  })), /*#__PURE__*/React.createElement("button", {
+    className: `btn-confirm ${isUp ? 'up' : 'dn'}`,
+    onClick: confirm,
+    disabled: loading
+  }, loading ? React.createElement('span', null, React.createElement('span', {
+    className: 'spinner'
+  }), 'Procesando...') : `CONFIRMAR ${isUp ? '▲ UP' : '▼ DOWN'}`), status && /*#__PURE__*/React.createElement("div", {
+    className: `modal-st ${status.tipo}`
+  }, status.msg)));
 }
-
-function ConnDropdown({onMM,onMovil,onVer,onDisconnect,wallet,error}) {
-  if(wallet) return (
-    <div className="conn-drop">
-      <div className="conn-title">Wallet Conectada</div>
-      <div className="conn-wallet-addr">{wallet}</div>
-      <button className="conn-opt danger" onClick={onDisconnect} style={{color:'var(--dn)',borderColor:'rgba(237,75,158,0.3)'}}><span style={{fontSize:18}}>⏻</span> Desconectar</button>
-      <button className="conn-opt" onClick={onMM}><span style={{fontSize:18}}>🔄</span> Cambiar wallet</button>
-    </div>
-  );
-  return (
-    <div className="conn-drop">
-      <div className="conn-title">Conectar Wallet</div>
-      <button className="conn-opt" onClick={onMM}><span style={{fontSize:20}}>🦊</span> MetaMask</button>
-      <button className="conn-opt" onClick={onMovil}><span style={{fontSize:20}}>📱</span> Celular (MM / Trust)</button>
-      <button className="conn-ghost" onClick={onVer}>Solo ver sin wallet →</button>
-      {error&&error.startsWith('link:')?<div className="conn-info" dangerouslySetInnerHTML={{__html:error.slice(5)}}/>:error?<div className="conn-err">{error}</div>:null}
-    </div>
-  );
+function ConnDropdown(_ref8) {
+  let {
+    onMM,
+    onMovil,
+    onVer,
+    onDisconnect,
+    wallet,
+    error
+  } = _ref8;
+  if (wallet) return /*#__PURE__*/React.createElement("div", {
+    className: "conn-drop"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "conn-title"
+  }, "Wallet Conectada"), /*#__PURE__*/React.createElement("div", {
+    className: "conn-wallet-addr"
+  }, wallet), /*#__PURE__*/React.createElement("button", {
+    className: "conn-opt danger",
+    onClick: onDisconnect,
+    style: {
+      color: 'var(--dn)',
+      borderColor: 'rgba(237,75,158,0.3)'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 18
+    }
+  }, "\u23FB"), " Desconectar"), /*#__PURE__*/React.createElement("button", {
+    className: "conn-opt",
+    onClick: onMM
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 18
+    }
+  }, "\uD83D\uDD04"), " Cambiar wallet"));
+  return /*#__PURE__*/React.createElement("div", {
+    className: "conn-drop"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "conn-title"
+  }, "Conectar Wallet"), /*#__PURE__*/React.createElement("button", {
+    className: "conn-opt",
+    onClick: onMM
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 20
+    }
+  }, "\uD83E\uDD8A"), " MetaMask"), /*#__PURE__*/React.createElement("button", {
+    className: "conn-opt",
+    onClick: onMovil
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 20
+    }
+  }, "\uD83D\uDCF1"), " Celular (MM / Trust)"), /*#__PURE__*/React.createElement("button", {
+    className: "conn-ghost",
+    onClick: onVer
+  }, "Solo ver sin wallet \u2192"), error && error.startsWith('link:') ? /*#__PURE__*/React.createElement("div", {
+    className: "conn-info",
+    dangerouslySetInnerHTML: {
+      __html: error.slice(5)
+    }
+  }) : error ? /*#__PURE__*/React.createElement("div", {
+    className: "conn-err"
+  }, error) : null);
 }
-
 function App() {
-  const [web3,setWeb3]=useState(null);const[contrato,setContrato]=useState(null);const[contratoE,setContratoE]=useState(null);
-  const[wallet,setWallet]=useState(null);const[esOwner,setEsOwner]=useState(false);const[soloLectura,setSoloLectura]=useState(true);
-  const[showConn,setShowConn]=useState(false);const[connErr,setConnErr]=useState('');
-  const[rondas,setRondas]=useState({live:null,liveId:null,exp1:null,exp1Id:null,exp2:null,exp2Id:null});
-  const[historial,setHistorial]=useState([]);const[precioBTC,setPrecioBTC]=useState(null);
-  const[precioCNKT,setPrecioCNKT]=useState(0.00142);const[timer,setTimer]=useState('--:--');const[timerUrgent,setTimerUrgent]=useState(false);
-  const[modal,setModal]=useState(null);const[resultModal,setResultModal]=useState(null);const[showGuia,setShowGuia]=useState(false);const[stats,setStats]=useState(null);const[statsLoading,setStatsLoading]=useState(false);const[newEvoxWallet,setNewEvoxWallet]=useState('');const[evoxWalletStatus,setEvoxWalletStatus]=useState(null);
-  const[toasts,setToasts]=useState([]);const[selAsset,setSelAsset]=useState(0);const[adminLoading,setAdminLoading]=useState('');
-  const prevLiveId=useRef(null);const prevWallet=useRef(null);const carouselRef=useRef(null);const liveCardRef=useRef(null);const contratoRef=useRef(null);const web3Ref=useRef(null);
-
-  const addToast=useCallback((msg,tipo='ok')=>{const id=Date.now();setToasts(t=>[...t,{id,msg,tipo}]);setTimeout(()=>setToasts(t=>t.filter(x=>x.id!==id)),3500);},[]);
-
-  const initWeb3=useCallback(async(provider,addr,lectura=false)=>{
-    const w3=new Web3(provider);const cv=new w3.eth.Contract(ABI_V,CFG.CONTRATO_VEGAS);const ce=new w3.eth.Contract(ABI_E,CFG.CONTRATO_CNKT);
-    window._web3=w3;setWeb3(w3);setContrato(cv);setContratoE(ce);setWallet(addr);setSoloLectura(lectura);web3Ref.current=w3;contratoRef.current=cv;
-    if(!lectura&&addr){const owner=await cv.methods.owner().call();setEsOwner(owner.toLowerCase()===addr.toLowerCase());}
-    return{w3,cv,ce};
-  },[]);
-
-  const fetchPrecioCNKT=useCallback(async()=>{
-    try{const r=await fetch('/precio-cnkt');const d=await r.json();if(d?.ok&&d?.precio)setPrecioCNKT(d.precio);}catch(e){}
-  },[]);
-
-  const checkResultado=useCallback(async(cv,w3,oldRid,walletAddr)=>{
-    if(!oldRid||!walletAddr||!cv||!w3)return;
-    try{
-      const r=await cv.methods.getRoundInfo(oldRid).call();const st=parseInt(r.status);
-      const apostó=await cv.methods.hasBet(oldRid,walletAddr).call();
-      if(!apostó)return;
-      if(st===3){setResultModal({tipo:'cancel',ganancia:null});return;}
-      if(st===2){
-        const bets=await cv.methods.getRoundBets(oldRid).call();
-        const myBet=bets.find(b=>b.user.toLowerCase()===walletAddr.toLowerCase());
-        if(!myBet)return;
-        const ganó=parseInt(myBet.direction)===parseInt(r.result);
-        if(ganó){
-          const ws=parseInt(r.result)===0?r.totalSube:r.totalBaja;
-          const pp=BigInt(r.totalPool)*95n/100n;
-          const payout=(BigInt(myBet.amount)*pp/BigInt(ws)).toString();
-          setResultModal({tipo:'win',ganancia:payout});
-        }else{setResultModal({tipo:'lose',ganancia:null});}
+  const [web3, setWeb3] = useState(null);
+  const [contrato, setContrato] = useState(null);
+  const [contratoE, setContratoE] = useState(null);
+  const [wallet, setWallet] = useState(null);
+  const [esOwner, setEsOwner] = useState(false);
+  const [soloLectura, setSoloLectura] = useState(true);
+  const [showConn, setShowConn] = useState(false);
+  const [connErr, setConnErr] = useState('');
+  const [rondas, setRondas] = useState({
+    live: null,
+    liveId: null,
+    exp1: null,
+    exp1Id: null,
+    exp2: null,
+    exp2Id: null
+  });
+  const [historial, setHistorial] = useState([]);
+  const [precioBTC, setPrecioBTC] = useState(null);
+  const [precioCNKT, setPrecioCNKT] = useState(0.00142);
+  const [timer, setTimer] = useState('--:--');
+  const [timerUrgent, setTimerUrgent] = useState(false);
+  const [modal, setModal] = useState(null);
+  const [resultModal, setResultModal] = useState(null);
+  const [showGuia, setShowGuia] = useState(false);
+  const [stats, setStats] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [newEvoxWallet, setNewEvoxWallet] = useState('');
+  const [evoxWalletStatus, setEvoxWalletStatus] = useState(null);
+  const [toasts, setToasts] = useState([]);
+  const [selAsset, setSelAsset] = useState(0);
+  const [adminLoading, setAdminLoading] = useState('');
+  const prevLiveId = useRef(null);
+  const prevWallet = useRef(null);
+  const carouselRef = useRef(null);
+  const liveCardRef = useRef(null);
+  const contratoRef = useRef(null);
+  const web3Ref = useRef(null);
+  const addToast = useCallback(function (msg) {
+    let tipo = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'ok';
+    const id = Date.now();
+    setToasts(t => [...t, {
+      id,
+      msg,
+      tipo
+    }]);
+    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3500);
+  }, []);
+  const initWeb3 = useCallback(async function (provider, addr) {
+    let lectura = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+    const w3 = new Web3(provider);
+    const cv = new w3.eth.Contract(ABI_V, CFG.CONTRATO_VEGAS);
+    const ce = new w3.eth.Contract(ABI_E, CFG.CONTRATO_CNKT);
+    window._web3 = w3;
+    setWeb3(w3);
+    setContrato(cv);
+    setContratoE(ce);
+    setWallet(addr);
+    setSoloLectura(lectura);
+    web3Ref.current = w3;
+    contratoRef.current = cv;
+    if (!lectura && addr) {
+      const owner = await cv.methods.owner().call();
+      setEsOwner(owner.toLowerCase() === addr.toLowerCase());
+    }
+    return {
+      w3,
+      cv,
+      ce
+    };
+  }, []);
+  const fetchPrecioCNKT = useCallback(async () => {
+    try {
+      const r = await fetch('/precio-cnkt');
+      const d = await r.json();
+      if (d?.ok && d?.precio) setPrecioCNKT(d.precio);
+    } catch (e) {}
+  }, []);
+  const checkResultado = useCallback(async (cv, w3, oldRid, walletAddr) => {
+    if (!oldRid || !walletAddr || !cv || !w3) return;
+    try {
+      const r = await cv.methods.getRoundInfo(oldRid).call();
+      const st = parseInt(r.status);
+      const apostó = await cv.methods.hasBet(oldRid, walletAddr).call();
+      if (!apostó) return;
+      if (st === 3) {
+        setResultModal({
+          tipo: 'cancel',
+          ganancia: null
+        });
+        return;
       }
-    }catch(e){}
-  },[]);
-
-  const cargarRondas=useCallback(async(cv,w3,walletAddr)=>{
-    if(!cv||!w3)return;
-    try{
-      const rid=parseInt(await cv.methods.currentRoundId().call());
-      let live=null,exp1=null,exp2=null;
-      if(rid>0)live=await cv.methods.getRoundInfo(rid).call();
-      if(rid>1)exp1=await cv.methods.getRoundInfo(rid-1).call();
-      if(rid>2)exp2=await cv.methods.getRoundInfo(rid-2).call();
-      // live puede ser status 0 (abierta) o calculando (status 0 pero pasó resolveTime)
-      // Solo ponemos null si ya fue resuelta (status 2) o cancelada (status 3)
-      const showLive=live&&(parseInt(live.status)===0);
-      setRondas({live:showLive?live:null,liveId:rid,exp1,exp1Id:rid>1?rid-1:null,exp2,exp2Id:rid>2?rid-2:null});
-      if(live&&(live.status==='0'||live.status===0)){
-        try{const p=await cv.methods.getPrice(parseInt(live.asset)).call();setPrecioBTC(parseInt(p)/1e8);}catch(e){}
-        const s=tLeft(live.resolveTime);setTimer(fTime(s));setTimerUrgent(s<=120&&s>0);
+      if (st === 2) {
+        const bets = await cv.methods.getRoundBets(oldRid).call();
+        const myBet = bets.find(b => b.user.toLowerCase() === walletAddr.toLowerCase());
+        if (!myBet) return;
+        const ganó = parseInt(myBet.direction) === parseInt(r.result);
+        if (ganó) {
+          const ws = parseInt(r.result) === 0 ? r.totalSube : r.totalBaja;
+          const pp = BigInt(r.totalPool) * 95n / 100n;
+          const payout = (BigInt(myBet.amount) * pp / BigInt(ws)).toString();
+          setResultModal({
+            tipo: 'win',
+            ganancia: payout
+          });
+        } else {
+          setResultModal({
+            tipo: 'lose',
+            ganancia: null
+          });
+        }
       }
-      if(prevLiveId.current&&rid>prevLiveId.current&&walletAddr){
-        checkResultado(cv,w3,prevLiveId.current,walletAddr);
+    } catch (e) {}
+  }, []);
+  const cargarRondas = useCallback(async (cv, w3, walletAddr) => {
+    if (!cv || !w3) return;
+    try {
+      const rid = parseInt(await cv.methods.currentRoundId().call());
+      let live = null,
+        exp1 = null,
+        exp2 = null;
+      if (rid > 0) live = await cv.methods.getRoundInfo(rid).call();
+      if (rid > 1) exp1 = await cv.methods.getRoundInfo(rid - 1).call();
+      if (rid > 2) exp2 = await cv.methods.getRoundInfo(rid - 2).call();
+      const showLive = live && parseInt(live.status) === 0;
+      setRondas({
+        live: showLive ? live : null,
+        liveId: rid,
+        exp1,
+        exp1Id: rid > 1 ? rid - 1 : null,
+        exp2,
+        exp2Id: rid > 2 ? rid - 2 : null
+      });
+      if (live && (live.status === '0' || live.status === 0)) {
+        try {
+          const p = await cv.methods.getPrice(parseInt(live.asset)).call();
+          setPrecioBTC(parseInt(p) / 1e8);
+        } catch (e) {}
+        const s = tLeft(live.resolveTime);
+        setTimer(fTime(s));
+        setTimerUrgent(s <= 120 && s > 0);
       }
-      prevLiveId.current=rid;
-    }catch(e){}
-  },[checkResultado]);
-
-  const cargarHistorial=useCallback(async(cv,w3)=>{
-    if(!cv||!w3)return;
-    try{
-      const rid=parseInt(await cv.methods.currentRoundId().call());
-      if(rid===0){setHistorial([]);return;}
-      const ini=Math.max(1,rid-9);const ps=[];
-      for(let i=rid;i>=ini;i--)ps.push(cv.methods.getRoundInfo(i).call().then(r=>({r,id:i})));
+      if (prevLiveId.current && rid > prevLiveId.current && walletAddr) {
+        checkResultado(cv, w3, prevLiveId.current, walletAddr);
+      }
+      prevLiveId.current = rid;
+    } catch (e) {}
+  }, [checkResultado]);
+  const cargarHistorial = useCallback(async (cv, w3) => {
+    if (!cv || !w3) return;
+    try {
+      const rid = parseInt(await cv.methods.currentRoundId().call());
+      if (rid === 0) {
+        setHistorial([]);
+        return;
+      }
+      const ini = Math.max(1, rid - 9);
+      const ps = [];
+      for (let i = rid; i >= ini; i--) ps.push(cv.methods.getRoundInfo(i).call().then(r => ({
+        r,
+        id: i
+      })));
       setHistorial(await Promise.all(ps));
-    }catch(e){}
-  },[]);
-
-  const cargarTodo=useCallback((cv,w3,wAddr)=>{cargarRondas(cv,w3,wAddr);cargarHistorial(cv,w3);},[cargarRondas,cargarHistorial]);
-
-  useEffect(()=>{
-    const w3=new Web3(new Web3.providers.HttpProvider(CFG.RPC));
-    const cv=new w3.eth.Contract(ABI_V,CFG.CONTRATO_VEGAS);
-    const ce=new w3.eth.Contract(ABI_E,CFG.CONTRATO_CNKT);
-    window._web3=w3;setWeb3(w3);setContrato(cv);setContratoE(ce);web3Ref.current=w3;contratoRef.current=cv;
-    fetchPrecioCNKT();cargarTodo(cv,w3,null);
-    const iv=setInterval(()=>cargarTodo(contratoRef.current,web3Ref.current,prevWallet.current),15000);
-    const pv=setInterval(fetchPrecioCNKT,60000);
-    return()=>{clearInterval(iv);clearInterval(pv);};
-  },[]);
-
-  useEffect(()=>{
-    if(!rondas.live)return;
-    const t=setInterval(()=>{
-      const s=tLeft(rondas.live.resolveTime);
-      setTimer(fTime(Math.max(0,s)));
-      setTimerUrgent(s<=120&&s>0);
-      if(s<=0)setTimer('00:00');
-    },1000);
-    return()=>clearInterval(t);
-  },[rondas.live]);
-
-  useEffect(()=>{prevWallet.current=wallet;},[wallet]);
-
-  // Centrar tarjeta LIVE al cargar
-  useEffect(()=>{
-    if(!liveCardRef.current||!carouselRef.current)return;
-    const track=carouselRef.current;
-    const card=liveCardRef.current;
-    const trackW=track.offsetWidth;
-    const cardLeft=card.offsetLeft;
-    const cardW=card.offsetWidth;
-    track.scrollLeft=cardLeft-(trackW/2)+(cardW/2);
-  },[rondas.liveId]);
-
-  const conectarMM=async()=>{
-    setConnErr('');if(!window.ethereum){setConnErr('MetaMask no detectado.');return;}
-    try{
-      const accounts=await window.ethereum.request({method:'eth_requestAccounts'});
-      const chainId=await window.ethereum.request({method:'eth_chainId'});
-      if(chainId!==CFG.POLYGON_CHAIN){try{await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:CFG.POLYGON_CHAIN}]});}catch(e){setConnErr('Cambia a Polygon en MetaMask.');return;}}
-      const{w3,cv,ce}=await initWeb3(window.ethereum,accounts[0],false);
-      setShowConn(false);addToast('Wallet conectada ✓','ok');cargarTodo(cv,w3,accounts[0]);
-    }catch(e){setConnErr('Error: '+(e.message||e));}
-  };
-
-  const conectarMovil=()=>{
-    const mm=`https://metamask.app.link/dapp/${window.location.host}`;
-    const tw=`https://link.trustwallet.com/open_url?coin_id=966&url=${encodeURIComponent(window.location.href)}`;
-    setConnErr(`link:<a href="${mm}" style="display:block;padding:8px;background:var(--gold-dim);border-radius:6px;color:var(--gold);text-decoration:none;margin-bottom:4px;font-size:11px">🦊 MetaMask Mobile</a><a href="${tw}" style="display:block;padding:8px;background:rgba(255,255,255,0.03);border-radius:6px;color:#888;text-decoration:none;font-size:11px">🛡 Trust Wallet</a>`);
-  };
-
-  const desconectar=()=>{
-    const w3=new Web3(new Web3.providers.HttpProvider(CFG.RPC));
-    const cv=new w3.eth.Contract(ABI_V,CFG.CONTRATO_VEGAS);
-    const ce=new w3.eth.Contract(ABI_E,CFG.CONTRATO_CNKT);
-    window._web3=w3;setWeb3(w3);setContrato(cv);setContratoE(ce);web3Ref.current=w3;contratoRef.current=cv;
-    setWallet(null);setSoloLectura(true);setEsOwner(false);setShowConn(false);setConnErr('');
-    prevWallet.current=null;addToast('Wallet desconectada','info');
-  };
-
-  const soloVer=()=>{setShowConn(false);addToast('Modo solo vista','info');};
-
-  const abrirRonda=async()=>{
-    if(!contrato||!wallet)return;setAdminLoading('abriendo');
-    try{await contrato.methods.openRound(selAsset).send({from:wallet});addToast(ASSETS[selAsset]+' ronda abierta ✓','ok');setTimeout(()=>cargarTodo(contrato,web3,wallet),3000);}
-    catch(e){addToast('Error: '+(e.message||e),'err');}
-    setAdminLoading('');
-  };
-
-  const resolverRonda=async()=>{
-    if(!contrato||!wallet||!rondas.liveId)return;setAdminLoading('resolviendo');
-    try{await contrato.methods.resolveRound(rondas.liveId).send({from:wallet});addToast('Ronda #'+rondas.liveId+' resuelta ✓','ok');setTimeout(()=>cargarTodo(contrato,web3,wallet),3000);}
-    catch(e){addToast('Error: '+(e.message||e),'err');}
-    setAdminLoading('');
-  };
-
-  const cambiarEvoxWallet = async () => {
-    if(!newEvoxWallet||!newEvoxWallet.startsWith('0x')||newEvoxWallet.length!==42){
-      setEvoxWalletStatus({msg:'Dirección inválida',tipo:'err'}); return;
+    } catch (e) {}
+  }, []);
+  const cargarTodo = useCallback((cv, w3, wAddr) => {
+    cargarRondas(cv, w3, wAddr);
+    cargarHistorial(cv, w3);
+  }, [cargarRondas, cargarHistorial]);
+  useEffect(() => {
+    const w3 = new Web3(new Web3.providers.HttpProvider(CFG.RPC));
+    const cv = new w3.eth.Contract(ABI_V, CFG.CONTRATO_VEGAS);
+    const ce = new w3.eth.Contract(ABI_E, CFG.CONTRATO_CNKT);
+    window._web3 = w3;
+    setWeb3(w3);
+    setContrato(cv);
+    setContratoE(ce);
+    web3Ref.current = w3;
+    contratoRef.current = cv;
+    fetchPrecioCNKT();
+    cargarTodo(cv, w3, null);
+    const iv = setInterval(() => cargarTodo(contratoRef.current, web3Ref.current, prevWallet.current), 15000);
+    const pv = setInterval(fetchPrecioCNKT, 60000);
+    return () => {
+      clearInterval(iv);
+      clearInterval(pv);
+    };
+  }, []);
+  useEffect(() => {
+    if (!rondas.live) return;
+    const t = setInterval(() => {
+      const s = tLeft(rondas.live.resolveTime);
+      setTimer(fTime(Math.max(0, s)));
+      setTimerUrgent(s <= 120 && s > 0);
+      if (s <= 0) setTimer('00:00');
+    }, 1000);
+    return () => clearInterval(t);
+  }, [rondas.live]);
+  useEffect(() => {
+    prevWallet.current = wallet;
+  }, [wallet]);
+  useEffect(() => {
+    if (!liveCardRef.current || !carouselRef.current) return;
+    const track = carouselRef.current;
+    const card = liveCardRef.current;
+    const trackW = track.offsetWidth;
+    const cardLeft = card.offsetLeft;
+    const cardW = card.offsetWidth;
+    track.scrollLeft = cardLeft - trackW / 2 + cardW / 2;
+  }, [rondas.liveId]);
+  const conectarMM = async () => {
+    setConnErr('');
+    if (!window.ethereum) {
+      setConnErr('MetaMask no detectado.');
+      return;
     }
     try {
-      setEvoxWalletStatus({msg:'Confirmando en MetaMask...',tipo:'info'});
-      const gasPrice = await web3.eth.getGasPrice();
-      const gasFast = (BigInt(gasPrice)*150n/100n<30000000000n?'30000000000':(BigInt(gasPrice)*150n/100n).toString());
-      await contrato.methods.setEvoxWallet(newEvoxWallet).send({from:wallet, gasPrice:gasFast});
-      setEvoxWalletStatus({msg:'✓ Wallet actualizada correctamente',tipo:'ok'});
-      setNewEvoxWallet('');
-    } catch(e) {
-      setEvoxWalletStatus({msg:'✗ '+(e.message||e),tipo:'err'});
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts'
+      });
+      const chainId = await window.ethereum.request({
+        method: 'eth_chainId'
+      });
+      if (chainId !== CFG.POLYGON_CHAIN) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{
+              chainId: CFG.POLYGON_CHAIN
+            }]
+          });
+        } catch (e) {
+          setConnErr('Cambia a Polygon en MetaMask.');
+          return;
+        }
+      }
+      const {
+        w3,
+        cv,
+        ce
+      } = await initWeb3(window.ethereum, accounts[0], false);
+      setShowConn(false);
+      addToast('Wallet conectada ✓', 'ok');
+      cargarTodo(cv, w3, accounts[0]);
+    } catch (e) {
+      setConnErr('Error: ' + (e.message || e));
     }
   };
-
+  const conectarMovil = () => {
+    const mm = `https://metamask.app.link/dapp/${window.location.host}`;
+    const tw = `https://link.trustwallet.com/open_url?coin_id=966&url=${encodeURIComponent(window.location.href)}`;
+    setConnErr(`link:<a href="${mm}" style="display:block;padding:8px;background:var(--gold-dim);border-radius:6px;color:var(--gold);text-decoration:none;margin-bottom:4px;font-size:11px">🦊 MetaMask Mobile</a><a href="${tw}" style="display:block;padding:8px;background:rgba(255,255,255,0.03);border-radius:6px;color:#888;text-decoration:none;font-size:11px">🛡 Trust Wallet</a>`);
+  };
+  const desconectar = () => {
+    const w3 = new Web3(new Web3.providers.HttpProvider(CFG.RPC));
+    const cv = new w3.eth.Contract(ABI_V, CFG.CONTRATO_VEGAS);
+    const ce = new w3.eth.Contract(ABI_E, CFG.CONTRATO_CNKT);
+    window._web3 = w3;
+    setWeb3(w3);
+    setContrato(cv);
+    setContratoE(ce);
+    web3Ref.current = w3;
+    contratoRef.current = cv;
+    setWallet(null);
+    setSoloLectura(true);
+    setEsOwner(false);
+    setShowConn(false);
+    setConnErr('');
+    prevWallet.current = null;
+    addToast('Wallet desconectada', 'info');
+  };
+  const soloVer = () => {
+    setShowConn(false);
+    addToast('Modo solo vista', 'info');
+  };
+  const abrirRonda = async () => {
+    if (!contrato || !wallet) return;
+    setAdminLoading('abriendo');
+    try {
+      await contrato.methods.openRound(selAsset).send({
+        from: wallet
+      });
+      addToast(ASSETS[selAsset] + ' ronda abierta ✓', 'ok');
+      setTimeout(() => cargarTodo(contrato, web3, wallet), 3000);
+    } catch (e) {
+      addToast('Error: ' + (e.message || e), 'err');
+    }
+    setAdminLoading('');
+  };
+  const resolverRonda = async () => {
+    if (!contrato || !wallet || !rondas.liveId) return;
+    setAdminLoading('resolviendo');
+    try {
+      await contrato.methods.resolveRound(rondas.liveId).send({
+        from: wallet
+      });
+      addToast('Ronda #' + rondas.liveId + ' resuelta ✓', 'ok');
+      setTimeout(() => cargarTodo(contrato, web3, wallet), 3000);
+    } catch (e) {
+      addToast('Error: ' + (e.message || e), 'err');
+    }
+    setAdminLoading('');
+  };
+  const cambiarEvoxWallet = async () => {
+    if (!newEvoxWallet || !newEvoxWallet.startsWith('0x') || newEvoxWallet.length !== 42) {
+      setEvoxWalletStatus({
+        msg: 'Dirección inválida',
+        tipo: 'err'
+      });
+      return;
+    }
+    try {
+      setEvoxWalletStatus({
+        msg: 'Confirmando en MetaMask...',
+        tipo: 'info'
+      });
+      const gasPrice = await web3.eth.getGasPrice();
+      const gasFast = BigInt(gasPrice) * 150n / 100n < 30000000000n ? '30000000000' : (BigInt(gasPrice) * 150n / 100n).toString();
+      await contrato.methods.setEvoxWallet(newEvoxWallet).send({
+        from: wallet,
+        gasPrice: gasFast
+      });
+      setEvoxWalletStatus({
+        msg: '✓ Wallet actualizada correctamente',
+        tipo: 'ok'
+      });
+      setNewEvoxWallet('');
+    } catch (e) {
+      setEvoxWalletStatus({
+        msg: '✗ ' + (e.message || e),
+        tipo: 'err'
+      });
+    }
+  };
   const cargarStats = async () => {
-    if(!contrato||!web3) return;
+    if (!contrato || !web3) return;
     setStatsLoading(true);
     try {
       const rid = parseInt(await contrato.methods.currentRoundId().call());
-      if(rid===0){setStats(null);setStatsLoading(false);return;}
-
-      const hoy = new Date(); hoy.setHours(0,0,0,0);
-      const mesInicio = new Date(); mesInicio.setDate(1); mesInicio.setHours(0,0,0,0);
-      const hoyTs = Math.floor(hoy.getTime()/1000);
-      const mesTs = Math.floor(mesInicio.getTime()/1000);
-
-      // Cargar todas las rondas
+      if (rid === 0) {
+        setStats(null);
+        setStatsLoading(false);
+        return;
+      }
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+      const mesInicio = new Date();
+      mesInicio.setDate(1);
+      mesInicio.setHours(0, 0, 0, 0);
+      const hoyTs = Math.floor(hoy.getTime() / 1000);
+      const mesTs = Math.floor(mesInicio.getTime() / 1000);
       const ps = [];
-      for(let i=1;i<=rid;i++) ps.push(contrato.methods.getRoundInfo(i).call().then(r=>({r,id:i})));
+      for (let i = 1; i <= rid; i++) ps.push(contrato.methods.getRoundInfo(i).call().then(r => ({
+        r,
+        id: i
+      })));
       const todas = await Promise.all(ps);
-
-      // Calcular stats
-      let evoxMes=0, evoxTotal=0;
-      let rondasHoy={total:0,resueltas:0,canceladas:0};
-      let volHoy=0, volMes=0;
-      let sumaApostadores=0, sumaPool=0, rondasConApuestas=0;
-      const horaConteo={};
-      let maxRonda={pool:0,id:0};
-
-      todas.forEach(({r,id})=>{
-        const st=parseInt(r.status);
-        const pool=parseFloat(web3.utils.fromWei(r.totalPool.toString(),'ether'));
-        const openTs=parseInt(r.openTime);
-        const fee=pool*0.05;
-
-        // Total histórico
-        if(st===2) evoxTotal+=fee;
-
-        // Este mes
-        if(openTs>=mesTs){
-          if(st===2){evoxMes+=fee; volMes+=pool;}
-          else if(st!==3) volMes+=pool;
+      let evoxMes = 0,
+        evoxTotal = 0;
+      let rondasHoy = {
+        total: 0,
+        resueltas: 0,
+        canceladas: 0
+      };
+      let volHoy = 0,
+        volMes = 0,
+        sumaPool = 0,
+        rondasConApuestas = 0;
+      const horaConteo = {};
+      let maxRonda = {
+        pool: 0,
+        id: 0
+      };
+      todas.forEach(_ref9 => {
+        let {
+          r,
+          id
+        } = _ref9;
+        const st = parseInt(r.status);
+        const pool = parseFloat(web3.utils.fromWei(r.totalPool.toString(), 'ether'));
+        const openTs = parseInt(r.openTime);
+        const fee = pool * 0.05;
+        if (st === 2) evoxTotal += fee;
+        if (openTs >= mesTs) {
+          if (st === 2) {
+            evoxMes += fee;
+            volMes += pool;
+          } else if (st !== 3) volMes += pool;
         }
-
-        // Hoy
-        if(openTs>=hoyTs){
+        if (openTs >= hoyTs) {
           rondasHoy.total++;
-          if(st===2){rondasHoy.resueltas++;volHoy+=pool;}
-          else if(st===3) rondasHoy.canceladas++;
+          if (st === 2) {
+            rondasHoy.resueltas++;
+            volHoy += pool;
+          } else if (st === 3) rondasHoy.canceladas++;
         }
-
-        // Promedios (rondas con apuestas)
-        if(pool>0&&st===2){
-          sumaPool+=pool; rondasConApuestas++;
-          if(pool>maxRonda.pool) maxRonda={pool,id};
-          // Hora
-          const hora=new Date(openTs*1000).getHours();
-          horaConteo[hora]=(horaConteo[hora]||0)+1;
+        if (pool > 0 && st === 2) {
+          sumaPool += pool;
+          rondasConApuestas++;
+          if (pool > maxRonda.pool) maxRonda = {
+            pool,
+            id
+          };
+          const hora = new Date(openTs * 1000).getHours();
+          horaConteo[hora] = (horaConteo[hora] || 0) + 1;
         }
       });
-
-      // Mejor hora
-      let mejorHora=-1, mejorHoraCount=0;
-      Object.entries(horaConteo).forEach(([h,c])=>{if(c>mejorHoraCount){mejorHoraCount=c;mejorHora=parseInt(h);}});
-
-      // Proyección mes (basada en promedio diario de hoy)
-      const diasMes=new Date(hoy.getFullYear(),hoy.getMonth()+1,0).getDate();
-      const diaDelMes=hoy.getDate();
-      const proyeccionMes=diaDelMes>0?(evoxMes/diaDelMes)*diasMes:0;
-
+      let mejorHora = -1,
+        mejorHoraCount = 0;
+      Object.entries(horaConteo).forEach(_ref0 => {
+        let [h, c] = _ref0;
+        if (c > mejorHoraCount) {
+          mejorHoraCount = c;
+          mejorHora = parseInt(h);
+        }
+      });
+      const diasMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).getDate();
+      const diaDelMes = hoy.getDate();
+      const proyeccionMes = diaDelMes > 0 ? evoxMes / diaDelMes * diasMes : 0;
       setStats({
-        evoxMes, evoxTotal,
-        rondasHoy, volHoy, volMes,
-        promPool: rondasConApuestas>0?sumaPool/rondasConApuestas:0,
-        maxRonda, mejorHora, mejorHoraCount,
-        proyeccionMes, totalRondas:rid,
+        evoxMes,
+        evoxTotal,
+        rondasHoy,
+        volHoy,
+        volMes,
+        promPool: rondasConApuestas > 0 ? sumaPool / rondasConApuestas : 0,
+        maxRonda,
+        mejorHora,
+        mejorHoraCount,
+        proyeccionMes,
+        totalRondas: rid
       });
-    } catch(e){ console.error(e); }
+    } catch (e) {
+      console.error(e);
+    }
     setStatsLoading(false);
   };
-
-  const renderHistorial=()=>{
-    if(!historial.length)return<div style={{color:'var(--muted)',fontSize:11,textAlign:'center',padding:32,fontFamily:'DM Mono,monospace'}}>SIN HISTORIAL</div>;
-    const sL=['Abierta','Cerrada','Resuelta','Cancelada'],sC=['var(--gold)','var(--muted)','var(--up)','var(--dn)'];
-    return(
-      <table><thead><tr><th>Ronda</th><th>Activo</th><th>Apertura</th><th>Cierre</th><th>Pool</th><th>Resultado</th><th>Estado</th></tr></thead>
-      <tbody>{historial.map(({r,id})=>{
-        const st=parseInt(r.status);
-        const pA=parseInt(r.priceAtOpen)/1e8,pC=r.priceAtClose!=='0'?parseInt(r.priceAtClose)/1e8:null;
-        const pool=web3?parseFloat(web3.utils.fromWei(r.totalPool.toString(),'ether')).toFixed(2):'—';
-        const res=st===2?(parseInt(r.result)===0?<span className="badge-up">▲ UP</span>:<span className="badge-dn">▼ DOWN</span>):st===3?<span className="badge-cancel">CANCEL</span>:'—';
-        return(<tr key={id}><td style={{color:'var(--muted)'}}>#{id}</td><td style={{fontWeight:700,color:'var(--gold)',fontFamily:'Kanit,sans-serif'}}>{ASSETS[parseInt(r.asset)]}</td><td>${pA.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td><td>{pC?'$'+pC.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'—'}</td><td>{pool} CNKT+</td><td>{res}</td><td style={{color:sC[st],fontSize:11}}>{sL[st]}</td></tr>);
-      })}</tbody></table>
-    );
-  };
-
-  return <>
-    <header className="header">
-      <div className="logo"><div className="logo-badge">C+</div><div><div className="logo-name">CNKT <span style={{color:'var(--muted)',fontSize:12,fontWeight:400}}>by EVOX</span></div></div></div>
-      <div className="price-bar">
-        <div className="price-chip active"><span>₿</span><span className="price-chip-val">{precioBTC?('$'+precioBTC.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})):'—'}</span><span style={{fontSize:10,color:'var(--muted)'}}>BTC</span></div>
-        <div className="price-chip"><span style={{fontSize:10,color:'var(--gold)'}}>CNKT+</span><span className="price-chip-val" style={{color:'var(--gold)'}}>${precioCNKT.toFixed(6)}</span></div>
-      </div>
-      <div className="header-actions">
-        <button onClick={()=>setShowGuia(true)} style={{background:'transparent',border:'1px solid var(--border)',borderRadius:16,padding:'5px 12px',color:'var(--muted)',fontFamily:'Kanit,sans-serif',fontSize:11,fontWeight:700,cursor:'pointer',letterSpacing:0.5,whiteSpace:'nowrap',transition:'all 0.2s'}} onMouseOver={e=>e.target.style.borderColor='var(--gold)'} onMouseOut={e=>e.target.style.borderColor='var(--border)'}>📖 Guía rápida</button>
-        <div className={`timer-badge ${timerUrgent?'urgent':''}`}>{timer} <span style={{fontSize:10,color:'var(--muted)',fontWeight:400,marginLeft:2}}>10m</span></div>
-        {!soloLectura&&wallet?(
-          <div className="wallet-pill" onClick={()=>setShowConn(!showConn)}><div className="wallet-dot"/>{wallet.slice(0,6)}...{wallet.slice(-4)} ▾</div>
-        ):(
-          <button className="btn-connect" onClick={()=>setShowConn(!showConn)}>CONECTAR</button>
-        )}
-      </div>
-    </header>
-
-    {showConn&&<><div style={{position:'fixed',inset:0,zIndex:199}} onClick={()=>setShowConn(false)}/><ConnDropdown onMM={conectarMM} onMovil={conectarMovil} onVer={soloVer} onDisconnect={desconectar} wallet={!soloLectura?wallet:null} error={connErr}/></>}
-
-    <div className="carousel-section">
-      <div className="carousel-track" ref={carouselRef}>
-        <div className="carousel-padding"/>
-        <CardExpired ronda={rondas.exp2} id={rondas.exp2Id} web3={web3}/>
-        <CardExpired ronda={rondas.exp1} id={rondas.exp1Id} web3={web3}/>
-        <div ref={liveCardRef} style={{flexShrink:0,scrollSnapAlign:"center"}}><CardLive ronda={rondas.live} rid={rondas.liveId} wallet={!soloLectura?wallet:null} soloLectura={soloLectura} web3={web3} contrato={contrato} onBet={dir=>{if(soloLectura){addToast('Conecta tu wallet para apostar','info');setShowConn(true);return;}setModal({dir});}}/></div>
-        <CardNext rid={rondas.liveId?rondas.liveId+1:null}/>
-        <div className="card card-later"><div style={{fontSize:28,opacity:0.4}}>🕐</div><div style={{fontSize:11,color:'var(--muted)',letterSpacing:1,textTransform:'uppercase'}}>Later</div><div style={{fontSize:13,fontWeight:700,fontFamily:'DM Mono,monospace',color:'var(--muted)'}}>~10 min</div></div>
-        <div className="carousel-padding"/>
-      </div>
-    </div>
-
-    <div className="bottom">
-      {esOwner&&<>
-        {/* DASHBOARD STATS */}
-        <div style={{marginBottom:16}}>
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
-            <div style={{fontSize:13,fontWeight:700,letterSpacing:0.5}}>📊 Dashboard EVOX</div>
-            <button onClick={cargarStats} disabled={statsLoading} style={{background:'var(--gold-dim)',border:'1px solid rgba(255,215,0,0.3)',borderRadius:10,padding:'5px 14px',color:'var(--gold)',fontFamily:'Kanit,sans-serif',fontSize:11,fontWeight:700,cursor:'pointer',letterSpacing:1}}>
-              {statsLoading?'Cargando...':'↻ Actualizar'}
-            </button>
-          </div>
-          {stats?(
-            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:10}}>
-              {[
-                {lbl:'Ganancias EVOX este mes',val:stats.evoxMes.toFixed(2)+' CNKT+',sub:'≈ $'+(stats.evoxMes*precioCNKT).toFixed(2)+' USD',color:'var(--gold)'},
-                {lbl:'Ganancias EVOX históricas',val:stats.evoxTotal.toFixed(2)+' CNKT+',sub:'≈ $'+(stats.evoxTotal*precioCNKT).toFixed(2)+' USD',color:'var(--gold)'},
-                {lbl:'Proyección fin de mes',val:stats.proyeccionMes.toFixed(2)+' CNKT+',sub:'≈ $'+(stats.proyeccionMes*precioCNKT).toFixed(2)+' USD',color:'var(--up)'},
-                {lbl:'Rondas hoy',val:stats.rondasHoy.total+' total',sub:'✓ '+stats.rondasHoy.resueltas+' resueltas · ✗ '+stats.rondasHoy.canceladas+' canceladas',color:'var(--text)'},
-                {lbl:'Volumen apostado hoy',val:stats.volHoy.toFixed(2)+' CNKT+',sub:'≈ $'+(stats.volHoy*precioCNKT).toFixed(2)+' USD',color:'var(--text)'},
-                {lbl:'Volumen apostado este mes',val:stats.volMes.toFixed(2)+' CNKT+',sub:'≈ $'+(stats.volMes*precioCNKT).toFixed(2)+' USD',color:'var(--text)'},
-                {lbl:'Promedio pool por ronda',val:stats.promPool.toFixed(2)+' CNKT+',sub:'≈ $'+(stats.promPool*precioCNKT).toFixed(2)+' USD',color:'var(--muted)'},
-                {lbl:'Ronda más grande',val:'#'+stats.maxRonda.id,sub:stats.maxRonda.pool.toFixed(2)+' CNKT+ en el pool',color:'var(--dn)'},
-                {lbl:'Mejor hora del día',val:stats.mejorHora>=0?(stats.mejorHora+':00 - '+(stats.mejorHora+1)+':00'):'—',sub:stats.mejorHoraCount+' rondas con apuestas',color:'var(--live)'},
-                {lbl:'Total rondas históricas',val:stats.totalRondas+' rondas',sub:stats.evoxTotal>0?'Plataforma activa':'Sin rondas resueltas aún',color:'var(--muted)'},
-              ].map((item,i)=>(
-                <div key={i} style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:14,padding:'14px 16px'}}>
-                  <div style={{fontSize:10,color:'var(--muted)',letterSpacing:1,textTransform:'uppercase',fontFamily:'DM Mono,monospace',marginBottom:6}}>{item.lbl}</div>
-                  <div style={{fontSize:16,fontWeight:800,color:item.color,fontFamily:'DM Mono,monospace',marginBottom:2}}>{item.val}</div>
-                  <div style={{fontSize:10,color:'var(--muted)',fontFamily:'DM Mono,monospace'}}>{item.sub}</div>
-                </div>
-              ))}
-            </div>
-          ):(
-            <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:14,padding:'24px',textAlign:'center',color:'var(--muted)',fontSize:12,fontFamily:'DM Mono,monospace'}}>
-              {statsLoading?'Cargando estadísticas...':'Presiona ↻ Actualizar para ver el dashboard'}
-            </div>
-          )}
-        </div>
-
-        {/* ADMIN GRID */}
-        <div className="admin-grid">
-        <div className="admin-card"><div className="admin-title">Abrir Ronda</div><div className="asset-chips">{ASSETS.map((a,i)=><button key={a} className={`asset-chip ${selAsset===i?'sel':''}`} onClick={()=>setSelAsset(i)}>{a}</button>)}</div><button className="btn-admin btn-open" disabled={adminLoading==='abriendo'} onClick={abrirRonda}>{adminLoading==='abriendo'?'...':'▶ Abrir Ronda'}</button></div>
-        <div className="admin-card"><div className="admin-title">Resolver Ronda</div><div style={{fontSize:11,color:'var(--muted)',marginBottom:12,lineHeight:1.8,fontFamily:'DM Mono,monospace'}}>Consulta Chainlink y distribuye fondos automáticamente.</div><button className="btn-admin btn-resolve" disabled={adminLoading==='resolviendo'} onClick={resolverRonda}>{adminLoading==='resolviendo'?'...':'✓ Resolver Ronda'}</button></div>
-        <div className="admin-card">
-          <div className="admin-title">Wallet de Comisiones EVOX</div>
-          <div style={{fontSize:11,color:'var(--muted)',marginBottom:10,fontFamily:'DM Mono,monospace',lineHeight:1.6}}>
-            Actual:<br/><span style={{color:'var(--gold)',fontSize:10,wordBreak:'break-all'}}>{CFG.EVOX_WALLET}</span>
-          </div>
-          <input
-            type="text"
-            placeholder="0x... nueva wallet"
-            value={newEvoxWallet}
-            onChange={e=>setNewEvoxWallet(e.target.value)}
-            style={{width:'100%',background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:10,padding:'10px 12px',color:'var(--text)',fontFamily:'DM Mono,monospace',fontSize:11,marginBottom:10,outline:'none'}}
-          />
-          {evoxWalletStatus&&<div style={{fontSize:11,marginBottom:8,color:evoxWalletStatus.tipo==='ok'?'var(--up)':evoxWalletStatus.tipo==='err'?'var(--dn)':'var(--gold)',fontFamily:'DM Mono,monospace'}}>{evoxWalletStatus.msg}</div>}
-          <button className="btn-admin btn-open" onClick={cambiarEvoxWallet}>💳 Cambiar Wallet</button>
-        </div>
-      </div>
-      </>
+  const renderHistorial = () => {
+    if (!historial.length) return /*#__PURE__*/React.createElement("div", {
+      style: {
+        color: 'var(--muted)',
+        fontSize: 11,
+        textAlign: 'center',
+        padding: 32,
+        fontFamily: 'DM Mono,monospace'
       }
-      <div className="hist-card"><div className="hist-head"><div className="hist-title">Historial de Rondas</div><div className="hist-sub">AUTO-ACTUALIZA</div></div>{renderHistorial()}</div>
-    </div>
-
-    {modal&&contrato&&web3&&<Modal dir={modal.dir} rid={rondas.liveId} asset={rondas.live?ASSETS[parseInt(rondas.live.asset)]:'BTC'} precioCNKT={precioCNKT} web3={web3} contrato={contrato} contratoE={contratoE} wallet={wallet} onClose={()=>setModal(null)} onSuccess={()=>{addToast('Entrada '+(modal.dir==='SUBE'?'▲':'▼')+' registrada ✓','ok');cargarTodo(contrato,web3,wallet);}}/>}
-    {resultModal&&<ResultModal tipo={resultModal.tipo} ganancia={resultModal.ganancia} web3={web3} onClose={()=>setResultModal(null)}/>}
-
-    {showGuia&&(
-      <div className="modal-bg" onClick={e=>e.target===e.currentTarget&&setShowGuia(false)}>
-        <div style={{background:'var(--surface)',borderRadius:20,padding:28,width:'100%',maxWidth:400,position:'relative',border:'1px solid var(--border)',borderTop:'3px solid var(--gold)'}}>
-          <button className="modal-close" onClick={()=>setShowGuia(false)}>✕</button>
-          <div style={{fontSize:20,fontWeight:800,color:'var(--gold)',letterSpacing:1,marginBottom:4}}>📖 Guía Rápida</div>
-          <div style={{fontSize:11,color:'var(--muted)',fontFamily:'DM Mono,monospace',letterSpacing:1,marginBottom:20}}>CNKT PREDICTOR by EVOX</div>
-
-          {[
-            {icon:'🎯', titulo:'¿Cómo funciona?', texto:'Cada 10 minutos se abre una ronda. Predice si el precio de BTC va a subir o bajar. Si aciertas, ganas tu parte del pool.'},
-            {icon:'▲▼', titulo:'¿Cómo entro?', texto:'Conecta tu wallet, elige SUBE (UP) o BAJA (DOWN) y confirma la transacción en MetaMask. Mínimo 500 CNKT+.'},
-            {icon:'🔒', titulo:'Los 2 minutos', texto:'Cuando el reloj llega a 02:00 se pone rojo y las entradas se cierran. El reloj sigue hasta 00:00 cuando el keeper resuelve la ronda.'},
-            {icon:'🎉', titulo:'Si ganas', texto:'Los CNKT+ llegan automáticamente a tu wallet. No tienes que hacer nada.'},
-            {icon:'↩️', titulo:'Si se cancela', texto:'Pasa cuando no hay entradas en ambos lados. Tus CNKT+ se devuelven automáticamente.'},
-          ].map((item,i)=>(
-            <div key={i} style={{display:'flex',gap:12,marginBottom:16,alignItems:'flex-start'}}>
-              <div style={{fontSize:20,flexShrink:0,width:28,textAlign:'center'}}>{item.icon}</div>
-              <div>
-                <div style={{fontSize:13,fontWeight:700,color:'var(--text)',marginBottom:3}}>{item.titulo}</div>
-                <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.7}}>{item.texto}</div>
-              </div>
-            </div>
-          ))}
-
-          <button onClick={()=>setShowGuia(false)} style={{width:'100%',padding:12,borderRadius:12,border:'none',background:'linear-gradient(135deg,var(--gold),var(--gold2))',color:'#000',fontFamily:'Kanit,sans-serif',fontSize:14,fontWeight:800,cursor:'pointer',marginTop:4,letterSpacing:0.5}}>
-            ¡Entendido, a jugar! 🚀
-          </button>
-        </div>
-      </div>
-    )}
-    <div className="toast-wrap">{toasts.map(t=><div key={t.id} className={`toast-item ${t.tipo}`}>{t.msg}</div>)}</div>
-  </>;
+    }, "SIN HISTORIAL");
+    const sL = ['Abierta', 'Cerrada', 'Resuelta', 'Cancelada'],
+      sC = ['var(--gold)', 'var(--muted)', 'var(--up)', 'var(--dn)'];
+    return /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "Ronda"), /*#__PURE__*/React.createElement("th", null, "Activo"), /*#__PURE__*/React.createElement("th", null, "Apertura"), /*#__PURE__*/React.createElement("th", null, "Cierre"), /*#__PURE__*/React.createElement("th", null, "Pool"), /*#__PURE__*/React.createElement("th", null, "Resultado"), /*#__PURE__*/React.createElement("th", null, "Estado"))), /*#__PURE__*/React.createElement("tbody", null, historial.map(_ref1 => {
+      let {
+        r,
+        id
+      } = _ref1;
+      const st = parseInt(r.status);
+      const pA = parseInt(r.priceAtOpen) / 1e8,
+        pC = r.priceAtClose !== '0' ? parseInt(r.priceAtClose) / 1e8 : null;
+      const pool = web3 ? parseFloat(web3.utils.fromWei(r.totalPool.toString(), 'ether')).toFixed(2) : '—';
+      const res = st === 2 ? parseInt(r.result) === 0 ? /*#__PURE__*/React.createElement("span", {
+        className: "badge-up"
+      }, "\u25B2 UP") : /*#__PURE__*/React.createElement("span", {
+        className: "badge-dn"
+      }, "\u25BC DOWN") : st === 3 ? /*#__PURE__*/React.createElement("span", {
+        className: "badge-cancel"
+      }, "CANCEL") : '—';
+      return /*#__PURE__*/React.createElement("tr", {
+        key: id
+      }, /*#__PURE__*/React.createElement("td", {
+        style: {
+          color: 'var(--muted)'
+        }
+      }, "#", id), /*#__PURE__*/React.createElement("td", {
+        style: {
+          fontWeight: 700,
+          color: 'var(--gold)',
+          fontFamily: 'Kanit,sans-serif'
+        }
+      }, ASSETS[parseInt(r.asset)]), /*#__PURE__*/React.createElement("td", null, "$", pA.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })), /*#__PURE__*/React.createElement("td", null, pC ? '$' + pC.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }) : '—'), /*#__PURE__*/React.createElement("td", null, pool, " CNKT+"), /*#__PURE__*/React.createElement("td", null, res), /*#__PURE__*/React.createElement("td", {
+        style: {
+          color: sC[st],
+          fontSize: 11
+        }
+      }, sL[st]));
+    })));
+  };
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("header", {
+    className: "header"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "logo"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "logo-badge"
+  }, "C+"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "logo-name"
+  }, "CNKT ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: 'var(--muted)',
+      fontSize: 12,
+      fontWeight: 400
+    }
+  }, "by EVOX")))), /*#__PURE__*/React.createElement("div", {
+    className: "price-bar"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "price-chip active"
+  }, /*#__PURE__*/React.createElement("span", null, "\u20BF"), /*#__PURE__*/React.createElement("span", {
+    className: "price-chip-val"
+  }, precioBTC ? '$' + precioBTC.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }) : '—'), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 10,
+      color: 'var(--muted)'
+    }
+  }, "BTC")), /*#__PURE__*/React.createElement("div", {
+    className: "price-chip"
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 10,
+      color: 'var(--gold)'
+    }
+  }, "CNKT+"), /*#__PURE__*/React.createElement("span", {
+    className: "price-chip-val",
+    style: {
+      color: 'var(--gold)'
+    }
+  }, "$", precioCNKT.toFixed(6)))), /*#__PURE__*/React.createElement("div", {
+    className: "header-actions"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowGuia(true),
+    style: {
+      background: 'transparent',
+      border: '1px solid var(--border)',
+      borderRadius: 16,
+      padding: '5px 12px',
+      color: 'var(--muted)',
+      fontFamily: 'Kanit,sans-serif',
+      fontSize: 11,
+      fontWeight: 700,
+      cursor: 'pointer',
+      letterSpacing: 0.5,
+      whiteSpace: 'nowrap',
+      transition: 'all 0.2s'
+    },
+    onMouseOver: e => e.target.style.borderColor = 'var(--gold)',
+    onMouseOut: e => e.target.style.borderColor = 'var(--border)'
+  }, "\uD83D\uDCD6 Gu\xEDa r\xE1pida"), /*#__PURE__*/React.createElement("div", {
+    className: `timer-badge ${timerUrgent ? 'urgent' : ''}`
+  }, timer, " ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 10,
+      color: 'var(--muted)',
+      fontWeight: 400,
+      marginLeft: 2
+    }
+  }, "10m")), !soloLectura && wallet ? /*#__PURE__*/React.createElement("div", {
+    className: "wallet-pill",
+    onClick: () => setShowConn(!showConn)
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "wallet-dot"
+  }), wallet.slice(0, 6), "...", wallet.slice(-4), " \u25BE") : /*#__PURE__*/React.createElement("button", {
+    className: "btn-connect",
+    onClick: () => setShowConn(!showConn)
+  }, "CONECTAR"))), showConn && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'fixed',
+      inset: 0,
+      zIndex: 199
+    },
+    onClick: () => setShowConn(false)
+  }), /*#__PURE__*/React.createElement(ConnDropdown, {
+    onMM: conectarMM,
+    onMovil: conectarMovil,
+    onVer: soloVer,
+    onDisconnect: desconectar,
+    wallet: !soloLectura ? wallet : null,
+    error: connErr
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "carousel-section"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "carousel-track",
+    ref: carouselRef
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "carousel-padding"
+  }), /*#__PURE__*/React.createElement(CardExpired, {
+    ronda: rondas.exp2,
+    id: rondas.exp2Id,
+    web3: web3
+  }), /*#__PURE__*/React.createElement(CardExpired, {
+    ronda: rondas.exp1,
+    id: rondas.exp1Id,
+    web3: web3
+  }), /*#__PURE__*/React.createElement("div", {
+    ref: liveCardRef,
+    style: {
+      flexShrink: 0,
+      scrollSnapAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement(CardLive, {
+    ronda: rondas.live,
+    rid: rondas.liveId,
+    wallet: !soloLectura ? wallet : null,
+    soloLectura: soloLectura,
+    web3: web3,
+    contrato: contrato,
+    onBet: dir => {
+      if (soloLectura) {
+        addToast('Conecta tu wallet para apostar', 'info');
+        setShowConn(true);
+        return;
+      }
+      setModal({
+        dir
+      });
+    }
+  })), /*#__PURE__*/React.createElement(CardNext, {
+    rid: rondas.liveId ? rondas.liveId + 1 : null
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "card card-later"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 28,
+      opacity: 0.4
+    }
+  }, "\uD83D\uDD50"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: 'var(--muted)',
+      letterSpacing: 1,
+      textTransform: 'uppercase'
+    }
+  }, "Later"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 700,
+      fontFamily: 'DM Mono,monospace',
+      color: 'var(--muted)'
+    }
+  }, "~10 min")), /*#__PURE__*/React.createElement("div", {
+    className: "carousel-padding"
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "bottom"
+  }, esOwner && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: 16
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 700,
+      letterSpacing: 0.5
+    }
+  }, "\uD83D\uDCCA Dashboard EVOX"), /*#__PURE__*/React.createElement("button", {
+    onClick: cargarStats,
+    disabled: statsLoading,
+    style: {
+      background: 'var(--gold-dim)',
+      border: '1px solid rgba(255,215,0,0.3)',
+      borderRadius: 10,
+      padding: '5px 14px',
+      color: 'var(--gold)',
+      fontFamily: 'Kanit,sans-serif',
+      fontSize: 11,
+      fontWeight: 700,
+      cursor: 'pointer',
+      letterSpacing: 1
+    }
+  }, statsLoading ? 'Cargando...' : '↻ Actualizar')), stats ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))',
+      gap: 10
+    }
+  }, [{
+    lbl: 'Ganancias EVOX este mes',
+    val: stats.evoxMes.toFixed(2) + ' CNKT+',
+    sub: '≈ $' + (stats.evoxMes * precioCNKT).toFixed(2) + ' USD',
+    color: 'var(--gold)'
+  }, {
+    lbl: 'Ganancias EVOX históricas',
+    val: stats.evoxTotal.toFixed(2) + ' CNKT+',
+    sub: '≈ $' + (stats.evoxTotal * precioCNKT).toFixed(2) + ' USD',
+    color: 'var(--gold)'
+  }, {
+    lbl: 'Proyección fin de mes',
+    val: stats.proyeccionMes.toFixed(2) + ' CNKT+',
+    sub: '≈ $' + (stats.proyeccionMes * precioCNKT).toFixed(2) + ' USD',
+    color: 'var(--up)'
+  }, {
+    lbl: 'Rondas hoy',
+    val: stats.rondasHoy.total + ' total',
+    sub: '✓ ' + stats.rondasHoy.resueltas + ' resueltas · ✗ ' + stats.rondasHoy.canceladas + ' canceladas',
+    color: 'var(--text)'
+  }, {
+    lbl: 'Volumen apostado hoy',
+    val: stats.volHoy.toFixed(2) + ' CNKT+',
+    sub: '≈ $' + (stats.volHoy * precioCNKT).toFixed(2) + ' USD',
+    color: 'var(--text)'
+  }, {
+    lbl: 'Volumen apostado este mes',
+    val: stats.volMes.toFixed(2) + ' CNKT+',
+    sub: '≈ $' + (stats.volMes * precioCNKT).toFixed(2) + ' USD',
+    color: 'var(--text)'
+  }, {
+    lbl: 'Promedio pool por ronda',
+    val: stats.promPool.toFixed(2) + ' CNKT+',
+    sub: '≈ $' + (stats.promPool * precioCNKT).toFixed(2) + ' USD',
+    color: 'var(--muted)'
+  }, {
+    lbl: 'Ronda más grande',
+    val: '#' + stats.maxRonda.id,
+    sub: stats.maxRonda.pool.toFixed(2) + ' CNKT+ en el pool',
+    color: 'var(--dn)'
+  }, {
+    lbl: 'Mejor hora del día',
+    val: stats.mejorHora >= 0 ? stats.mejorHora + ':00 - ' + (stats.mejorHora + 1) + ':00' : '—',
+    sub: stats.mejorHoraCount + ' rondas con apuestas',
+    color: 'var(--live)'
+  }, {
+    lbl: 'Total rondas históricas',
+    val: stats.totalRondas + ' rondas',
+    sub: stats.evoxTotal > 0 ? 'Plataforma activa' : 'Sin rondas resueltas aún',
+    color: 'var(--muted)'
+  }].map((item, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      background: 'var(--surface)',
+      border: '1px solid var(--border)',
+      borderRadius: 14,
+      padding: '14px 16px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: 'var(--muted)',
+      letterSpacing: 1,
+      textTransform: 'uppercase',
+      fontFamily: 'DM Mono,monospace',
+      marginBottom: 6
+    }
+  }, item.lbl), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 16,
+      fontWeight: 800,
+      color: item.color,
+      fontFamily: 'DM Mono,monospace',
+      marginBottom: 2
+    }
+  }, item.val), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: 'var(--muted)',
+      fontFamily: 'DM Mono,monospace'
+    }
+  }, item.sub)))) : /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: 'var(--surface)',
+      border: '1px solid var(--border)',
+      borderRadius: 14,
+      padding: '24px',
+      textAlign: 'center',
+      color: 'var(--muted)',
+      fontSize: 12,
+      fontFamily: 'DM Mono,monospace'
+    }
+  }, statsLoading ? 'Cargando estadísticas...' : 'Presiona ↻ Actualizar para ver el dashboard')), /*#__PURE__*/React.createElement("div", {
+    className: "admin-grid"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "admin-card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "admin-title"
+  }, "Abrir Ronda"), /*#__PURE__*/React.createElement("div", {
+    className: "asset-chips"
+  }, ASSETS.map((a, i) => /*#__PURE__*/React.createElement("button", {
+    key: a,
+    className: `asset-chip ${selAsset === i ? 'sel' : ''}`,
+    onClick: () => setSelAsset(i)
+  }, a))), /*#__PURE__*/React.createElement("button", {
+    className: "btn-admin btn-open",
+    disabled: adminLoading === 'abriendo',
+    onClick: abrirRonda
+  }, adminLoading === 'abriendo' ? '...' : '▶ Abrir Ronda')), /*#__PURE__*/React.createElement("div", {
+    className: "admin-card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "admin-title"
+  }, "Resolver Ronda"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: 'var(--muted)',
+      marginBottom: 12,
+      lineHeight: 1.8,
+      fontFamily: 'DM Mono,monospace'
+    }
+  }, "Consulta Chainlink y distribuye fondos autom\xE1ticamente."), /*#__PURE__*/React.createElement("button", {
+    className: "btn-admin btn-resolve",
+    disabled: adminLoading === 'resolviendo',
+    onClick: resolverRonda
+  }, adminLoading === 'resolviendo' ? '...' : '✓ Resolver Ronda')), /*#__PURE__*/React.createElement("div", {
+    className: "admin-card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "admin-title"
+  }, "Wallet de Comisiones EVOX"), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    placeholder: "0x... nueva wallet",
+    value: newEvoxWallet,
+    onChange: e => setNewEvoxWallet(e.target.value),
+    style: {
+      width: '100%',
+      background: 'var(--bg2)',
+      border: '1px solid var(--border)',
+      borderRadius: 10,
+      padding: '10px 12px',
+      color: 'var(--text)',
+      fontFamily: 'DM Mono,monospace',
+      fontSize: 11,
+      marginBottom: 10,
+      outline: 'none'
+    }
+  }), evoxWalletStatus && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      marginBottom: 8,
+      color: evoxWalletStatus.tipo === 'ok' ? 'var(--up)' : evoxWalletStatus.tipo === 'err' ? 'var(--dn)' : 'var(--gold)',
+      fontFamily: 'DM Mono,monospace'
+    }
+  }, evoxWalletStatus.msg), /*#__PURE__*/React.createElement("button", {
+    className: "btn-admin btn-open",
+    onClick: cambiarEvoxWallet
+  }, "\uD83D\uDCB3 Cambiar Wallet")))), /*#__PURE__*/React.createElement("div", {
+    className: "hist-card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "hist-head"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "hist-title"
+  }, "Historial de Rondas"), /*#__PURE__*/React.createElement("div", {
+    className: "hist-sub"
+  }, "AUTO-ACTUALIZA")), renderHistorial())), modal && contrato && web3 && /*#__PURE__*/React.createElement(Modal, {
+    dir: modal.dir,
+    rid: rondas.liveId,
+    asset: rondas.live ? ASSETS[parseInt(rondas.live.asset)] : 'BTC',
+    precioCNKT: precioCNKT,
+    web3: web3,
+    contrato: contrato,
+    contratoE: contratoE,
+    wallet: wallet,
+    onClose: () => setModal(null),
+    onSuccess: () => {
+      addToast('Entrada ' + (modal.dir === 'SUBE' ? '▲' : '▼') + ' registrada ✓', 'ok');
+      cargarTodo(contrato, web3, wallet);
+    }
+  }), resultModal && /*#__PURE__*/React.createElement(ResultModal, {
+    tipo: resultModal.tipo,
+    ganancia: resultModal.ganancia,
+    web3: web3,
+    onClose: () => setResultModal(null)
+  }), showGuia && /*#__PURE__*/React.createElement("div", {
+    className: "modal-bg",
+    onClick: e => e.target === e.currentTarget && setShowGuia(false)
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: 'var(--surface)',
+      borderRadius: 20,
+      padding: 28,
+      width: '100%',
+      maxWidth: 400,
+      position: 'relative',
+      border: '1px solid var(--border)',
+      borderTop: '3px solid var(--gold)'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "modal-close",
+    onClick: () => setShowGuia(false)
+  }, "\u2715"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 20,
+      fontWeight: 800,
+      color: 'var(--gold)',
+      letterSpacing: 1,
+      marginBottom: 4
+    }
+  }, "\uD83D\uDCD6 Gu\xEDa R\xE1pida"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: 'var(--muted)',
+      fontFamily: 'DM Mono,monospace',
+      letterSpacing: 1,
+      marginBottom: 20
+    }
+  }, "CNKT PREDICTOR by EVOX"), [{
+    icon: '🎯',
+    titulo: '¿Cómo funciona?',
+    texto: 'Cada 10 minutos se abre una ronda. Predice si el precio de BTC va a subir o bajar. Si aciertas, ganas tu parte del pool.'
+  }, {
+    icon: '▲▼',
+    titulo: '¿Cómo entro?',
+    texto: 'Conecta tu wallet, elige SUBE (UP) o BAJA (DOWN) y confirma la transacción en MetaMask. Mínimo 500 CNKT+.'
+  }, {
+    icon: '🔒',
+    titulo: 'Los 2 minutos',
+    texto: 'Cuando el reloj llega a 02:00 se pone rojo y las entradas se cierran. El reloj sigue hasta 00:00 cuando el keeper resuelve la ronda.'
+  }, {
+    icon: '🎉',
+    titulo: 'Si ganas',
+    texto: 'Los CNKT+ llegan automáticamente a tu wallet. No tienes que hacer nada.'
+  }, {
+    icon: '↩️',
+    titulo: 'Si se cancela',
+    texto: 'Pasa cuando no hay entradas en ambos lados. Tus CNKT+ se devuelven automáticamente.'
+  }].map((item, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      display: 'flex',
+      gap: 12,
+      marginBottom: 16,
+      alignItems: 'flex-start'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 20,
+      flexShrink: 0,
+      width: 28,
+      textAlign: 'center'
+    }
+  }, item.icon), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 700,
+      color: 'var(--text)',
+      marginBottom: 3
+    }
+  }, item.titulo), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: 'var(--muted)',
+      lineHeight: 1.7
+    }
+  }, item.texto)))), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowGuia(false),
+    style: {
+      width: '100%',
+      padding: 12,
+      borderRadius: 12,
+      border: 'none',
+      background: 'linear-gradient(135deg,var(--gold),var(--gold2))',
+      color: '#000',
+      fontFamily: 'Kanit,sans-serif',
+      fontSize: 14,
+      fontWeight: 800,
+      cursor: 'pointer',
+      marginTop: 4,
+      letterSpacing: 0.5
+    }
+  }, "\xA1Entendido, a jugar! \uD83D\uDE80"))), /*#__PURE__*/React.createElement("div", {
+    className: "toast-wrap"
+  }, toasts.map(t => /*#__PURE__*/React.createElement("div", {
+    key: t.id,
+    className: `toast-item ${t.tipo}`
+  }, t.msg))));
 }
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
 </script>
 </body>
 </html>
