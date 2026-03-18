@@ -2356,8 +2356,13 @@ function CardPregunta({pregunta, web3, contrato, contratoE, wallet, soloLectura,
   const totalNo  = web3 ? parseFloat(web3.utils.fromWei(pregunta.totalNo.toString(), 'ether')) : 0;
   const totalPool = totalSi + totalNo;
   const pctSi = totalPool > 0 ? (totalSi / totalPool * 100) : 50;
-  const urgente = secsLeft <= 300 && secsLeft > 0;
-  const cerrada = secsLeft <= 0;
+  const cierreMatch = pregunta.condiciones && pregunta.condiciones.match(/^\[CIERRE:(\d+)\]/);
+  const cierreSegs = cierreMatch ? parseInt(cierreMatch[1]) : 0;
+  const closeTime = cierreSegs > 0 ? parseInt(pregunta.fechaLimite) - cierreSegs : parseInt(pregunta.fechaLimite);
+  const secsToClose = Math.max(0, closeTime - Math.floor(Date.now()/1000));
+  const cerrada = secsToClose <= 0;
+  const urgente = secsToClose <= 3600 && secsToClose > 0;
+  const condicionesDisplay = pregunta.condiciones ? pregunta.condiciones.replace(/^\[CIERRE:\d+\]/, '') : '';
 
   const dias = Math.floor(secsLeft / 86400);
   const hrs  = Math.floor((secsLeft % 86400) / 3600);
