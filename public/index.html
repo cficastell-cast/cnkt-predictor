@@ -10,6 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.10.0/web3.min.js"></script>
 <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.3/dist/dotlottie-wc.js" type="module"></script>
 <style>
+<style>
 :root{
   --bg:#1A1033;--bg2:#130D28;--surface:#1E1538;--surface2:#251C45;--border:#2E2455;
   --gold:#FFD700;--gold2:#FFC200;--gold-dim:rgba(255,215,0,0.12);
@@ -193,10 +194,12 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .spinner{display:inline-block;width:11px;height:11px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:5px}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(max-width:600px){.price-bar{display:none}.admin-grid{grid-template-columns:1fr}.carousel-padding{width:20px}}
+
 </style>
 </head>
 <body>
 <div id="root"></div>
+<script>
 <script>
 const {
   useState,
@@ -208,6 +211,7 @@ const CFG = {
   CONTRATO_VEGAS: '0x17F46D9dA30360Bc2ce7fe17C02D5b49544a46a5',
   CONTRATO_CNKT: '0x87bdfbe98Ba55104701b2F2e999982a317905637',
   POLYGON_CHAIN: '0x89',
+  CONTRATO_PREGUNTAS: '0xc0Da4D13e6a61605780aa15Cd4Ca241B033a33a7',
   RPC: '/rpc'
 };
 const ASSETS = ['BTC', 'ETH', 'SOL', 'BNB', 'MATIC'];
@@ -1337,6 +1341,7 @@ function App() {
   const [web3, setWeb3] = useState(null);
   const [contrato, setContrato] = useState(null);
   const [contratoE, setContratoE] = useState(null);
+  const [contratoP, setContratoP] = useState(null);
   const [wallet, setWallet] = useState(null);
   const [esOwner, setEsOwner] = useState(false);
   const [soloLectura, setSoloLectura] = useState(true);
@@ -1506,10 +1511,12 @@ function App() {
     const w3 = new Web3(new Web3.providers.HttpProvider(CFG.RPC));
     const cv = new w3.eth.Contract(ABI_V, CFG.CONTRATO_VEGAS);
     const ce = new w3.eth.Contract(ABI_E, CFG.CONTRATO_CNKT);
+    const cp = new w3.eth.Contract(ABI_P, CFG.CONTRATO_PREGUNTAS);
     window._web3 = w3;
     setWeb3(w3);
     setContrato(cv);
     setContratoE(ce);
+    setContratoP(cp);
     web3Ref.current = w3;
     contratoRef.current = cv;
     fetchPrecioCNKT();
@@ -1978,7 +1985,15 @@ function App() {
     }
   }, "~10 min")), /*#__PURE__*/React.createElement("div", {
     className: "carousel-padding"
-  }))), /*#__PURE__*/React.createElement("div", {
+  }))), /*#__PURE__*/React.createElement(SeccionPreguntas, {
+    web3: web3,
+    contrato: contratoP,
+    contratoE: contratoE,
+    wallet: !soloLectura ? wallet : null,
+    soloLectura: soloLectura,
+    esOwner: esOwner,
+    addToast: addToast
+  }), /*#__PURE__*/React.createElement("div", {
     className: "bottom"
   }, esOwner && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -2236,7 +2251,7 @@ function App() {
   }, "CNKT PREDICTOR by EVOX"), [{
     icon: '🎯',
     titulo: '¿Cómo funciona?',
-    texto: 'Cada 05 minutos se abre una ronda. Predice si el precio de BTC va a subir o bajar. Si aciertas, ganas tu parte del pool.'
+    texto: 'Cada 10 minutos se abre una ronda. Predice si el precio de BTC va a subir o bajar. Si aciertas, ganas tu parte del pool.'
   }, {
     icon: '▲▼',
     titulo: '¿Cómo entro?',
@@ -2305,6 +2320,315 @@ function App() {
   }, t.msg))));
 }
 ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+
+
+// ============================================================
+//  ABI CONTRATO PREGUNTAS
+// ============================================================
+const ABI_P = [
+  {inputs:[{internalType:"string",name:"_texto",type:"string"},{internalType:"string",name:"_condiciones",type:"string"},{internalType:"uint256",name:"_fechaLimite",type:"uint256"}],name:"crearPregunta",outputs:[],stateMutability:"nonpayable",type:"function"},
+  {inputs:[{internalType:"uint256",name:"_id",type:"uint256"},{internalType:"uint8",name:"_respuesta",type:"uint8"},{internalType:"uint256",name:"_amount",type:"uint256"}],name:"apostar",outputs:[],stateMutability:"nonpayable",type:"function"},
+  {inputs:[{internalType:"uint256",name:"_id",type:"uint256"},{internalType:"uint8",name:"_resultado",type:"uint8"}],name:"resolver",outputs:[],stateMutability:"nonpayable",type:"function"},
+  {inputs:[{internalType:"uint256",name:"_id",type:"uint256"}],name:"cancelar",outputs:[],stateMutability:"nonpayable",type:"function"},
+  {inputs:[],name:"getTodasActivas",outputs:[{components:[{internalType:"uint256",name:"id",type:"uint256"},{internalType:"string",name:"texto",type:"string"},{internalType:"string",name:"condiciones",type:"string"},{internalType:"uint256",name:"fechaLimite",type:"uint256"},{internalType:"uint8",name:"estado",type:"uint8"},{internalType:"uint8",name:"resultado",type:"uint8"},{internalType:"uint256",name:"totalSi",type:"uint256"},{internalType:"uint256",name:"totalNo",type:"uint256"},{internalType:"uint256",name:"totalPool",type:"uint256"}],internalType:"struct EvoxPreguntas.Pregunta[]",name:"",type:"tuple[]"}],stateMutability:"view",type:"function"},
+  {inputs:[{internalType:"uint256",name:"_id",type:"uint256"},{internalType:"address",name:"",type:"address"}],name:"yaAposto",outputs:[{internalType:"bool",name:"",type:"bool"}],stateMutability:"view",type:"function"},
+  {inputs:[],name:"totalPreguntas",outputs:[{internalType:"uint256",name:"",type:"uint256"}],stateMutability:"view",type:"function"},
+];
+
+// ============================================================
+//  COMPONENTE TARJETA PREGUNTA
+// ============================================================
+function CardPregunta({pregunta, web3, contrato, contratoE, wallet, soloLectura, esOwner, onBet, onResolver, onCancelar}) {
+  const [secsLeft, setSecsLeft] = React.useState(Math.max(0, parseInt(pregunta.fechaLimite) - Math.floor(Date.now()/1000)));
+  const [yaAposto, setYaAposto] = React.useState(false);
+
+  React.useEffect(() => {
+    const t = setInterval(() => setSecsLeft(Math.max(0, parseInt(pregunta.fechaLimite) - Math.floor(Date.now()/1000))), 1000);
+    return () => clearInterval(t);
+  }, [pregunta.fechaLimite]);
+
+  React.useEffect(() => {
+    if (!wallet || !contrato) return;
+    contrato.methods.yaAposto(pregunta.id, wallet).call().then(b => setYaAposto(b)).catch(()=>{});
+  }, [wallet, pregunta.id]);
+
+  const totalSi  = web3 ? parseFloat(web3.utils.fromWei(pregunta.totalSi.toString(), 'ether')) : 0;
+  const totalNo  = web3 ? parseFloat(web3.utils.fromWei(pregunta.totalNo.toString(), 'ether')) : 0;
+  const totalPool = totalSi + totalNo;
+  const pctSi = totalPool > 0 ? (totalSi / totalPool * 100) : 50;
+  const urgente = secsLeft <= 300 && secsLeft > 0;
+  const cerrada = secsLeft <= 0;
+
+  const dias = Math.floor(secsLeft / 86400);
+  const hrs  = Math.floor((secsLeft % 86400) / 3600);
+  const mins = Math.floor((secsLeft % 3600) / 60);
+  const timerStr = dias > 0 ? `${dias}d ${hrs}h` : hrs > 0 ? `${hrs}h ${mins}m` : fTime(secsLeft);
+
+  return React.createElement('div', {
+    style: {
+      flexShrink: 0, width: 300, borderRadius: 20,
+      background: 'linear-gradient(160deg,#1E1538,#150F2E)',
+      border: '2px solid rgba(255,215,0,0.4)',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+      display: 'flex', flexDirection: 'column',
+      scrollSnapAlign: 'center', overflow: 'hidden',
+    }
+  },
+    // Header
+    React.createElement('div', {style:{padding:'14px 16px 10px',borderBottom:'1px solid var(--border)'}},
+      React.createElement('div', {style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}},
+        React.createElement('span', {style:{fontSize:10,fontWeight:700,letterSpacing:2,color:'var(--gold)',fontFamily:'DM Mono,monospace'}}, '🎯 PREDICCIÓN'),
+        React.createElement('span', {style:{fontSize:11,fontFamily:'DM Mono,monospace',color:urgente?'var(--dn)':cerrada?'var(--muted)':'var(--gold)',fontWeight:700}}, cerrada ? 'CERRADA' : timerStr)
+      ),
+      React.createElement('div', {style:{fontSize:14,fontWeight:700,color:'var(--text)',lineHeight:1.4,marginBottom:6}}, pregunta.texto),
+      pregunta.condiciones && React.createElement('div', {style:{fontSize:11,color:'var(--muted)',lineHeight:1.5,fontFamily:'DM Mono,monospace'}}, pregunta.condiciones)
+    ),
+    // Pool
+    React.createElement('div', {style:{padding:'10px 16px'}},
+      React.createElement('div', {style:{display:'flex',justifyContent:'space-between',fontSize:11,marginBottom:4}},
+        React.createElement('span', {style:{color:'var(--up)',fontFamily:'DM Mono,monospace',fontWeight:700}}, `✅ SI — ${totalSi.toFixed(0)} CNKT+`),
+        React.createElement('span', {style:{color:'var(--dn)',fontFamily:'DM Mono,monospace',fontWeight:700}}, `❌ NO — ${totalNo.toFixed(0)} CNKT+`)
+      ),
+      React.createElement('div', {style:{height:4,background:'var(--border)',borderRadius:2,overflow:'hidden',display:'flex',margin:'4px 0'}},
+        React.createElement('div', {style:{width:pctSi+'%',background:'var(--up)',height:'100%',transition:'width 0.6s'}}),
+        React.createElement('div', {style:{width:(100-pctSi)+'%',background:'var(--dn)',height:'100%',transition:'width 0.6s'}})
+      ),
+      React.createElement('div', {style:{textAlign:'center',fontSize:10,color:'var(--muted)',fontFamily:'DM Mono,monospace'}},
+        `Pool: ${totalPool.toFixed(0)} CNKT+`
+      )
+    ),
+    // Botones
+    React.createElement('div', {style:{padding:'8px 16px 14px',marginTop:'auto'}},
+      yaAposto ? (
+        React.createElement('div', {style:{textAlign:'center',padding:'10px',borderRadius:10,background:'var(--gold-dim)',border:'1px solid rgba(255,215,0,0.3)',color:'var(--gold)',fontSize:12,fontWeight:700,letterSpacing:1}}, '✓ Ya apostaste')
+      ) : cerrada ? (
+        React.createElement('div', {style:{textAlign:'center',padding:'10px',borderRadius:10,background:'rgba(107,94,154,0.1)',border:'1px solid var(--border)',color:'var(--muted)',fontSize:12,fontWeight:700}}, '🔒 Apuestas cerradas')
+      ) : (
+        React.createElement('div', {style:{display:'flex',gap:8}},
+          React.createElement('button', {
+            onClick: () => onBet(pregunta.id, 0),
+            disabled: soloLectura || !wallet,
+            style:{flex:1,padding:'10px',borderRadius:10,border:'none',background:'var(--up)',color:'#000',fontFamily:'Kanit,sans-serif',fontSize:13,fontWeight:800,cursor:'pointer',opacity:(soloLectura||!wallet)?0.3:1}
+          }, '✅ SI'),
+          React.createElement('button', {
+            onClick: () => onBet(pregunta.id, 1),
+            disabled: soloLectura || !wallet,
+            style:{flex:1,padding:'10px',borderRadius:10,border:'none',background:'var(--dn)',color:'#fff',fontFamily:'Kanit,sans-serif',fontSize:13,fontWeight:800,cursor:'pointer',opacity:(soloLectura||!wallet)?0.3:1}
+          }, '❌ NO')
+        )
+      ),
+      esOwner && React.createElement('div', {style:{display:'flex',gap:6,marginTop:8}},
+        React.createElement('button', {
+          onClick: () => onResolver(pregunta.id, 0),
+          style:{flex:1,padding:'7px',borderRadius:8,border:'1px solid rgba(31,199,212,0.4)',background:'transparent',color:'var(--up)',fontFamily:'Kanit,sans-serif',fontSize:11,fontWeight:700,cursor:'pointer'}
+        }, 'Resolver SI'),
+        React.createElement('button', {
+          onClick: () => onResolver(pregunta.id, 1),
+          style:{flex:1,padding:'7px',borderRadius:8,border:'1px solid rgba(237,75,158,0.4)',background:'transparent',color:'var(--dn)',fontFamily:'Kanit,sans-serif',fontSize:11,fontWeight:700,cursor:'pointer'}
+        }, 'Resolver NO'),
+        React.createElement('button', {
+          onClick: () => onCancelar(pregunta.id),
+          style:{padding:'7px 10px',borderRadius:8,border:'1px solid var(--border)',background:'transparent',color:'var(--muted)',fontFamily:'Kanit,sans-serif',fontSize:11,fontWeight:700,cursor:'pointer'}
+        }, 'Cancelar')
+      )
+    )
+  );
+}
+
+// ============================================================
+//  SECCIÓN PREGUNTAS (carrusel)
+// ============================================================
+function SeccionPreguntas({web3, contrato, contratoE, wallet, soloLectura, esOwner, addToast}) {
+  const [preguntas, setPreguntas] = React.useState([]);
+  const [modalBet, setModalBet] = React.useState(null);
+  const [showCrear, setShowCrear] = React.useState(false);
+  const [texto, setTexto] = React.useState('');
+  const [condiciones, setCondiciones] = React.useState('');
+  const [fecha, setFecha] = React.useState('');
+  const [creating, setCreating] = React.useState(false);
+  const carruselRef = React.useRef(null);
+
+  const cargarPreguntas = React.useCallback(async () => {
+    if (!contrato) return;
+    try {
+      const ps = await contrato.methods.getTodasActivas().call();
+      setPreguntas(ps);
+    } catch(e) {}
+  }, [contrato]);
+
+  React.useEffect(() => {
+    cargarPreguntas();
+    const iv = setInterval(cargarPreguntas, 15000);
+    return () => clearInterval(iv);
+  }, [cargarPreguntas]);
+
+  const handleBet = async (id, respuesta, amount) => {
+    if (!web3 || !contrato || !contratoE || !wallet) return;
+    try {
+      const aw = web3.utils.toWei(amount.toString(), 'ether');
+      const chainId = await window.ethereum.request({method:'eth_chainId'});
+      if (chainId !== '0x89') {
+        await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:'0x89'}]});
+      }
+      const al = await contratoE.methods.allowance(wallet, CFG.CONTRATO_PREGUNTAS).call();
+      const MAX = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
+      const gasPrice = await web3.eth.getGasPrice();
+      const gasFast = (BigInt(gasPrice)*150n/100n<30000000000n?'30000000000':(BigInt(gasPrice)*150n/100n).toString());
+      if (BigInt(al) < BigInt(aw)) {
+        addToast('Aprobando CNKT+...', 'info');
+        await contratoE.methods.approve(CFG.CONTRATO_PREGUNTAS, MAX).send({from:wallet, gasPrice:gasFast});
+      }
+      addToast('Enviando apuesta...', 'info');
+      await contrato.methods.apostar(id, respuesta, aw).send({from:wallet, gasPrice:gasFast});
+      addToast('Apuesta registrada ✓', 'ok');
+      setModalBet(null);
+      cargarPreguntas();
+    } catch(e) {
+      addToast('Error: '+(e.message||e), 'err');
+    }
+  };
+
+  const handleResolver = async (id, resultado) => {
+    if (!contrato || !wallet) return;
+    try {
+      const gasPrice = await web3.eth.getGasPrice();
+      const gasFast = (BigInt(gasPrice)*150n/100n<30000000000n?'30000000000':(BigInt(gasPrice)*150n/100n).toString());
+      await contrato.methods.resolver(id, resultado).send({from:wallet, gasPrice:gasFast});
+      addToast('Pregunta #'+id+' resuelta ✓', 'ok');
+      cargarPreguntas();
+    } catch(e) { addToast('Error: '+(e.message||e), 'err'); }
+  };
+
+  const handleCancelar = async (id) => {
+    if (!contrato || !wallet) return;
+    try {
+      const gasPrice = await web3.eth.getGasPrice();
+      const gasFast = (BigInt(gasPrice)*150n/100n<30000000000n?'30000000000':(BigInt(gasPrice)*150n/100n).toString());
+      await contrato.methods.cancelar(id).send({from:wallet, gasPrice:gasFast});
+      addToast('Pregunta #'+id+' cancelada', 'info');
+      cargarPreguntas();
+    } catch(e) { addToast('Error: '+(e.message||e), 'err'); }
+  };
+
+  const handleCrear = async () => {
+    if (!texto || !fecha) { addToast('Completa texto y fecha', 'err'); return; }
+    const ts = Math.floor(new Date(fecha).getTime() / 1000);
+    if (ts <= Math.floor(Date.now()/1000)) { addToast('La fecha debe ser futura', 'err'); return; }
+    setCreating(true);
+    try {
+      const gasPrice = await web3.eth.getGasPrice();
+      const gasFast = (BigInt(gasPrice)*150n/100n<30000000000n?'30000000000':(BigInt(gasPrice)*150n/100n).toString());
+      await contrato.methods.crearPregunta(texto, condiciones, ts).send({from:wallet, gasPrice:gasFast});
+      addToast('Pregunta creada ✓', 'ok');
+      setTexto(''); setCondiciones(''); setFecha(''); setShowCrear(false);
+      cargarPreguntas();
+    } catch(e) { addToast('Error: '+(e.message||e), 'err'); }
+    setCreating(false);
+  };
+
+  if (preguntas.length === 0 && !esOwner) return null;
+
+  return React.createElement('div', {style:{padding:'0 0 8px',position:'relative',zIndex:1}},
+    // Título sección
+    React.createElement('div', {style:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 20px',marginBottom:4}},
+      React.createElement('div', {style:{fontSize:13,fontWeight:700,color:'var(--gold)',letterSpacing:1}}, '🎯 PREDICCIONES'),
+      esOwner && React.createElement('button', {
+        onClick: () => setShowCrear(!showCrear),
+        style:{background:'var(--gold-dim)',border:'1px solid rgba(255,215,0,0.3)',borderRadius:10,padding:'5px 14px',color:'var(--gold)',fontFamily:'Kanit,sans-serif',fontSize:11,fontWeight:700,cursor:'pointer',letterSpacing:1}
+      }, '+ Nueva')
+    ),
+
+    // Panel crear pregunta (solo owner)
+    esOwner && showCrear && React.createElement('div', {style:{margin:'8px 16px',background:'var(--surface)',border:'1px solid var(--border)',borderRadius:16,padding:16}},
+      React.createElement('div', {style:{fontSize:11,color:'var(--muted)',letterSpacing:2,textTransform:'uppercase',marginBottom:10,fontFamily:'DM Mono,monospace'}}, 'Nueva Predicción'),
+      React.createElement('textarea', {
+        placeholder:'¿Se listará CNKT en Uniswap antes del 1 de Junio?',
+        value:texto, onChange:e=>setTexto(e.target.value),
+        rows:2,
+        style:{width:'100%',background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:8,padding:'8px 10px',color:'var(--text)',fontFamily:'DM Mono,monospace',fontSize:12,marginBottom:8,outline:'none',resize:'none'}
+      }),
+      React.createElement('textarea', {
+        placeholder:'Condiciones de cumplimiento (opcional)...',
+        value:condiciones, onChange:e=>setCondiciones(e.target.value),
+        rows:2,
+        style:{width:'100%',background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:8,padding:'8px 10px',color:'var(--text)',fontFamily:'DM Mono,monospace',fontSize:12,marginBottom:8,outline:'none',resize:'none'}
+      }),
+      React.createElement('input', {
+        type:'datetime-local', value:fecha, onChange:e=>setFecha(e.target.value),
+        style:{width:'100%',background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:8,padding:'8px 10px',color:'var(--text)',fontFamily:'DM Mono,monospace',fontSize:12,marginBottom:10,outline:'none'}
+      }),
+      React.createElement('button', {
+        onClick:handleCrear, disabled:creating,
+        style:{width:'100%',padding:'10px',borderRadius:10,border:'none',background:'linear-gradient(135deg,var(--gold),var(--gold2))',color:'#000',fontFamily:'Kanit,sans-serif',fontSize:13,fontWeight:800,cursor:'pointer'}
+      }, creating ? 'Creando...' : '▶ Crear Predicción')
+    ),
+
+    // Carrusel de preguntas
+    preguntas.length > 0 ? React.createElement('div', {
+      ref: carruselRef,
+      style:{display:'flex',gap:12,padding:'8px 0 16px',overflowX:'auto',scrollSnapType:'x mandatory',scrollbarWidth:'none',alignItems:'stretch',cursor:'grab'}
+    },
+      React.createElement('div', {style:{flexShrink:0,width:'calc(50vw - 160px)'}}),
+      ...preguntas.map(p => React.createElement(CardPregunta, {
+        key:p.id, pregunta:p, web3, contrato, contratoE,
+        wallet, soloLectura, esOwner,
+        onBet:(id,resp) => setModalBet({id,resp}),
+        onResolver:handleResolver,
+        onCancelar:handleCancelar
+      })),
+      React.createElement('div', {style:{flexShrink:0,width:'calc(50vw - 160px)'}})
+    ) : esOwner && React.createElement('div', {style:{textAlign:'center',padding:'20px',color:'var(--muted)',fontSize:12,fontFamily:'DM Mono,monospace'}},'No hay predicciones activas'),
+
+    // Modal apuesta pregunta
+    modalBet && React.createElement(ModalBetPregunta, {
+      id:modalBet.id, respuesta:modalBet.resp, web3,
+      onClose:()=>setModalBet(null),
+      onConfirm:(amount)=>handleBet(modalBet.id, modalBet.resp, amount)
+    })
+  );
+}
+
+// ============================================================
+//  MODAL APUESTA PREGUNTA
+// ============================================================
+function ModalBetPregunta({id, respuesta, web3, onClose, onConfirm}) {
+  const [cnkt, setCnkt] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const esSi = respuesta === 0;
+
+  const confirm = async () => {
+    const c = parseFloat(cnkt);
+    if (!c || c < 500 || c > 250000) return;
+    setLoading(true);
+    await onConfirm(c);
+    setLoading(false);
+  };
+
+  return React.createElement('div', {
+    className:'modal-bg',
+    onClick:e=>e.target===e.currentTarget&&onClose()
+  },
+    React.createElement('div', {className:`modal-box ${esSi?'up':'dn'}`},
+      React.createElement('button', {className:'modal-close', onClick:onClose}, '✕'),
+      React.createElement('div', {className:`modal-dir ${esSi?'up':'dn'}`}, esSi?'✅ SI':'❌ NO'),
+      React.createElement('div', {className:'modal-sub'}, `Predicción #${id}`),
+      React.createElement('div', {className:'field'},
+        React.createElement('label', null, 'CNKT+ a ingresar'),
+        React.createElement('input', {
+          type:'number', value:cnkt, onChange:e=>setCnkt(e.target.value),
+          placeholder:'500', min:'500'
+        }),
+        React.createElement('div', {className:'field-hint'}, 'Min 500 · Max 250,000')
+      ),
+      React.createElement('button', {
+        className:`btn-confirm ${esSi?'up':'dn'}`,
+        onClick:confirm, disabled:loading||!cnkt||parseFloat(cnkt)<500
+      }, loading?'Procesando...':`CONFIRMAR ${esSi?'✅ SI':'❌ NO'}`)
+    )
+  );
+}
+
+
 </script>
 </body>
 </html>
