@@ -2490,7 +2490,8 @@ function SeccionPreguntas({web3, contrato, contratoE, wallet, soloLectura, esOwn
       // Combinar: resueltas recientes + activas
       const activasIds = new Set(activas.map(p => p.id.toString()));
       const histP = recientes.filter(p => !activasIds.has(p.id.toString()));
-      setPreguntas([...histP, ...activas]);
+      // Orden: resueltas (izquierda) + activas (centro/derecha)
+      setPreguntas([...histP.reverse(), ...activas]);
     } catch(e) {}
   }, [contrato]);
 
