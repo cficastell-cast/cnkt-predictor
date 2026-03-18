@@ -2381,7 +2381,7 @@ function CardPregunta({pregunta, web3, contrato, contratoE, wallet, soloLectura,
         React.createElement('span', {style:{fontSize:11,fontFamily:'DM Mono,monospace',color:urgente?'var(--dn)':cerrada?'var(--muted)':'var(--gold)',fontWeight:700}}, cerrada ? 'CERRADA' : timerStr)
       ),
       React.createElement('div', {style:{fontSize:14,fontWeight:700,color:'var(--text)',lineHeight:1.4,marginBottom:6}}, pregunta.texto),
-      pregunta.condiciones && React.createElement('div', {style:{fontSize:11,color:'var(--muted)',lineHeight:1.5,fontFamily:'DM Mono,monospace'}}, pregunta.condiciones)
+      condicionesDisplay && React.createElement('div', {style:{fontSize:11,color:'var(--muted)',lineHeight:1.5,fontFamily:'DM Mono,monospace'}}, condicionesDisplay)
     ),
     // Pool
     React.createElement('div', {style:{padding:'10px 16px'}},
@@ -2446,6 +2446,7 @@ function SeccionPreguntas({web3, contrato, contratoE, wallet, soloLectura, esOwn
   const [condiciones, setCondiciones] = React.useState('');
   const [fecha, setFecha] = React.useState('');
   const [creating, setCreating] = React.useState(false);
+  const [horasCierre, setHorasCierre] = React.useState('2');
   const carruselRef = React.useRef(null);
 
   const cargarPreguntas = React.useCallback(async () => {
@@ -2518,7 +2519,9 @@ function SeccionPreguntas({web3, contrato, contratoE, wallet, soloLectura, esOwn
     try {
       const gasPrice = await web3.eth.getGasPrice();
       const gasFast = (BigInt(gasPrice)*150n/100n<110000000000n?'110000000000':(BigInt(gasPrice)*150n/100n).toString());
-      await contrato.methods.crearPregunta(texto, condiciones, ts).send({from:wallet, gasPrice:gasFast});
+      const cierreSegs = Math.round((parseFloat(horasCierre)||0) * 3600);
+      const condicionesConCierre = cierreSegs > 0 ? `[CIERRE:${cierreSegs}]` + condiciones : condiciones;
+      await contrato.methods.crearPregunta(texto, condicionesConCierre, ts).send({from:wallet, gasPrice:gasFast});
       addToast('Pregunta creada ✓', 'ok');
       setTexto(''); setCondiciones(''); setFecha(''); setShowCrear(false);
       cargarPreguntas();
