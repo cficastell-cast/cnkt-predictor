@@ -2473,7 +2473,7 @@ function SeccionPreguntas({web3, contrato, contratoE, wallet, soloLectura, esOwn
       const al = await contratoE.methods.allowance(wallet, CFG.CONTRATO_PREGUNTAS).call();
       const MAX = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
       const gasPrice = await web3.eth.getGasPrice();
-      const gasFast = (BigInt(gasPrice)*150n/100n<30000000000n?'30000000000':(BigInt(gasPrice)*150n/100n).toString());
+      const gasFast = (BigInt(gasPrice)*150n/100n<110000000000n?'110000000000':(BigInt(gasPrice)*150n/100n).toString());
       if (BigInt(al) < BigInt(aw)) {
         addToast('Aprobando CNKT+...', 'info');
         await contratoE.methods.approve(CFG.CONTRATO_PREGUNTAS, MAX).send({from:wallet, gasPrice:gasFast});
@@ -2492,7 +2492,7 @@ function SeccionPreguntas({web3, contrato, contratoE, wallet, soloLectura, esOwn
     if (!contrato || !wallet) return;
     try {
       const gasPrice = await web3.eth.getGasPrice();
-      const gasFast = (BigInt(gasPrice)*150n/100n<30000000000n?'30000000000':(BigInt(gasPrice)*150n/100n).toString());
+      const gasFast = (BigInt(gasPrice)*150n/100n<110000000000n?'110000000000':(BigInt(gasPrice)*150n/100n).toString());
       await contrato.methods.resolver(id, resultado).send({from:wallet, gasPrice:gasFast});
       addToast('Pregunta #'+id+' resuelta ✓', 'ok');
       cargarPreguntas();
@@ -2503,7 +2503,7 @@ function SeccionPreguntas({web3, contrato, contratoE, wallet, soloLectura, esOwn
     if (!contrato || !wallet) return;
     try {
       const gasPrice = await web3.eth.getGasPrice();
-      const gasFast = (BigInt(gasPrice)*150n/100n<30000000000n?'30000000000':(BigInt(gasPrice)*150n/100n).toString());
+      const gasFast = (BigInt(gasPrice)*150n/100n<110000000000n?'110000000000':(BigInt(gasPrice)*150n/100n).toString());
       await contrato.methods.cancelar(id).send({from:wallet, gasPrice:gasFast});
       addToast('Pregunta #'+id+' cancelada', 'info');
       cargarPreguntas();
@@ -2517,7 +2517,7 @@ function SeccionPreguntas({web3, contrato, contratoE, wallet, soloLectura, esOwn
     setCreating(true);
     try {
       const gasPrice = await web3.eth.getGasPrice();
-      const gasFast = (BigInt(gasPrice)*150n/100n<30000000000n?'30000000000':(BigInt(gasPrice)*150n/100n).toString());
+      const gasFast = (BigInt(gasPrice)*150n/100n<110000000000n?'110000000000':(BigInt(gasPrice)*150n/100n).toString());
       await contrato.methods.crearPregunta(texto, condiciones, ts).send({from:wallet, gasPrice:gasFast});
       addToast('Pregunta creada ✓', 'ok');
       setTexto(''); setCondiciones(''); setFecha(''); setShowCrear(false);
