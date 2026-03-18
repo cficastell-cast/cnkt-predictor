@@ -2189,6 +2189,15 @@ function App() {
     className: "btn-admin btn-open",
     onClick: cambiarEvoxWallet
   }, "\uD83D\uDCB3 Cambiar Wallet")))), /*#__PURE__*/React.createElement("div", {
+    className: "hist-card",
+    style: {marginBottom: 16}
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "hist-head"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "hist-title"
+  }, "Historial de Predicciones"), /*#__PURE__*/React.createElement("div", {
+    className: "hist-sub"
+  }, "AUTO-ACTUALIZA")), /*#__PURE__*/React.createElement(HistorialPreguntas, {web3: web3, contrato: contratoP})), /*#__PURE__*/React.createElement("div", {
     className: "hist-card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "hist-head"
@@ -2333,6 +2342,7 @@ const ABI_P = [
   {inputs:[],name:"getTodasActivas",outputs:[{components:[{internalType:"uint256",name:"id",type:"uint256"},{internalType:"string",name:"texto",type:"string"},{internalType:"string",name:"condiciones",type:"string"},{internalType:"uint256",name:"fechaLimite",type:"uint256"},{internalType:"uint8",name:"estado",type:"uint8"},{internalType:"uint8",name:"resultado",type:"uint8"},{internalType:"uint256",name:"totalSi",type:"uint256"},{internalType:"uint256",name:"totalNo",type:"uint256"},{internalType:"uint256",name:"totalPool",type:"uint256"}],internalType:"struct EvoxPreguntas.Pregunta[]",name:"",type:"tuple[]"}],stateMutability:"view",type:"function"},
   {inputs:[{internalType:"uint256",name:"_id",type:"uint256"},{internalType:"address",name:"",type:"address"}],name:"yaAposto",outputs:[{internalType:"bool",name:"",type:"bool"}],stateMutability:"view",type:"function"},
   {inputs:[],name:"totalPreguntas",outputs:[{internalType:"uint256",name:"",type:"uint256"}],stateMutability:"view",type:"function"},
+  {inputs:[{internalType:"uint256",name:"_id",type:"uint256"}],name:"getPregunta",outputs:[{components:[{internalType:"uint256",name:"id",type:"uint256"},{internalType:"string",name:"texto",type:"string"},{internalType:"string",name:"condiciones",type:"string"},{internalType:"uint256",name:"fechaLimite",type:"uint256"},{internalType:"uint8",name:"estado",type:"uint8"},{internalType:"uint8",name:"resultado",type:"uint8"},{internalType:"uint256",name:"totalSi",type:"uint256"},{internalType:"uint256",name:"totalNo",type:"uint256"},{internalType:"uint256",name:"totalPool",type:"uint256"}],internalType:"struct EvoxPreguntas.Pregunta",name:"",type:"tuple"}],stateMutability:"view",type:"function"},
 ];
 
 // ============================================================
@@ -2356,12 +2366,16 @@ function CardPregunta({pregunta, web3, contrato, contratoE, wallet, soloLectura,
   const totalNo  = web3 ? parseFloat(web3.utils.fromWei(pregunta.totalNo.toString(), 'ether')) : 0;
   const totalPool = totalSi + totalNo;
   const pctSi = totalPool > 0 ? (totalSi / totalPool * 100) : 50;
+  const estado = parseInt(pregunta.estado); // 0=ABIERTA, 1=RESUELTA, 2=CANCELADA
+  const isResuelta = estado === 1;
+  const isCancelada = estado === 2;
+  const resultado = parseInt(pregunta.resultado); // 0=SI, 1=NO
   const cierreMatch = pregunta.condiciones && pregunta.condiciones.match(/^\[CIERRE:(\d+)\]/);
   const cierreSegs = cierreMatch ? parseInt(cierreMatch[1]) : 0;
   const closeTime = cierreSegs > 0 ? parseInt(pregunta.fechaLimite) - cierreSegs : parseInt(pregunta.fechaLimite);
   const secsToClose = Math.max(0, closeTime - Math.floor(Date.now()/1000));
-  const cerrada = secsToClose <= 0;
-  const urgente = secsToClose <= 3600 && secsToClose > 0;
+  const cerrada = secsToClose <= 0 || isResuelta || isCancelada;
+  const urgente = secsToClose <= 3600 && secsToClose > 0 && !isResuelta && !isCancelada;
   const condicionesDisplay = pregunta.condiciones ? pregunta.condiciones.replace(/^\[CIERRE:\d+\]/, '') : '';
 
   const dias = Math.floor(secsLeft / 86400);
@@ -2404,7 +2418,11 @@ function CardPregunta({pregunta, web3, contrato, contratoE, wallet, soloLectura,
     ),
     // Botones
     React.createElement('div', {style:{padding:'8px 16px 14px',marginTop:'auto'}},
-      yaAposto ? (
+      isResuelta ? (
+        React.createElement('div', {style:{textAlign:'center',padding:'10px',borderRadius:10,background:resultado===0?'rgba(31,199,212,0.12)':'rgba(237,75,158,0.12)',border:resultado===0?'1px solid rgba(31,199,212,0.35)':'1px solid rgba(237,75,158,0.35)',color:resultado===0?'var(--up)':'var(--dn)',fontSize:14,fontWeight:800,letterSpacing:1}}, resultado===0?'✅ SI GANÓ':'❌ NO GANÓ')
+      ) : isCancelada ? (
+        React.createElement('div', {style:{textAlign:'center',padding:'10px',borderRadius:10,background:'rgba(107,94,154,0.1)',border:'1px solid var(--border)',color:'var(--muted)',fontSize:13,fontWeight:700}}, '↩️ CANCELADA — Fondos devueltos')
+      ) : yaAposto ? (
         React.createElement('div', {style:{textAlign:'center',padding:'10px',borderRadius:10,background:'var(--gold-dim)',border:'1px solid rgba(255,215,0,0.3)',color:'var(--gold)',fontSize:12,fontWeight:700,letterSpacing:1}}, '✓ Ya apostaste')
       ) : cerrada ? (
         React.createElement('div', {style:{textAlign:'center',padding:'10px',borderRadius:10,background:'rgba(107,94,154,0.1)',border:'1px solid var(--border)',color:'var(--muted)',fontSize:12,fontWeight:700}}, '🔒 Apuestas cerradas')
@@ -2422,7 +2440,7 @@ function CardPregunta({pregunta, web3, contrato, contratoE, wallet, soloLectura,
           }, '❌ NO')
         )
       ),
-      esOwner && React.createElement('div', {style:{display:'flex',gap:6,marginTop:8}},
+      esOwner && !isResuelta && !isCancelada && React.createElement('div', {style:{display:'flex',gap:6,marginTop:8}},
         React.createElement('button', {
           onClick: () => onResolver(pregunta.id, 0),
           style:{flex:1,padding:'7px',borderRadius:8,border:'1px solid rgba(31,199,212,0.4)',background:'transparent',color:'var(--up)',fontFamily:'Kanit,sans-serif',fontSize:11,fontWeight:700,cursor:'pointer'}
@@ -2457,8 +2475,22 @@ function SeccionPreguntas({web3, contrato, contratoE, wallet, soloLectura, esOwn
   const cargarPreguntas = React.useCallback(async () => {
     if (!contrato) return;
     try {
-      const ps = await contrato.methods.getTodasActivas().call();
-      setPreguntas(ps);
+      // Cargar activas
+      const activas = await contrato.methods.getTodasActivas().call();
+      // Cargar ultimas 5 por id para historial
+      const total = parseInt(await contrato.methods.totalPreguntas().call());
+      const ini = Math.max(1, total - 4);
+      const recientes = [];
+      for (let i = total; i >= ini; i--) {
+        try {
+          const p = await contrato.methods.getPregunta(i).call();
+          if (parseInt(p.estado) !== 0) recientes.push(p); // solo resueltas/canceladas
+        } catch(e) {}
+      }
+      // Combinar: resueltas recientes + activas
+      const activasIds = new Set(activas.map(p => p.id.toString()));
+      const histP = recientes.filter(p => !activasIds.has(p.id.toString()));
+      setPreguntas([...histP, ...activas]);
     } catch(e) {}
   }, [contrato]);
 
@@ -2641,6 +2673,69 @@ function ModalBetPregunta({id, respuesta, web3, onClose, onConfirm}) {
   );
 }
 
+
+
+function HistorialPreguntas({web3, contrato}) {
+  const [historial, setHistorial] = React.useState([]);
+  React.useEffect(() => {
+    if (!contrato) return;
+    const cargar = async () => {
+      try {
+        const total = parseInt(await contrato.methods.totalPreguntas().call());
+        if (total === 0) return;
+        const ini = Math.max(1, total - 9);
+        const ps = [];
+        for (let i = total; i >= ini; i--) {
+          ps.push(contrato.methods.getPregunta(i).call().then(p => ({p, id: i})));
+        }
+        const todas = await Promise.all(ps);
+        setHistorial(todas.filter(({p}) => parseInt(p.estado) !== 0));
+      } catch(e) {}
+    };
+    cargar();
+    const iv = setInterval(cargar, 15000);
+    return () => clearInterval(iv);
+  }, [contrato]);
+
+  if (!historial.length) return React.createElement('div', {
+    style:{color:'var(--muted)',fontSize:11,textAlign:'center',padding:32,fontFamily:'DM Mono,monospace'}
+  }, 'SIN HISTORIAL');
+
+  const estadoLabel = ['Abierta','Resuelta','Cancelada'];
+  const estadoColor = ['var(--gold)','var(--up)','var(--muted)'];
+
+  return React.createElement('table', null,
+    React.createElement('thead', null,
+      React.createElement('tr', null,
+        React.createElement('th', null, '#'),
+        React.createElement('th', null, 'Pregunta'),
+        React.createElement('th', null, 'Pool'),
+        React.createElement('th', null, 'Resultado'),
+        React.createElement('th', null, 'Estado')
+      )
+    ),
+    React.createElement('tbody', null,
+      historial.map(({p, id}) => {
+        const est = parseInt(p.estado);
+        const res = parseInt(p.resultado);
+        const pool = web3 ? parseFloat(web3.utils.fromWei(p.totalPool.toString(), 'ether')).toFixed(0) : '—';
+        const texto = p.texto.length > 40 ? p.texto.slice(0, 40) + '...' : p.texto;
+        const resEl = est === 1 ? (res === 0 ?
+          React.createElement('span', {className:'badge-up'}, '✅ SI') :
+          React.createElement('span', {className:'badge-dn'}, '❌ NO')
+        ) : est === 2 ?
+          React.createElement('span', {className:'badge-cancel'}, 'CANCEL') : '—';
+        return React.createElement('tr', {key: id},
+          React.createElement('td', {style:{color:'var(--muted)'}}, '#', id),
+          React.createElement('td', null, texto),
+          React.createElement('td', null, pool, ' CNKT+'),
+          React.createElement('td', null, resEl),
+          React.createElement('td', {style:{color:estadoColor[est],fontSize:11}}, estadoLabel[est])
+        );
+      })
+    )
+  );
+}
 
 ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
 </script>
