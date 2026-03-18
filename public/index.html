@@ -2381,7 +2381,11 @@ function CardPregunta({pregunta, web3, contrato, contratoE, wallet, soloLectura,
   const dias = Math.floor(secsLeft / 86400);
   const hrs  = Math.floor((secsLeft % 86400) / 3600);
   const mins = Math.floor((secsLeft % 3600) / 60);
-  const timerStr = dias > 0 ? `${dias}d ${hrs}h` : hrs > 0 ? `${hrs}h ${mins}m` : fTime(secsLeft);
+  // Timer siempre corre hasta fechaLimite
+  const diasL = Math.floor(secsLeft / 86400);
+  const hrsL  = Math.floor((secsLeft % 86400) / 3600);
+  const minsL = Math.floor((secsLeft % 3600) / 60);
+  const timerStr = diasL > 0 ? `${diasL}d ${hrsL}h` : hrsL > 0 ? `${hrsL}h ${minsL}m` : fTime(secsLeft);
 
   return React.createElement('div', {
     style: {
@@ -2397,7 +2401,7 @@ function CardPregunta({pregunta, web3, contrato, contratoE, wallet, soloLectura,
     React.createElement('div', {style:{padding:'14px 16px 10px',borderBottom:'1px solid var(--border)'}},
       React.createElement('div', {style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}},
         React.createElement('span', {style:{fontSize:10,fontWeight:700,letterSpacing:2,color:'var(--gold)',fontFamily:'DM Mono,monospace'}}, '🎯 PREDICCIÓN'),
-        React.createElement('span', {style:{fontSize:11,fontFamily:'DM Mono,monospace',color:urgente?'var(--dn)':cerrada?'var(--muted)':'var(--gold)',fontWeight:700}}, cerrada ? 'CERRADA' : timerStr)
+        React.createElement('span', {style:{fontSize:11,fontFamily:'DM Mono,monospace',color:urgente?'var(--dn)':secsLeft<=0?'var(--muted)':urgente?'var(--dn)':'var(--gold)',fontWeight:700}}, isResuelta?(resultado===0?'✅ SI GANÓ':'❌ NO GANÓ'):isCancelada?'CANCELADA':secsLeft<=0?'CERRADA':timerStr)
       ),
       React.createElement('div', {style:{fontSize:14,fontWeight:700,color:'var(--text)',lineHeight:1.4,marginBottom:6}}, pregunta.texto),
       condicionesDisplay && React.createElement('div', {style:{fontSize:11,color:'var(--muted)',lineHeight:1.5,fontFamily:'DM Mono,monospace'}}, condicionesDisplay)
