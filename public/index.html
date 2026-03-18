@@ -1389,10 +1389,12 @@ function App() {
     const w3 = new Web3(provider);
     const cv = new w3.eth.Contract(ABI_V, CFG.CONTRATO_VEGAS);
     const ce = new w3.eth.Contract(ABI_E, CFG.CONTRATO_CNKT);
+    const cp = new w3.eth.Contract(ABI_P, CFG.CONTRATO_PREGUNTAS);
     window._web3 = w3;
     setWeb3(w3);
     setContrato(cv);
     setContratoE(ce);
+    setContratoP(cp);
     setWallet(addr);
     setSoloLectura(lectura);
     web3Ref.current = w3;
