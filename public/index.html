@@ -1098,7 +1098,7 @@ function Modal(_ref7) {
   const [cnkt, setCnkt] = useState('');
   const [usd, setUsd] = useState('');
   const [hint, setHint] = useState({
-    txt: 'Min 500 · Max 250,000',
+    txt: 'Min 500 · Max 250,000 CNKT+',
     color: 'var(--muted)'
   });
   const [status, setStatus] = useState(null);
@@ -1115,7 +1115,7 @@ function Modal(_ref7) {
       txt: `✓ ≈ $${(c * precioCNKT).toFixed(2)} USD`,
       color: 'var(--up)'
     });else setHint({
-      txt: 'Min 500 · Max 250,000',
+      txt: 'Min 500 · Max 250,000 CNKT+',
       color: 'var(--muted)'
     });
   };
@@ -2342,6 +2342,7 @@ const ABI_P = [
   {inputs:[],name:"getTodasActivas",outputs:[{components:[{internalType:"uint256",name:"id",type:"uint256"},{internalType:"string",name:"texto",type:"string"},{internalType:"string",name:"condiciones",type:"string"},{internalType:"uint256",name:"fechaLimite",type:"uint256"},{internalType:"uint8",name:"estado",type:"uint8"},{internalType:"uint8",name:"resultado",type:"uint8"},{internalType:"uint256",name:"totalSi",type:"uint256"},{internalType:"uint256",name:"totalNo",type:"uint256"},{internalType:"uint256",name:"totalPool",type:"uint256"}],internalType:"struct EvoxPreguntas.Pregunta[]",name:"",type:"tuple[]"}],stateMutability:"view",type:"function"},
   {inputs:[{internalType:"uint256",name:"_id",type:"uint256"},{internalType:"address",name:"",type:"address"}],name:"yaAposto",outputs:[{internalType:"bool",name:"",type:"bool"}],stateMutability:"view",type:"function"},
   {inputs:[],name:"totalPreguntas",outputs:[{internalType:"uint256",name:"",type:"uint256"}],stateMutability:"view",type:"function"},
+  {inputs:[{internalType:"uint256",name:"_id",type:"uint256"}],name:"getApuestas",outputs:[{components:[{internalType:"address",name:"user",type:"address"},{internalType:"uint256",name:"amount",type:"uint256"},{internalType:"uint8",name:"respuesta",type:"uint8"}],internalType:"struct EvoxPreguntas.Apuesta[]",name:"",type:"tuple[]"}],stateMutability:"view",type:"function"},
   {inputs:[{internalType:"uint256",name:"_id",type:"uint256"}],name:"getPregunta",outputs:[{components:[{internalType:"uint256",name:"id",type:"uint256"},{internalType:"string",name:"texto",type:"string"},{internalType:"string",name:"condiciones",type:"string"},{internalType:"uint256",name:"fechaLimite",type:"uint256"},{internalType:"uint8",name:"estado",type:"uint8"},{internalType:"uint8",name:"resultado",type:"uint8"},{internalType:"uint256",name:"totalSi",type:"uint256"},{internalType:"uint256",name:"totalNo",type:"uint256"},{internalType:"uint256",name:"totalPool",type:"uint256"}],internalType:"struct EvoxPreguntas.Pregunta",name:"",type:"tuple"}],stateMutability:"view",type:"function"},
 ];
 
@@ -2433,7 +2434,7 @@ function CardPregunta({pregunta, web3, contrato, contratoE, wallet, soloLectura,
       ) : yaAposto ? (
         React.createElement('div', {style:{textAlign:'center',padding:'10px',borderRadius:10,background:'var(--gold-dim)',border:'1px solid rgba(255,215,0,0.3)',color:'var(--gold)',fontSize:12,fontWeight:700,letterSpacing:1}}, '✓ Ya apostaste')
       ) : cerrada ? (
-        React.createElement('div', {style:{textAlign:'center',padding:'10px',borderRadius:10,background:'rgba(107,94,154,0.1)',border:'1px solid var(--border)',color:'var(--muted)',fontSize:12,fontWeight:700}}, '🔒 Apuestas cerradas')
+        React.createElement('div', {style:{textAlign:'center',padding:'10px',borderRadius:10,background:'rgba(107,94,154,0.1)',border:'1px solid var(--border)',color:'var(--muted)',fontSize:12,fontWeight:700}}, '🔒 ENTRADAS CERRADAS')
       ) : (
         React.createElement('div', {style:{display:'flex',gap:8}},
           React.createElement('button', {
@@ -2477,7 +2478,7 @@ function SeccionPreguntas({web3, contrato, contratoE, wallet, soloLectura, esOwn
   const [condiciones, setCondiciones] = React.useState('');
   const [fecha, setFecha] = React.useState('');
   const [creating, setCreating] = React.useState(false);
-  const [horasCierre, setHorasCierre] = React.useState('2');
+  const [minutosCierre, setMinutosCierre] = React.useState('30');
   const carruselRef = React.useRef(null);
 
   const cargarPreguntas = React.useCallback(async () => {
@@ -2525,9 +2526,9 @@ function SeccionPreguntas({web3, contrato, contratoE, wallet, soloLectura, esOwn
         addToast('Aprobando CNKT+...', 'info');
         await contratoE.methods.approve(CFG.CONTRATO_PREGUNTAS, MAX).send({from:wallet, gasPrice:gasFast});
       }
-      addToast('Enviando apuesta...', 'info');
-      await contrato.methods.apostar(id, respuesta, aw).send({from:wallet, gasPrice:gasFast});
-      addToast('Apuesta registrada ✓', 'ok');
+      addToast('Enviando entrada...', 'info');
+      await contrato.methods.apostar(id, respuesta, aw).send({from:wallet, gasPrice:gasFast, gas:300000});
+      addToast('Entrada registrada ✓', 'ok');
       setModalBet(null);
       cargarPreguntas();
     } catch(e) {
@@ -2540,8 +2541,25 @@ function SeccionPreguntas({web3, contrato, contratoE, wallet, soloLectura, esOwn
     try {
       const gasPrice = await web3.eth.getGasPrice();
       const gasFast = (BigInt(gasPrice)*150n/100n<110000000000n?'110000000000':(BigInt(gasPrice)*150n/100n).toString());
-      await contrato.methods.resolver(id, resultado).send({from:wallet, gasPrice:gasFast});
-      addToast('Pregunta #'+id+' resuelta ✓', 'ok');
+      await contrato.methods.resolver(id, resultado).send({from:wallet, gasPrice:gasFast, gas:300000});
+      addToast('Predicción #'+id+' resuelta ✓', 'ok');
+      try {
+        const apuestas = await contrato.methods.getApuestas(id).call();
+        const miApuesta = apuestas.find(a => a.user.toLowerCase() === wallet.toLowerCase());
+        if (miApuesta) {
+          const gane = parseInt(miApuesta.respuesta) === resultado;
+          if (gane) {
+            const p = await contrato.methods.getPregunta(id).call();
+            const pool = parseFloat(web3.utils.fromWei(p.totalPool.toString(), 'ether'));
+            const lado = resultado === 0 ? parseFloat(web3.utils.fromWei(p.totalSi.toString(), 'ether')) : parseFloat(web3.utils.fromWei(p.totalNo.toString(), 'ether'));
+            const miMonto = parseFloat(web3.utils.fromWei(miApuesta.amount.toString(), 'ether'));
+            const payout = lado > 0 ? (miMonto * pool * 0.95 / lado).toFixed(2) : '0';
+            setResultadoModal({tipo:'win', payout});
+          } else {
+            setResultadoModal({tipo:'lose'});
+          }
+        }
+      } catch(e2) {}
       cargarPreguntas();
     } catch(e) { addToast('Error: '+(e.message||e), 'err'); }
   };
@@ -2551,7 +2569,7 @@ function SeccionPreguntas({web3, contrato, contratoE, wallet, soloLectura, esOwn
     try {
       const gasPrice = await web3.eth.getGasPrice();
       const gasFast = (BigInt(gasPrice)*150n/100n<110000000000n?'110000000000':(BigInt(gasPrice)*150n/100n).toString());
-      await contrato.methods.cancelar(id).send({from:wallet, gasPrice:gasFast});
+      await contrato.methods.cancelar(id).send({from:wallet, gasPrice:gasFast, gas:300000});
       addToast('Pregunta #'+id+' cancelada', 'info');
       cargarPreguntas();
     } catch(e) { addToast('Error: '+(e.message||e), 'err'); }
@@ -2565,9 +2583,9 @@ function SeccionPreguntas({web3, contrato, contratoE, wallet, soloLectura, esOwn
     try {
       const gasPrice = await web3.eth.getGasPrice();
       const gasFast = (BigInt(gasPrice)*150n/100n<110000000000n?'110000000000':(BigInt(gasPrice)*150n/100n).toString());
-      const cierreSegs = Math.round((parseFloat(horasCierre)||0) * 3600);
+      const cierreSegs = Math.round((parseFloat(minutosCierre)||0) * 60);
       const condicionesConCierre = cierreSegs > 0 ? `[CIERRE:${cierreSegs}]` + condiciones : condiciones;
-      await contrato.methods.crearPregunta(texto, condicionesConCierre, ts).send({from:wallet, gasPrice:gasFast});
+      await contrato.methods.crearPregunta(texto, condicionesConCierre, ts).send({from:wallet, gasPrice:gasFast, gas:300000});
       addToast('Pregunta creada ✓', 'ok');
       setTexto(''); setCondiciones(''); setFecha(''); setShowCrear(false);
       cargarPreguntas();
@@ -2607,9 +2625,9 @@ function SeccionPreguntas({web3, contrato, contratoE, wallet, soloLectura, esOwn
         style:{width:'100%',background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:8,padding:'8px 10px',color:'var(--text)',fontFamily:'DM Mono,monospace',fontSize:12,marginBottom:8,outline:'none'}
       }),
       React.createElement('div', {style:{display:'flex',alignItems:'center',gap:8,marginBottom:10,padding:'8px 10px',background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:8}},
-        React.createElement('span', {style:{fontSize:11,color:'var(--muted)',fontFamily:'DM Mono,monospace',flex:1}}, 'Cerrar apuestas'),
-        React.createElement('input', {type:'number', value:horasCierre, onChange:e=>setHorasCierre(e.target.value), min:'0', style:{width:60,background:'var(--surface)',border:'1px solid var(--border)',borderRadius:6,padding:'4px 8px',color:'var(--text)',fontFamily:'DM Mono,monospace',fontSize:12,outline:'none',textAlign:'center'}}),
-        React.createElement('span', {style:{fontSize:11,color:'var(--muted)',fontFamily:'DM Mono,monospace'}}, 'horas antes')
+        React.createElement('span', {style:{fontSize:11,color:'var(--muted)',fontFamily:'DM Mono,monospace',flex:1}}, 'Cerrar entradas'),
+        React.createElement('input', {type:'number', value:minutosCierre, onChange:e=>setMinutosCierre(e.target.value), min:'0', style:{width:60,background:'var(--surface)',border:'1px solid var(--border)',borderRadius:6,padding:'4px 8px',color:'var(--text)',fontFamily:'DM Mono,monospace',fontSize:12,outline:'none',textAlign:'center'}}),
+        React.createElement('span', {style:{fontSize:11,color:'var(--muted)',fontFamily:'DM Mono,monospace'}}, 'minutos antes')
       ),
       React.createElement('button', {
         onClick:handleCrear, disabled:creating,
@@ -2634,6 +2652,11 @@ function SeccionPreguntas({web3, contrato, contratoE, wallet, soloLectura, esOwn
     ) : esOwner && React.createElement('div', {style:{textAlign:'center',padding:'20px',color:'var(--muted)',fontSize:12,fontFamily:'DM Mono,monospace'}},'No hay predicciones activas'),
 
     // Modal apuesta pregunta
+    resultadoModal && React.createElement(ResultadoPrediccionModal, {
+      tipo: resultadoModal.tipo,
+      payout: resultadoModal.payout,
+      onClose: () => setResultadoModal(null)
+    }),
     modalBet && React.createElement(ModalBetPregunta, {
       id:modalBet.id, respuesta:modalBet.resp, web3,
       onClose:()=>setModalBet(null),
@@ -2672,7 +2695,7 @@ function ModalBetPregunta({id, respuesta, web3, onClose, onConfirm}) {
           type:'number', value:cnkt, onChange:e=>setCnkt(e.target.value),
           placeholder:'500', min:'500'
         }),
-        React.createElement('div', {className:'field-hint'}, 'Min 500 · Max 250,000')
+        React.createElement('div', {className:'field-hint'}, 'Min 500 · Max 250,000 CNKT+')
       ),
       React.createElement('button', {
         className:`btn-confirm ${esSi?'up':'dn'}`,
@@ -2683,6 +2706,39 @@ function ModalBetPregunta({id, respuesta, web3, onClose, onConfirm}) {
 }
 
 
+
+
+function ResultadoPrediccionModal({tipo, payout, onClose}) {
+  const isWin = tipo === 'win';
+  return React.createElement(React.Fragment, null,
+    isWin && React.createElement(Confetti, null),
+    React.createElement('div', {
+      className: 'result-bg',
+      onClick: e => e.target === e.currentTarget && onClose()
+    },
+      React.createElement('div', {
+        className: `result-box ${isWin ? 'win' : 'lose'}`,
+        style: {borderTop: isWin ? '4px solid var(--gold)' : '4px solid var(--dn)'}
+      },
+        React.createElement('span', {className: 'result-emoji'}, isWin ? '🎯' : '😔'),
+        React.createElement('div', {className: `result-title ${isWin ? 'win' : 'lose'}`},
+          isWin ? '¡ACERTASTE!' : 'NO FUE ESTA VEZ'
+        ),
+        React.createElement('div', {className: 'result-sub'},
+          isWin ? 'Tu predicción fue correcta. Los CNKT+ ya están en tu wallet.' : 'Tu predicción no fue correcta esta vez.
+¡La próxima será tuya!'
+        ),
+        isWin && payout && React.createElement(React.Fragment, null,
+          React.createElement('div', {className: 'result-amount'}, '+', payout),
+          React.createElement('div', {className: 'result-lbl'}, 'CNKT+ RECIBIDOS')
+        ),
+        React.createElement('button', {className: 'result-btn', onClick: onClose},
+          isWin ? '¡Seguir prediciendo! 🚀' : 'Intentar de nuevo'
+        )
+      )
+    )
+  );
+}
 
 function HistorialPreguntas({web3, contrato}) {
   const [historial, setHistorial] = React.useState([]);
