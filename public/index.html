@@ -2725,8 +2725,7 @@ function ResultadoPrediccionModal({tipo, payout, onClose}) {
           isWin ? '¡ACERTASTE!' : 'NO FUE ESTA VEZ'
         ),
         React.createElement('div', {className: 'result-sub'},
-          isWin ? 'Tu predicción fue correcta. Los CNKT+ ya están en tu wallet.' : 'Tu predicción no fue correcta esta vez.
-¡La próxima será tuya!'
+          isWin ? 'Tu predicción fue correcta. Los CNKT+ ya están en tu wallet.' : 'Tu predicción no fue correcta esta vez. ¡La próxima será tuya!'
         ),
         isWin && payout && React.createElement(React.Fragment, null,
           React.createElement('div', {className: 'result-amount'}, '+', payout),
