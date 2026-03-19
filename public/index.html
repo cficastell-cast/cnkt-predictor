@@ -2479,6 +2479,7 @@ function SeccionPreguntas({web3, contrato, contratoE, wallet, soloLectura, esOwn
   const [fecha, setFecha] = React.useState('');
   const [creating, setCreating] = React.useState(false);
   const [minutosCierre, setMinutosCierre] = React.useState('30');
+  const [resultadoModal, setResultadoModal] = React.useState(null);
   const carruselRef = React.useRef(null);
 
   const cargarPreguntas = React.useCallback(async () => {
