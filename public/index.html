@@ -2481,6 +2481,7 @@ function SeccionPreguntas({web3, contrato, contratoE, wallet, soloLectura, esOwn
   const [minutosCierre, setMinutosCierre] = React.useState('30');
   const [resultadoModal, setResultadoModal] = React.useState(null);
   const carruselRef = React.useRef(null);
+  const firstActivaRef = React.useRef(null);
 
   const cargarPreguntas = React.useCallback(async () => {
     if (!contrato) return;
@@ -2510,6 +2511,19 @@ function SeccionPreguntas({web3, contrato, contratoE, wallet, soloLectura, esOwn
     const iv = setInterval(cargarPreguntas, 15000);
     return () => clearInterval(iv);
   }, [cargarPreguntas]);
+
+  React.useEffect(() => {
+    if (!preguntas.length) return;
+    setTimeout(() => {
+      if (!firstActivaRef.current || !carruselRef.current) return;
+      const track = carruselRef.current;
+      const card = firstActivaRef.current;
+      const trackW = track.offsetWidth;
+      const cardLeft = card.offsetLeft;
+      const cardW = card.offsetWidth;
+      track.scrollLeft = cardLeft - (trackW / 2) + (cardW / 2);
+    }, 100);
+  }, [preguntas]);
 
   const handleBet = async (id, respuesta, amount) => {
     if (!web3 || !contrato || !contratoE || !wallet) return;
@@ -2642,13 +2656,20 @@ function SeccionPreguntas({web3, contrato, contratoE, wallet, soloLectura, esOwn
       style:{display:'flex',gap:12,padding:'8px 0 16px',overflowX:'auto',scrollSnapType:'x mandatory',scrollbarWidth:'none',alignItems:'stretch',cursor:'grab'}
     },
       React.createElement('div', {style:{flexShrink:0,width:'calc(50vw - 160px)'}}),
-      ...preguntas.map(p => React.createElement(CardPregunta, {
-        key:p.id, pregunta:p, web3, contrato, contratoE,
-        wallet, soloLectura, esOwner,
-        onBet:(id,resp) => setModalBet({id,resp}),
-        onResolver:handleResolver,
-        onCancelar:handleCancelar
-      })),
+      ...preguntas.map((p, i) => {
+        const isFirstActiva = parseInt(p.estado) === 0 && preguntas.slice(0,i).every(prev => parseInt(prev.estado) !== 0);
+        return React.createElement('div', {
+          key: p.id,
+          ref: isFirstActiva ? firstActivaRef : null,
+          style: {flexShrink:0, scrollSnapAlign:'center'}
+        }, React.createElement(CardPregunta, {
+          pregunta:p, web3, contrato, contratoE,
+          wallet, soloLectura, esOwner,
+          onBet:(id,resp) => setModalBet({id,resp}),
+          onResolver:handleResolver,
+          onCancelar:handleCancelar
+        }));
+      }),
       React.createElement('div', {style:{flexShrink:0,width:'calc(50vw - 160px)'}})
     ) : esOwner && React.createElement('div', {style:{textAlign:'center',padding:'20px',color:'var(--muted)',fontSize:12,fontFamily:'DM Mono,monospace'}},'No hay predicciones activas'),
 
